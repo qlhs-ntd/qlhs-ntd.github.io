@@ -570,7 +570,12 @@ const SelectWrap = styled.div`
     padding: 0 38px 0 14px;
     line-height: 46px;
     text-indent: 0;
+    text-transform: uppercase;
     cursor: pointer;
+  }
+
+  option {
+    text-transform: uppercase;
   }
 
   &::after {
