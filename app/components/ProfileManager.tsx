@@ -512,7 +512,7 @@ const Modal = styled.div`
   @media (max-width: 520px) {
     height: var(--modal-viewport-height, 100dvh);
     max-height: none;
-    border-radius: 22px;
+    border-radius: 0;
     -webkit-text-size-adjust: 88%;
     text-size-adjust: 88%;
 
