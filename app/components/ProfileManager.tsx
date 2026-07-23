@@ -804,7 +804,7 @@ function formatCurrentTime(value: Date) {
 }
 
 function formatCurrency(value: number) {
-  return `${new Intl.NumberFormat("vi-VN").format(value || 0)} đ`;
+  return `${new Intl.NumberFormat("vi-VN").format(value || 0)} VNĐ`;
 }
 
 function monthKey(value: Date) {
@@ -866,7 +866,7 @@ function MoneyField({ icon, label, value, onChange }: {
           <span className="money-caret" />
           <span className="money-minor">.000</span>
         </div>
-        <span className="money-currency" aria-hidden="true">đ</span>
+        <span className="money-currency" aria-hidden="true">VNĐ</span>
       </MoneyInputWrap>
     </Field>
   );
