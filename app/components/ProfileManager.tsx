@@ -1,23 +1,33 @@
 "use client";
 
 import {
-  BadgeDollarSign,
+  BadgeCheck,
+  BadgePlus,
+  Box,
   BriefcaseBusiness,
   Building2,
+  Calculator,
   CarFront,
   CheckCircle2,
   CircleAlert,
   ClipboardCheck,
+  Coins,
+  ContactRound,
   FilePlus2,
+  HandCoins,
+  IdCard,
   Inbox,
   ListChecks,
   LoaderCircle,
   PencilLine,
+  ReceiptText,
   Search,
   Trash2,
+  TrendingUp,
   UserRound,
+  Wallet,
 } from "lucide-react";
-import { FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { AppShell } from "./AppShell";
 import {
@@ -727,14 +737,15 @@ function getYearEndMonths() {
   });
 }
 
-function MoneyField({ label, value, onChange }: {
+function MoneyField({ icon, label, value, onChange }: {
+  icon: ReactNode;
   label: string;
   value: number;
   onChange: (value: number) => void;
 }) {
   return (
     <Field>
-      <FieldLabel><BadgeDollarSign size={14} />{label}</FieldLabel>
+      <FieldLabel>{icon}{label}</FieldLabel>
       <MoneyInputWrap>
         <input
           type="number"
@@ -840,7 +851,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                <FieldLabel><UserRound size={14} />Tên chủ phương tiện</FieldLabel>
+                <FieldLabel><ContactRound size={14} />Tên chủ phương tiện</FieldLabel>
                 <input
                   required
                   maxLength={120}
@@ -851,7 +862,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                <FieldLabel><CarFront size={14} />Biển số xe</FieldLabel>
+                <FieldLabel><IdCard size={14} />Biển số xe</FieldLabel>
                 <input
                   required
                   maxLength={30}
@@ -890,20 +901,20 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             </FormSection>
 
             <FormSection>
-              <MoneyField label="Chi phí" value={form.cost} onChange={(value) => updateField("cost", value)} />
-              <MoneyField label="Chi phí LPTB" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
-              <MoneyField label="Chi phí khác" value={form.otherCost} onChange={(value) => updateField("otherCost", value)} />
-              <MoneyField label="Phát sinh Hộp đen, Phù hiệu" value={form.blackBoxBadgeCost} onChange={(value) => updateField("blackBoxBadgeCost", value)} />
-              <MoneyField label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
+              <MoneyField icon={<Wallet size={14} />} label="Chi phí" value={form.cost} onChange={(value) => updateField("cost", value)} />
+              <MoneyField icon={<ReceiptText size={14} />} label="Chi phí LPTB" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
+              <MoneyField icon={<Coins size={14} />} label="Chi phí khác" value={form.otherCost} onChange={(value) => updateField("otherCost", value)} />
+              <MoneyField icon={<Box size={14} />} label="Phát sinh Hộp đen, Phù hiệu" value={form.blackBoxBadgeCost} onChange={(value) => updateField("blackBoxBadgeCost", value)} />
+              <MoneyField icon={<BadgePlus size={14} />} label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
 
               <CostSummary>
-                <span><BadgeDollarSign size={13} />Tổng chi phí</span>
+                <span><Calculator size={13} />Tổng chi phí</span>
                 <strong>{formatCurrency(totalCost)}</strong>
               </CostSummary>
             </FormSection>
 
             <FormSection>
-              <MoneyField label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
+              <MoneyField icon={<HandCoins size={14} />} label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
 
               <Field>
                 <FieldLabel><ClipboardCheck size={14} />Trạng thái</FieldLabel>
@@ -915,7 +926,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                <FieldLabel><CarFront size={14} />Biển số xe mới</FieldLabel>
+                <FieldLabel><BadgeCheck size={14} />Biển số xe mới</FieldLabel>
                 <input
                   maxLength={30}
                   value={form.newVehiclePlate}
@@ -947,7 +958,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <CostSummary>
-                <span><BadgeDollarSign size={13} />Lợi nhuận</span>
+                <span><TrendingUp size={13} />Lợi nhuận</span>
                 <strong>{formatCurrency(profit)}</strong>
               </CostSummary>
             </FormSection>
