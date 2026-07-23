@@ -789,7 +789,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   maxLength={120}
                   value={form.customerName}
                   onChange={(event) => updateField("customerName", event.target.value)}
-                  placeholder="--"
+                  placeholder="Nhập tên khách hàng"
                 />
               </Field>
 
