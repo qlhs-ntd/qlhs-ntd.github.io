@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import "./globals.scss";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const headerStore = await headers();
-  const host = headerStore.get("x-forwarded-host") || headerStore.get("host") || "localhost:3000";
-  const protocol = headerStore.get("x-forwarded-proto") || (host.startsWith("localhost") ? "http" : "https");
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`;
-  const socialImage = new URL("/og.png", origin).toString();
+export function generateMetadata(): Metadata {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const socialImage = new URL("og.png", `${siteUrl.replace(/\/$/, "")}/`).toString();
 
   return {
+    metadataBase: new URL(siteUrl),
     title: {
       default: "Quản Lý Hồ Sơ",
       template: "%s | Quản Lý Hồ Sơ",
