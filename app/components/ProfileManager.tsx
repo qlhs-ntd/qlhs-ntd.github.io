@@ -591,11 +591,11 @@ const MoneyInputWrap = styled.div`
   }
 
   .money-minor {
-    color: var(--ink);
+    color: #697185;
     font-size: 18px;
     font-weight: 720;
     line-height: 1;
-    transition: color 140ms ease;
+    transition: color 140ms ease, opacity 140ms ease;
   }
 
   .money-minor.is-placeholder {
@@ -624,7 +624,8 @@ const MoneyInputWrap = styled.div`
   }
 
   input:focus + .money-display .money-minor {
-    color: #aeb4c2;
+    color: var(--ink);
+    opacity: 1;
   }
 
   > span {
