@@ -532,7 +532,7 @@ const MoneyInputWrap = styled.div`
 
   input {
     padding-right: 92px;
-    text-align: right;
+    text-align: left;
   }
 
   span {
