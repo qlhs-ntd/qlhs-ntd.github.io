@@ -404,6 +404,7 @@ const Modal = styled.div`
 `;
 
 const ModalHeader = styled.div`
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -427,8 +428,24 @@ const ModalHeader = styled.div`
   }
 
   @media (max-width: 600px) {
-    align-items: stretch;
-    flex-direction: column;
+    min-height: 64px;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 70px;
+
+    > div:first-child {
+      min-width: 0;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 3px;
+      font-size: 16px;
+    }
+
+    p {
+      font-size: 11px;
+    }
   }
 `;
 
@@ -757,9 +774,36 @@ const HeaderActions = styled.div`
   gap: 10px;
 
   @media (max-width: 600px) {
+    position: absolute;
+    inset: 0 12px;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+
     button {
-      flex: 1;
+      min-height: 36px;
+      flex: 0 0 auto;
+      padding: 0 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      pointer-events: auto;
     }
+
+    button svg {
+      display: none;
+    }
+
+    .save-label-full {
+      display: none;
+    }
+  }
+`;
+
+const MobileSaveLabel = styled.span`
+  display: none;
+
+  @media (max-width: 600px) {
+    display: inline;
   }
 `;
 
@@ -957,7 +1001,8 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               }
             >
               {saving ? <LoaderCircle className="spin" size={17} /> : <CheckCircle2 size={17} />}
-              {saving ? "Đang lưu..." : "Lưu hồ sơ"}
+              <span className="save-label-full">{saving ? "Đang lưu..." : "Lưu hồ sơ"}</span>
+              <MobileSaveLabel>{saving ? "Đang lưu" : "Lưu"}</MobileSaveLabel>
             </PrimaryButton>
           </HeaderActions>
         </ModalHeader>
