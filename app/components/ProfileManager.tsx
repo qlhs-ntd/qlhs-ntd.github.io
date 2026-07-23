@@ -80,11 +80,14 @@ const PrimaryButton = styled.button`
 
 const MonthTabs = styled.div`
   display: flex;
+  width: fit-content;
+  max-width: 100%;
+  justify-content: flex-start;
   gap: 6px;
   margin-bottom: 18px;
   overflow-x: auto;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.88);
   padding: 6px;
   box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
@@ -96,12 +99,12 @@ const MonthTabs = styled.div`
 `;
 
 const MonthTab = styled.button<{ $active: boolean }>`
-  min-width: 112px;
   min-height: 44px;
-  flex: 1 0 auto;
+  flex: 0 0 auto;
   border: 0;
-  border-radius: 11px;
+  border-radius: 999px;
   background: ${({ $active }) => ($active ? "var(--primary)" : "transparent")};
+  padding: 0 18px;
   color: ${({ $active }) => ($active ? "white" : "#687086")};
   font-size: 13px;
   font-weight: 700;
