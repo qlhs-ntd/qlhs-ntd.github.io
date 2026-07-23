@@ -545,8 +545,8 @@ const MoneyInputWrap = styled.div`
   }
 
   input {
-    width: auto;
-    max-width: calc(100% - 88px);
+    width: 100%;
+    max-width: none;
     height: auto;
     flex: 0 0 auto;
     border: 0;
@@ -563,7 +563,7 @@ const MoneyInputWrap = styled.div`
     }
   }
 
-  span {
+  > span {
     display: grid;
     min-width: 34px;
     height: 32px;
@@ -590,6 +590,30 @@ const MoneyInputWrap = styled.div`
 
   .money-currency {
     margin-left: auto;
+  }
+`;
+
+const MoneyValueWrap = styled.div`
+  display: grid;
+  width: fit-content;
+  min-width: 1ch;
+  max-width: calc(100% - 88px);
+  align-items: center;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+
+  span {
+    visibility: hidden;
+    white-space: pre;
+    font-size: 14px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  input {
+    min-width: 0;
   }
 `;
 
@@ -787,23 +811,25 @@ function MoneyField({ icon, label, value, onChange }: {
     <Field>
       <FieldLabel>{icon}{label}</FieldLabel>
       <MoneyInputWrap>
-        <input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9.]*"
-          value={displayedValue}
-          style={{ width: `${Math.max(displayedValue.length, 1)}ch` }}
-          onKeyDown={(event) => {
-            if (!event.ctrlKey && !event.metaKey && event.key.length === 1 && !/^\d$/.test(event.key)) {
-              event.preventDefault();
-            }
-          }}
-          onChange={(event) => {
-            const digits = event.target.value.replace(/\D/g, "");
-            onChange((Number(digits) || 0) * 1000);
-          }}
-          placeholder="0"
-        />
+        <MoneyValueWrap>
+          <span aria-hidden="true">{displayedValue || "0"}</span>
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9.]*"
+            value={displayedValue}
+            onKeyDown={(event) => {
+              if (!event.ctrlKey && !event.metaKey && event.key.length === 1 && !/^\d$/.test(event.key)) {
+                event.preventDefault();
+              }
+            }}
+            onChange={(event) => {
+              const digits = event.target.value.replace(/\D/g, "");
+              onChange((Number(digits) || 0) * 1000);
+            }}
+            placeholder="0"
+          />
+        </MoneyValueWrap>
         <span className="money-thousands" aria-hidden="true">.000</span>
         <span className="money-currency" aria-hidden="true">đ</span>
       </MoneyInputWrap>
