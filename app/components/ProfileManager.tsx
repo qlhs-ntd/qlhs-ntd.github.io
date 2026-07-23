@@ -436,7 +436,7 @@ const Form = styled.form`
 const FormSections = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 0;
 
   @media (max-width: 820px) {
     grid-template-columns: 1fr;
@@ -448,10 +448,32 @@ const FormSection = styled.section`
   min-width: 0;
   flex-direction: column;
   gap: 16px;
-  border: 1px solid var(--line);
-  border-radius: 17px;
-  background: #fcfcfe;
-  padding: 18px;
+  border-right: 1px solid var(--line);
+  padding: 0 18px;
+
+  &:first-child {
+    padding-left: 0;
+  }
+
+  &:last-child {
+    border-right: 0;
+    padding-right: 0;
+  }
+
+  @media (max-width: 820px) {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 18px 0;
+
+    &:first-child {
+      padding-top: 0;
+    }
+
+    &:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+  }
 `;
 
 const SectionTitle = styled.h3`
@@ -459,6 +481,7 @@ const SectionTitle = styled.h3`
   color: var(--ink);
   font-size: 16px;
   letter-spacing: -0.015em;
+  text-transform: capitalize;
 `;
 
 const Field = styled.label`
