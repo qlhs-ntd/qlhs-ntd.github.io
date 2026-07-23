@@ -474,9 +474,12 @@ const Toast = styled.div<{ $error: boolean }>`
 
 const Overlay = styled.div`
   position: fixed;
-  inset: 0;
+  top: var(--modal-viewport-top, 0px);
+  right: 0;
+  bottom: auto;
+  left: 0;
   height: 100vh;
-  height: 100dvh;
+  height: var(--modal-viewport-height, 100dvh);
   z-index: 50;
   display: grid;
   place-items: center;
@@ -497,7 +500,7 @@ const Modal = styled.div`
   display: flex;
   width: min(980px, 100%);
   height: calc(100vh - 20px);
-  height: calc(100dvh - 20px);
+  height: calc(var(--modal-viewport-height, 100dvh) - 20px);
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -1137,6 +1140,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
   onClose: () => void;
   onSave: (input: ProfileInput) => Promise<void>;
 }) {
+  const overlayRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<ProfileInput>(() =>
     state.profile ? profileToInput(state.profile) : createEmptyProfileInput(),
   );
@@ -1162,6 +1166,38 @@ function ProfileModal({ state, saving, onClose, onSave }: {
     };
   }, [onClose, saving]);
 
+  useEffect(() => {
+    const visualViewport = window.visualViewport;
+
+    const syncVisualViewport = () => {
+      const overlayElement = overlayRef.current;
+      if (!overlayElement) return;
+
+      const viewportHeight = visualViewport?.height ?? window.innerHeight;
+      const viewportTop = visualViewport?.offsetTop ?? 0;
+      overlayElement.style.setProperty("--modal-viewport-height", `${viewportHeight}px`);
+      overlayElement.style.setProperty("--modal-viewport-top", `${Math.max(0, viewportTop)}px`);
+
+      window.requestAnimationFrame(() => {
+        const formElement = overlayElement.querySelector<HTMLFormElement>("#profile-form");
+        const activeElement = document.activeElement;
+        if (!formElement || !(activeElement instanceof HTMLElement) || !formElement.contains(activeElement)) return;
+        positionFieldInForm(formElement, activeElement, "auto");
+      });
+    };
+
+    syncVisualViewport();
+    visualViewport?.addEventListener("resize", syncVisualViewport);
+    visualViewport?.addEventListener("scroll", syncVisualViewport);
+    window.addEventListener("resize", syncVisualViewport);
+
+    return () => {
+      visualViewport?.removeEventListener("resize", syncVisualViewport);
+      visualViewport?.removeEventListener("scroll", syncVisualViewport);
+      window.removeEventListener("resize", syncVisualViewport);
+    };
+  }, []);
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     await onSave({
@@ -1173,27 +1209,32 @@ function ProfileModal({ state, saving, onClose, onSave }: {
     });
   }
 
+  function positionFieldInForm(
+    formElement: HTMLFormElement,
+    fieldElement: HTMLElement,
+    behavior: ScrollBehavior,
+  ) {
+    const formRect = formElement.getBoundingClientRect();
+    const fieldRect = fieldElement.getBoundingClientRect();
+    const targetTop =
+      formElement.scrollTop +
+      fieldRect.top -
+      formRect.top -
+      Math.max(18, (formElement.clientHeight - fieldRect.height) * 0.28);
+
+    formElement.scrollTo({ top: Math.max(0, targetTop), behavior });
+  }
+
   function revealFocusedField(event: FocusEvent<HTMLFormElement>) {
     if (window.innerWidth > 520) return;
 
     const formElement = event.currentTarget;
     const fieldElement = event.target as HTMLElement;
-
-    window.requestAnimationFrame(() => {
-      const formRect = formElement.getBoundingClientRect();
-      const fieldRect = fieldElement.getBoundingClientRect();
-      const targetTop =
-        formElement.scrollTop +
-        fieldRect.top -
-        formRect.top -
-        Math.max(18, (formElement.clientHeight - fieldRect.height) * 0.28);
-
-      formElement.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
-    });
+    window.requestAnimationFrame(() => positionFieldInForm(formElement, fieldElement, "smooth"));
   }
 
   return (
-    <Overlay role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !saving && onClose()}>
+    <Overlay ref={overlayRef} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !saving && onClose()}>
       <Modal role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
         <ModalHeader>
           <div>
