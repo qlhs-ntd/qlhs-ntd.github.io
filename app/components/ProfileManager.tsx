@@ -397,7 +397,7 @@ const ModalHeader = styled.div`
   justify-content: space-between;
   gap: 16px;
   border-bottom: 1px solid var(--line);
-  padding: 22px 24px 18px;
+  padding: 15px 20px;
   flex: 0 0 auto;
 
   h2 {
