@@ -378,7 +378,7 @@ const Overlay = styled.div`
 
 const Modal = styled.div`
   display: flex;
-  width: min(920px, 100%);
+  width: min(1240px, 100%);
   max-height: calc(100vh - 48px);
   flex-direction: column;
   overflow: hidden;
@@ -433,19 +433,36 @@ const Form = styled.form`
   padding: 22px 24px 24px;
 `;
 
-const FormGrid = styled.div`
+const FormSections = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 
-  @media (max-width: 680px) {
+  @media (max-width: 820px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const Field = styled.label<{ $full?: boolean }>`
+const FormSection = styled.section`
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: #fcfcfe;
+  padding: 18px;
+`;
+
+const SectionTitle = styled.h3`
+  margin: 0 0 2px;
+  color: var(--ink);
+  font-size: 16px;
+  letter-spacing: -0.015em;
+`;
+
+const Field = styled.label`
   display: grid;
-  grid-column: ${({ $full }) => ($full ? "1 / -1" : "auto")};
   gap: 8px;
   color: #3d465b;
   font-size: 13px;
@@ -482,7 +499,8 @@ const CheckGroup = styled.div`
   display: flex;
   min-height: 48px;
   align-items: center;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 10px 18px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #fbfbfd;
@@ -506,21 +524,16 @@ const CheckGroup = styled.div`
 `;
 
 const CostSummary = styled.div`
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  display: block;
+  margin-top: auto;
   border: 1px solid #dfe4f8;
   border-radius: 14px;
   background: #f7f8ff;
   padding: 15px;
 
-  div {
-    display: grid;
-    gap: 4px;
-  }
-
   span {
+    display: block;
+    margin-bottom: 4px;
     color: var(--muted);
     font-size: 12px;
   }
@@ -530,9 +543,6 @@ const CostSummary = styled.div`
     font-size: 18px;
   }
 
-  @media (max-width: 520px) {
-    grid-template-columns: 1fr;
-  }
 `;
 
 const FormActions = styled.div`
@@ -585,18 +595,6 @@ function formatDate(value: string) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "—";
   return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(parsed);
-}
-
-function formatDateTime(value: string) {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "—";
-  return new Intl.DateTimeFormat("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(parsed);
 }
 
 function formatCurrency(value: number) {
@@ -692,130 +690,134 @@ function ProfileModal({ state, saving, onClose, onSave }: {
         </ModalHeader>
 
         <Form onSubmit={submit}>
-          <FormGrid>
-            <Field>
-              Thời gian tạo
-              <input
-                disabled
-                value={state.mode === "create" ? "Tự động khi lưu hồ sơ" : formatDateTime(state.profile.createdAt)}
-              />
-            </Field>
+          <FormSections>
+            <FormSection>
+              <SectionTitle>Thông tin khách</SectionTitle>
 
-            <Field>
-              Trạng thái
-              <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-                {PROFILE_STATUSES.map((status) => <option key={status}>{status}</option>)}
-              </select>
-            </Field>
+              <Field>
+                Tên khách hàng
+                <input
+                  autoFocus
+                  required
+                  maxLength={120}
+                  value={form.customerName}
+                  onChange={(event) => updateField("customerName", event.target.value)}
+                  placeholder="Ví dụ: Nguyễn Văn An"
+                />
+              </Field>
 
-            <Field>
-              Tên khách hàng
-              <input
-                autoFocus
-                required
-                maxLength={120}
-                value={form.customerName}
-                onChange={(event) => updateField("customerName", event.target.value)}
-                placeholder="Ví dụ: Nguyễn Văn An"
-              />
-            </Field>
+              <Field>
+                Tên chủ phương tiện
+                <input
+                  required
+                  maxLength={120}
+                  value={form.vehicleOwnerName}
+                  onChange={(event) => updateField("vehicleOwnerName", event.target.value)}
+                  placeholder="Ví dụ: Trần Minh Bình"
+                />
+              </Field>
 
-            <Field>
-              Tên chủ phương tiện
-              <input
-                required
-                maxLength={120}
-                value={form.vehicleOwnerName}
-                onChange={(event) => updateField("vehicleOwnerName", event.target.value)}
-                placeholder="Ví dụ: Trần Minh Bình"
-              />
-            </Field>
+              <Field>
+                Biển số xe
+                <input
+                  required
+                  maxLength={30}
+                  value={form.vehiclePlate}
+                  onChange={(event) => updateField("vehiclePlate", event.target.value)}
+                  placeholder="Ví dụ: 61A-123.45"
+                />
+              </Field>
 
-            <Field>
-              Biển số xe
-              <input
-                required
-                maxLength={30}
-                value={form.vehiclePlate}
-                onChange={(event) => updateField("vehiclePlate", event.target.value)}
-                placeholder="Ví dụ: 61A-123.45"
-              />
-            </Field>
+              <Field>
+                Loại xe
+                <select required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
+                  <option value="" disabled>Chọn loại xe</option>
+                  {VEHICLE_TYPES.map((type) => <option key={type}>{type}</option>)}
+                </select>
+              </Field>
 
-            <Field>
-              Loại xe
-              <select required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
-                <option value="" disabled>Chọn loại xe</option>
-                {VEHICLE_TYPES.map((type) => <option key={type}>{type}</option>)}
-              </select>
-            </Field>
+              <Field>
+                Cơ quan nhận
+                <select required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
+                  <option value="" disabled>Chọn cơ quan nhận</option>
+                  {RECEIVING_AGENCIES.map((agency) => <option key={agency}>{agency}</option>)}
+                </select>
+              </Field>
 
-            <Field>
-              Cơ quan nhận
-              <select required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
-                <option value="" disabled>Chọn cơ quan nhận</option>
-                {RECEIVING_AGENCIES.map((agency) => <option key={agency}>{agency}</option>)}
-              </select>
-            </Field>
+              <Field>
+                Loại dịch vụ
+                <select required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
+                  <option value="" disabled>Chọn loại dịch vụ</option>
+                  {SERVICE_TYPES.map((service) => <option key={service}>{service}</option>)}
+                </select>
+              </Field>
+            </FormSection>
 
-            <Field>
-              Loại dịch vụ
-              <select required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
-                <option value="" disabled>Chọn loại dịch vụ</option>
-                {SERVICE_TYPES.map((service) => <option key={service}>{service}</option>)}
-              </select>
-            </Field>
+            <FormSection>
+              <SectionTitle>Chi phí</SectionTitle>
 
-            <MoneyField label="Chi phí" value={form.cost} onChange={(value) => updateField("cost", value)} />
-            <MoneyField label="Chi phí LPTB" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
-            <MoneyField label="Chi phí khác" value={form.otherCost} onChange={(value) => updateField("otherCost", value)} />
-            <MoneyField label="Phát sinh Hộp đen, Phù hiệu" value={form.blackBoxBadgeCost} onChange={(value) => updateField("blackBoxBadgeCost", value)} />
-            <MoneyField label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
-            <MoneyField label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
+              <MoneyField label="Chi phí" value={form.cost} onChange={(value) => updateField("cost", value)} />
+              <MoneyField label="Chi phí LPTB" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
+              <MoneyField label="Chi phí khác" value={form.otherCost} onChange={(value) => updateField("otherCost", value)} />
+              <MoneyField label="Phát sinh Hộp đen, Phù hiệu" value={form.blackBoxBadgeCost} onChange={(value) => updateField("blackBoxBadgeCost", value)} />
+              <MoneyField label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
 
-            <Field>
-              Biển số xe mới
-              <input
-                maxLength={30}
-                value={form.newVehiclePlate}
-                onChange={(event) => updateField("newVehiclePlate", event.target.value)}
-                placeholder="Nhập khi đã có biển số mới"
-              />
-            </Field>
-
-            <Field $full as="div">
-              Theo dõi giấy tờ
-              <CheckGroup>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={form.owesVehiclePlate}
-                    onChange={(event) => updateField("owesVehiclePlate", event.target.checked)}
-                  />
-                  Nợ biển số
-                </label>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={form.owesRegistration}
-                    onChange={(event) => updateField("owesRegistration", event.target.checked)}
-                  />
-                  Nợ giấy đăng kí
-                </label>
-              </CheckGroup>
-            </Field>
-
-            <CostSummary>
-              <div>
+              <CostSummary>
                 <span>Tổng chi phí</span>
                 <strong>{formatCurrency(totalCost)}</strong>
-              </div>
-              <div>
+              </CostSummary>
+            </FormSection>
+
+            <FormSection>
+              <SectionTitle>Tiến trình hồ sơ</SectionTitle>
+
+              <MoneyField label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
+
+              <Field>
+                Trạng thái
+                <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
+                  {PROFILE_STATUSES.map((status) => <option key={status}>{status}</option>)}
+                </select>
+              </Field>
+
+              <Field as="div">
+                Theo dõi giấy tờ
+                <CheckGroup>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={form.owesVehiclePlate}
+                      onChange={(event) => updateField("owesVehiclePlate", event.target.checked)}
+                    />
+                    Nợ biển số
+                  </label>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={form.owesRegistration}
+                      onChange={(event) => updateField("owesRegistration", event.target.checked)}
+                    />
+                    Nợ giấy đăng kí
+                  </label>
+                </CheckGroup>
+              </Field>
+
+              <Field>
+                Biển số xe mới
+                <input
+                  maxLength={30}
+                  value={form.newVehiclePlate}
+                  onChange={(event) => updateField("newVehiclePlate", event.target.value)}
+                  placeholder="Nhập khi đã có biển số mới"
+                />
+              </Field>
+
+              <CostSummary>
                 <span>Lợi nhuận</span>
                 <strong>{formatCurrency(profit)}</strong>
-              </div>
-            </CostSummary>
-          </FormGrid>
+              </CostSummary>
+            </FormSection>
+          </FormSections>
 
           <FormActions>
             <SecondaryButton type="button" onClick={onClose} disabled={saving}>Huỷ</SecondaryButton>
