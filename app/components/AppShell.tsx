@@ -175,6 +175,7 @@ const MainInner = styled.div`
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const normalizedPathname = pathname === "/" ? pathname : pathname.replace(/\/+$/, "");
 
   return (
     <Shell>
@@ -182,8 +183,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Navigation aria-label="Điều hướng chính">
           <NavItem
             href="/"
-            $active={pathname === "/"}
-            aria-current={pathname === "/" ? "page" : undefined}
+            $active={normalizedPathname === "/"}
+            aria-current={normalizedPathname === "/" ? "page" : undefined}
             aria-label="Hồ sơ"
             title="Hồ sơ"
           >
@@ -192,8 +193,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </NavItem>
           <NavItem
             href="/doanh-thu"
-            $active={pathname === "/doanh-thu"}
-            aria-current={pathname === "/doanh-thu" ? "page" : undefined}
+            $active={normalizedPathname === "/doanh-thu"}
+            aria-current={normalizedPathname === "/doanh-thu" ? "page" : undefined}
             aria-label="Doanh thu"
             title="Doanh thu"
           >

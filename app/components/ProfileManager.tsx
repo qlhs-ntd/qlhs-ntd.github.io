@@ -642,7 +642,7 @@ const FormSection = styled.section`
   }
 `;
 
-const Field = styled.label`
+const Field = styled.div`
   position: relative;
   display: grid;
   gap: 8px;
@@ -1095,14 +1095,14 @@ function monthKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
 }
 
+const PROFILE_YEAR = 2026;
+
 function getYearEndMonths() {
-  const current = new Date();
   return [8, 9, 10, 11, 12].map((month) => {
-    const date = new Date(current.getFullYear(), month - 1, 1);
     return {
-      key: monthKey(date),
+      key: `${PROFILE_YEAR}-${String(month).padStart(2, "0")}`,
       label: `Tháng ${month}`,
-      year: date.getFullYear(),
+      year: PROFILE_YEAR,
     };
   });
 }
@@ -1292,6 +1292,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 <FieldLabel><UserRound size={14} />Tên khách hàng</FieldLabel>
                 <input
                   autoFocus
+                  aria-label="Tên khách hàng"
                   type="text"
                   autoComplete="off"
                   autoCorrect="off"
@@ -1345,6 +1346,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><IdCard size={14} />Biển số xe</FieldLabel>
                 <input
+                  aria-label="Biển số xe"
                   type="text"
                   autoComplete="off"
                   autoCorrect="off"
@@ -1361,7 +1363,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><CarFront size={14} />Loại xe</FieldLabel>
                 <SelectWrap>
-                  <select required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
+                  <select aria-label="Loại xe" required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
                     {VEHICLE_TYPES.map((type) => <option key={type} value={type}>{type.toLocaleUpperCase("vi-VN")}</option>)}
                   </select>
                 </SelectWrap>
@@ -1370,7 +1372,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><Building2 size={14} />Cơ quan nhận</FieldLabel>
                 <SelectWrap>
-                  <select required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
+                  <select aria-label="Cơ quan nhận" required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
                     {RECEIVING_AGENCIES.map((agency) => <option key={agency} value={agency}>{agency.toLocaleUpperCase("vi-VN")}</option>)}
                   </select>
                 </SelectWrap>
@@ -1379,7 +1381,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><BriefcaseBusiness size={14} />Loại dịch vụ</FieldLabel>
                 <SelectWrap>
-                  <select required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
+                  <select aria-label="Loại dịch vụ" required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
                     {SERVICE_TYPES.map((service) => <option key={service} value={service}>{service.toLocaleUpperCase("vi-VN")}</option>)}
                   </select>
                 </SelectWrap>
@@ -1427,6 +1429,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><BadgeCheck size={14} />Biển số xe mới</FieldLabel>
                 <input
+                  aria-label="Biển số xe mới"
                   type="text"
                   autoComplete="off"
                   autoCorrect="off"
@@ -1442,7 +1445,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><ClipboardCheck size={14} />Trạng thái</FieldLabel>
                 <SelectWrap>
-                  <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
+                  <select aria-label="Trạng thái" value={form.status} onChange={(event) => updateField("status", event.target.value)}>
                     {PROFILE_STATUSES.map((status) => <option key={status} value={status}>{status.toLocaleUpperCase("vi-VN")}</option>)}
                   </select>
                 </SelectWrap>
@@ -1465,12 +1468,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 export function ProfileManager() {
   const monthTabs = useMemo(() => getYearEndMonths(), []);
   const monthTabsRef = useRef<HTMLDivElement>(null);
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const current = new Date();
-    const currentMonth = current.getMonth() + 1;
-    const initialMonth = currentMonth >= 8 && currentMonth <= 12 ? currentMonth : 8;
-    return `${current.getFullYear()}-${String(initialMonth).padStart(2, "0")}`;
-  });
+  const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
   const [activePill, setActivePill] = useState({ left: 0, width: 0, visible: false });
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [query, setQuery] = useState("");
@@ -1480,6 +1478,14 @@ export function ProfileManager() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [toast, setToast] = useState<{ message: string; error: boolean } | null>(null);
+
+  useEffect(() => {
+    const current = new Date();
+    const currentMonth = current.getMonth() + 1;
+    if (current.getFullYear() === PROFILE_YEAR && currentMonth >= 8 && currentMonth <= 12) {
+      setSelectedMonth(`${PROFILE_YEAR}-${String(currentMonth).padStart(2, "0")}`);
+    }
+  }, []);
 
   const loadProfiles = useCallback(async () => {
     setLoading(true);
