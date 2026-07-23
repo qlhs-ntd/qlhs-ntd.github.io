@@ -36,17 +36,11 @@ const Header = styled.header`
 
 const TitleBlock = styled.div`
   h1 {
-    margin: 0 0 10px;
+    margin: 0;
     color: var(--ink);
     font-size: clamp(28px, 4vw, 40px);
     letter-spacing: -0.045em;
     line-height: 1.05;
-  }
-
-  p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 14px;
   }
 `;
 
@@ -669,8 +663,7 @@ export function ProfileManager() {
     <AppShell>
       <Header>
         <TitleBlock>
-          <h1>Tổng hợp hồ sơ</h1>
-          <p>Danh sách quản lí hồ sơ xe</p>
+          <h1>Danh sách hồ sơ xe</h1>
         </TitleBlock>
         <MonthTabs ref={monthTabsRef} role="tablist" aria-label="Lọc hồ sơ theo tháng">
           <ActiveMonthPill
