@@ -792,7 +792,7 @@ function MoneyField({ icon, label, value, onChange }: {
           inputMode="numeric"
           pattern="[0-9.]*"
           value={displayedValue}
-          style={{ width: `${Math.max(displayedValue.length, 1) + 0.5}ch` }}
+          style={{ width: `${Math.max(displayedValue.length, 1)}ch` }}
           onKeyDown={(event) => {
             if (!event.ctrlKey && !event.metaKey && event.key.length === 1 && !/^\d$/.test(event.key)) {
               event.preventDefault();
