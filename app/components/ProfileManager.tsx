@@ -4,7 +4,6 @@ import {
   ArrowRight,
   CheckCircle2,
   CircleAlert,
-  Cloud,
   FilePlus2,
   Inbox,
   LoaderCircle,
@@ -19,7 +18,6 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { AppShell } from "./AppShell";
 import {
-  isGoogleSheetsConnected,
   profileService,
   type ProfileInput,
   type ProfileRecord,
@@ -39,16 +37,8 @@ const Header = styled.header`
 `;
 
 const TitleBlock = styled.div`
-  span {
-    color: var(--primary);
-    font-size: 12px;
-    font-weight: 750;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
   h1 {
-    margin: 8px 0 6px;
+    margin: 0 0 6px;
     color: var(--ink);
     font-size: clamp(28px, 4vw, 40px);
     letter-spacing: -0.045em;
@@ -88,20 +78,6 @@ const PrimaryButton = styled.button`
     cursor: not-allowed;
     opacity: 0.65;
   }
-`;
-
-const ConnectionNote = styled.div<{ $connected: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 18px;
-  border: 1px solid ${({ $connected }) => ($connected ? "#cfe9db" : "#e7defd")};
-  border-radius: 12px;
-  background: ${({ $connected }) => ($connected ? "#f1fbf5" : "#f8f5ff")};
-  padding: 11px 14px;
-  color: ${({ $connected }) => ($connected ? "#26734a" : "#67529c")};
-  font-size: 12px;
-  font-weight: 600;
 `;
 
 const SummaryGrid = styled.section`
@@ -637,22 +613,14 @@ export function ProfileManager() {
     <AppShell>
       <Header>
         <TitleBlock>
-          <span>Quản lý hồ sơ</span>
           <h1>Danh sách hồ sơ</h1>
-          <p>Lưu trữ và cập nhật thông tin khách hàng tại một nơi.</p>
+          <p>Danh sách quản lí hồ sơ xe</p>
         </TitleBlock>
         <PrimaryButton type="button" onClick={() => setEditor({ mode: "create" })}>
           <FilePlus2 size={18} />
           Thêm hồ sơ
         </PrimaryButton>
       </Header>
-
-      <ConnectionNote $connected={isGoogleSheetsConnected}>
-        <Cloud size={16} />
-        {isGoogleSheetsConnected
-          ? "Đã kết nối Google Sheets — thay đổi sẽ được đồng bộ tự động."
-          : "Đang ở chế độ demo — cấu hình NEXT_PUBLIC_GOOGLE_SCRIPT_URL để đồng bộ Google Sheets."}
-      </ConnectionNote>
 
       <SummaryGrid aria-label="Tóm tắt hồ sơ">
         <SummaryCard>
@@ -726,4 +694,3 @@ export function ProfileManager() {
     </AppShell>
   );
 }
-
