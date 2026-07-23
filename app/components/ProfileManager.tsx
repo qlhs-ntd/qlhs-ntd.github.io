@@ -800,7 +800,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   maxLength={120}
                   value={form.vehicleOwnerName}
                   onChange={(event) => updateField("vehicleOwnerName", event.target.value)}
-                  placeholder="--"
+                  placeholder="Nhập tên chủ phương tiện"
                 />
               </Field>
 
