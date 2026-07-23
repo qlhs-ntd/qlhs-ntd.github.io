@@ -514,7 +514,7 @@ const Modal = styled.div`
     input:not([type="checkbox"]),
     select,
     textarea {
-      font-size: 16px !important;
+      font-size: 14px !important;
       -webkit-text-size-adjust: 100% !important;
       text-size-adjust: 100% !important;
     }
