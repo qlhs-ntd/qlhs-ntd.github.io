@@ -12,7 +12,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { AppShell } from "./AppShell";
 import {
@@ -79,6 +79,7 @@ const PrimaryButton = styled.button`
 `;
 
 const MonthTabs = styled.div`
+  position: relative;
   display: flex;
   width: fit-content;
   max-width: 100%;
@@ -98,21 +99,45 @@ const MonthTabs = styled.div`
   }
 `;
 
+const ActiveMonthPill = styled.span<{ $left: number; $width: number; $visible: boolean }>`
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: ${({ $width }) => `${$width}px`};
+  height: 44px;
+  border-radius: 999px;
+  background: var(--primary);
+  box-shadow: 0 7px 18px rgba(56, 89, 217, 0.24);
+  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
+  pointer-events: none;
+  transform: translateX(${({ $left }) => `${$left}px`});
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 120ms ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`;
+
 const MonthTab = styled.button<{ $active: boolean }>`
+  position: relative;
+  z-index: 1;
   min-height: 44px;
   flex: 0 0 auto;
   border: 0;
   border-radius: 999px;
-  background: ${({ $active }) => ($active ? "var(--primary)" : "transparent")};
+  background: transparent;
   padding: 0 18px;
   color: ${({ $active }) => ($active ? "white" : "#687086")};
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  transition: 150ms ease;
+  transition: color 180ms ease, background 180ms ease;
 
   &:hover {
-    background: ${({ $active }) => ($active ? "var(--primary-dark)" : "#f1f3f8")};
+    background: ${({ $active }) => ($active ? "transparent" : "#f1f3f8")};
     color: ${({ $active }) => ($active ? "white" : "var(--ink)")};
   }
 `;
@@ -537,12 +562,14 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
 export function ProfileManager() {
   const monthTabs = useMemo(() => getYearEndMonths(), []);
+  const monthTabsRef = useRef<HTMLDivElement>(null);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const current = new Date();
     const currentMonth = current.getMonth() + 1;
     const initialMonth = currentMonth >= 8 && currentMonth <= 12 ? currentMonth : 8;
     return `${current.getFullYear()}-${String(initialMonth).padStart(2, "0")}`;
   });
+  const [activePill, setActivePill] = useState({ left: 0, width: 0, visible: false });
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -571,6 +598,22 @@ export function ProfileManager() {
     const timer = window.setTimeout(() => setToast(null), 3600);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useLayoutEffect(() => {
+    const container = monthTabsRef.current;
+    if (!container) return;
+
+    const updatePill = () => {
+      const activeTab = container.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]');
+      if (!activeTab) return;
+      setActivePill({ left: activeTab.offsetLeft, width: activeTab.offsetWidth, visible: true });
+    };
+
+    updatePill();
+    const observer = new ResizeObserver(updatePill);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [selectedMonth]);
 
   const visibleProfiles = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
@@ -632,7 +675,13 @@ export function ProfileManager() {
         </PrimaryButton>
       </Header>
 
-      <MonthTabs role="tablist" aria-label="Lọc hồ sơ theo tháng">
+      <MonthTabs ref={monthTabsRef} role="tablist" aria-label="Lọc hồ sơ theo tháng">
+        <ActiveMonthPill
+          aria-hidden="true"
+          $left={activePill.left}
+          $width={activePill.width}
+          $visible={activePill.visible}
+        />
         {monthTabs.map((month) => (
           <MonthTab
             key={month.key}
