@@ -673,14 +673,19 @@ const FieldLabel = styled.span`
   }
 `;
 
-const SuggestionList = styled.div`
-  display: flex;
+const SuggestionList = styled.div<{ $mobileOnly?: boolean; $alignDesktopRight?: boolean }>`
+  display: ${({ $mobileOnly }) => ($mobileOnly ? "none" : "flex")};
   flex-wrap: wrap;
   gap: 6px;
   margin-top: -2px;
+  justify-content: ${({ $alignDesktopRight }) => ($alignDesktopRight ? "flex-end" : "flex-start")};
 
   button {
+    display: inline-flex;
     min-height: 28px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
     border: 0;
     border-radius: 999px;
     background: #edf0ff;
@@ -691,6 +696,11 @@ const SuggestionList = styled.div`
     line-height: 1;
     text-transform: none;
     cursor: pointer;
+  }
+
+  @media (max-width: 520px) {
+    display: flex;
+    justify-content: flex-start;
   }
 `;
 
@@ -1105,7 +1115,7 @@ function MoneyField({ icon, label, value, onChange }: {
         <span className="money-currency" aria-hidden="true">VNĐ</span>
       </MoneyInputWrap>
       {suggestionsOpen && (
-        <SuggestionList aria-label={`Gợi ý ${label}`}>
+        <SuggestionList $mobileOnly aria-label={`Gợi ý ${label}`}>
           {MONEY_SUGGESTIONS.slice(0, 5).map((amount) => {
             const chooseAmount = () => {
               onChange(amount);
@@ -1289,7 +1299,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   placeholder="Nhập tên chủ phương tiện"
                 />
                 {ownerSuggestionsOpen && form.customerName.trim() && (
-                  <SuggestionList aria-label="Gợi ý tên chủ phương tiện">
+                  <SuggestionList $alignDesktopRight aria-label="Gợi ý tên chủ phương tiện">
                     <button
                       type="button"
                       onPointerDown={(event) => {
@@ -1302,7 +1312,8 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                         setOwnerSuggestionsOpen(false);
                       }}
                     >
-                      Cùng với Tên Khách Hàng
+                      <UserRound size={13} />
+                      Tên Khách Hàng
                     </button>
                   </SuggestionList>
                 )}
