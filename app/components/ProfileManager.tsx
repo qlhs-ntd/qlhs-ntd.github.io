@@ -628,6 +628,7 @@ const FormSection = styled.section`
 `;
 
 const Field = styled.label`
+  position: relative;
   display: grid;
   gap: 8px;
   color: #3d465b;
@@ -673,14 +674,32 @@ const FieldLabel = styled.span`
   }
 `;
 
-const SuggestionList = styled.div<{ $mobileOnly?: boolean; $alignDesktopRight?: boolean }>`
+const SuggestionList = styled.div<{ $mobileOnly?: boolean; $alignDesktopRight?: boolean; $floating?: boolean }>`
+  position: ${({ $floating }) => ($floating ? "absolute" : "static")};
+  top: ${({ $floating }) => ($floating ? "calc(100% + 7px)" : "auto")};
+  right: ${({ $floating }) => ($floating ? "0" : "auto")};
+  z-index: ${({ $floating }) => ($floating ? "8" : "auto")};
   display: ${({ $mobileOnly }) => ($mobileOnly ? "none" : "flex")};
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: -2px;
+  margin-top: ${({ $floating }) => ($floating ? "0" : "-2px")};
   justify-content: ${({ $alignDesktopRight }) => ($alignDesktopRight ? "flex-end" : "flex-start")};
 
+  &::before {
+    position: absolute;
+    top: -6px;
+    right: 18px;
+    display: ${({ $floating }) => ($floating ? "block" : "none")};
+    width: 12px;
+    height: 12px;
+    background: #edf0ff;
+    content: "";
+    transform: rotate(45deg);
+  }
+
   button {
+    position: relative;
+    z-index: 1;
     display: inline-flex;
     min-height: 28px;
     align-items: center;
@@ -1299,7 +1318,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   placeholder="Nhập tên chủ phương tiện"
                 />
                 {ownerSuggestionsOpen && form.customerName.trim() && (
-                  <SuggestionList $alignDesktopRight aria-label="Gợi ý tên chủ phương tiện">
+                  <SuggestionList $alignDesktopRight $floating aria-label="Gợi ý tên chủ phương tiện">
                     <button
                       type="button"
                       onPointerDown={(event) => {
@@ -1312,8 +1331,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                         setOwnerSuggestionsOpen(false);
                       }}
                     >
-                      <UserRound size={13} />
-                      Tên Khách Hàng
+                      Nhập Tên Khách Hàng
                     </button>
                   </SuggestionList>
                 )}
