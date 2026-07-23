@@ -542,8 +542,11 @@ const SelectWrap = styled.div`
   position: relative;
 
   select {
+    display: block;
     appearance: none;
-    padding-right: 52px;
+    padding: 0 52px 0 14px;
+    line-height: 46px;
+    text-indent: 0;
     cursor: pointer;
   }
 
