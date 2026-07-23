@@ -445,13 +445,13 @@ function monthKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function getRecentMonths(count: number) {
+function getYearEndMonths() {
   const current = new Date();
-  return Array.from({ length: count }, (_, index) => {
-    const date = new Date(current.getFullYear(), current.getMonth() - index, 1);
+  return [8, 9, 10, 11, 12].map((month) => {
+    const date = new Date(current.getFullYear(), month - 1, 1);
     return {
       key: monthKey(date),
-      label: `Tháng ${date.getMonth() + 1}`,
+      label: `Tháng ${month}`,
       year: date.getFullYear(),
     };
   });
@@ -533,8 +533,13 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 }
 
 export function ProfileManager() {
-  const monthTabs = useMemo(() => getRecentMonths(5), []);
-  const [selectedMonth, setSelectedMonth] = useState(() => monthKey(new Date()));
+  const monthTabs = useMemo(() => getYearEndMonths(), []);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const current = new Date();
+    const currentMonth = current.getMonth() + 1;
+    const initialMonth = currentMonth >= 8 && currentMonth <= 12 ? currentMonth : 8;
+    return `${current.getFullYear()}-${String(initialMonth).padStart(2, "0")}`;
+  });
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
