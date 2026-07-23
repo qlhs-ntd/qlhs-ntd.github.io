@@ -582,8 +582,8 @@ const SelectWrap = styled.div`
 const CheckGroup = styled.div`
   display: flex;
   min-height: 48px;
-  align-items: center;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  flex-direction: column;
   gap: 10px 18px;
   border: 1px solid var(--line);
   border-radius: 12px;
