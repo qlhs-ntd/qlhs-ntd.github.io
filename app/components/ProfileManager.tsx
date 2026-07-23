@@ -624,14 +624,18 @@ function formatDate(value: string) {
 }
 
 function formatCurrentTime(value: Date) {
-  return new Intl.DateTimeFormat("vi-VN", {
+  const date = new Intl.DateTimeFormat("vi-VN", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+  }).format(value);
+  const time = new Intl.DateTimeFormat("vi-VN", {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
   }).format(value);
+
+  return `${date} ${time}`;
 }
 
 function formatCurrency(value: number) {
