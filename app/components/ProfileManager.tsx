@@ -63,6 +63,14 @@ const TitleBlock = styled.div`
     letter-spacing: -0.045em;
     line-height: 1.05;
   }
+
+  @media (max-width: 640px) {
+    text-align: center;
+
+    h1 {
+      font-size: 19px;
+    }
+  }
 `;
 
 const PrimaryButton = styled.button`
