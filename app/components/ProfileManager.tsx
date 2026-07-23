@@ -482,13 +482,13 @@ const Overlay = styled.div`
   place-items: center;
   overflow-y: auto;
   background: rgba(17, 24, 43, 0.5);
-  padding: 24px;
+  padding: 10px 24px;
   backdrop-filter: blur(5px);
 
   @media (max-width: 520px) {
-    align-items: end;
+    align-items: center;
     overflow: hidden;
-    padding: 0;
+    padding: 10px 0;
     overscroll-behavior: none;
   }
 `;
@@ -496,8 +496,8 @@ const Overlay = styled.div`
 const Modal = styled.div`
   display: flex;
   width: min(980px, 100%);
-  max-height: calc(100vh - 48px);
-  max-height: calc(100dvh - 48px);
+  height: calc(100vh - 20px);
+  height: calc(100dvh - 20px);
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -506,8 +506,7 @@ const Modal = styled.div`
   box-shadow: 0 30px 90px rgba(14, 22, 45, 0.28);
 
   @media (max-width: 520px) {
-    max-height: calc(100dvh - 12px);
-    border-radius: 22px 22px 0 0;
+    border-radius: 22px;
     -webkit-text-size-adjust: 88%;
     text-size-adjust: 88%;
 
@@ -636,7 +635,7 @@ const Field = styled.label`
   input,
   select {
     width: 100%;
-    height: 48px;
+    height: 46px;
     border: 1px solid var(--line);
     border-radius: 12px;
     background: #fbfbfd;
@@ -697,7 +696,7 @@ const MoneyInputWrap = styled.div`
   position: relative;
   display: flex;
   width: 100%;
-  height: 48px;
+  height: 46px;
   align-items: center;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -827,7 +826,7 @@ const SelectWrap = styled.div`
     display: block;
     appearance: none;
     padding: 0 38px 0 14px;
-    line-height: 46px;
+    line-height: 44px;
     text-indent: 0;
     text-transform: uppercase;
     font-weight: 600;
