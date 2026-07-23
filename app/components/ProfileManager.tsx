@@ -674,12 +674,12 @@ const FieldLabel = styled.span`
   }
 `;
 
-const SuggestionList = styled.div<{ $mobileOnly?: boolean; $alignDesktopRight?: boolean; $floating?: boolean }>`
+const SuggestionList = styled.div<{ $alignDesktopRight?: boolean; $floating?: boolean }>`
   position: ${({ $floating }) => ($floating ? "absolute" : "static")};
   top: ${({ $floating }) => ($floating ? "calc(100% - 3.5px)" : "auto")};
   right: ${({ $floating }) => ($floating ? "0" : "auto")};
   z-index: ${({ $floating }) => ($floating ? "20" : "auto")};
-  display: ${({ $mobileOnly }) => ($mobileOnly ? "none" : "flex")};
+  display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: ${({ $floating }) => ($floating ? "0" : "-2px")};
@@ -1066,8 +1066,6 @@ function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value || 0)} VNĐ`;
 }
 
-const MONEY_SUGGESTIONS = [1000000, 1500000, 2000000] as const;
-
 function monthKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -1090,7 +1088,6 @@ function MoneyField({ icon, label, value, onChange }: {
   value: number;
   onChange: (value: number) => void;
 }) {
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const displayedValue = value
     ? new Intl.NumberFormat("vi-VN").format(Math.round(value / 1000))
     : "";
@@ -1106,11 +1103,9 @@ function MoneyField({ icon, label, value, onChange }: {
           pattern="[0-9.]*"
           value={displayedValue}
           onFocus={(event) => {
-            setSuggestionsOpen(true);
             const end = event.currentTarget.value.length;
             event.currentTarget.setSelectionRange(end, end);
           }}
-          onBlur={() => setSuggestionsOpen(false)}
           onClick={(event) => {
             const end = event.currentTarget.value.length;
             event.currentTarget.setSelectionRange(end, end);
@@ -1133,30 +1128,6 @@ function MoneyField({ icon, label, value, onChange }: {
         </div>
         <span className="money-currency" aria-hidden="true">VNĐ</span>
       </MoneyInputWrap>
-      {suggestionsOpen && (
-        <SuggestionList $mobileOnly aria-label={`Gợi ý ${label}`}>
-          {MONEY_SUGGESTIONS.slice(0, 5).map((amount) => {
-            const chooseAmount = () => {
-              onChange(amount);
-              setSuggestionsOpen(false);
-            };
-
-            return (
-              <button
-                key={amount}
-                type="button"
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  chooseAmount();
-                }}
-                onClick={chooseAmount}
-              >
-                {new Intl.NumberFormat("vi-VN").format(amount)}
-              </button>
-            );
-          })}
-        </SuggestionList>
-      )}
     </Field>
   );
 }
