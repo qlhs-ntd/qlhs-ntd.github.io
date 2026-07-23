@@ -613,7 +613,7 @@ export function ProfileManager() {
     <AppShell>
       <Header>
         <TitleBlock>
-          <h1>Danh sách hồ sơ</h1>
+          <h1>Tổng hợp hồ sơ</h1>
           <p>Danh sách quản lí hồ sơ xe</p>
         </TitleBlock>
         <PrimaryButton type="button" onClick={() => setEditor({ mode: "create" })}>
