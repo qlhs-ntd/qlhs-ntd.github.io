@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowRight,
   CheckCircle2,
   CircleAlert,
   FilePlus2,
@@ -11,7 +10,6 @@ import {
   Search,
   Trash2,
   UserRound,
-  UsersRound,
   X,
 } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
@@ -77,53 +75,6 @@ const PrimaryButton = styled.button`
   &:disabled {
     cursor: not-allowed;
     opacity: 0.65;
-  }
-`;
-
-const SummaryGrid = styled.section`
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 18px;
-
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const SummaryCard = styled.article`
-  display: flex;
-  min-height: 112px;
-  align-items: center;
-  gap: 15px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.82);
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
-
-  > span {
-    display: grid;
-    width: 48px;
-    height: 48px;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 15px;
-    background: #edf0ff;
-    color: var(--primary);
-  }
-
-  small {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--muted);
-    font-size: 12px;
-  }
-
-  strong {
-    color: var(--ink);
-    font-size: 24px;
-    letter-spacing: -0.03em;
   }
 `;
 
@@ -567,11 +518,6 @@ export function ProfileManager() {
     );
   }, [profiles, query]);
 
-  const recentlyUpdated = useMemo(() => {
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    return profiles.filter((profile) => new Date(profile.updatedAt).getTime() >= sevenDaysAgo).length;
-  }, [profiles]);
-
   async function saveProfile(input: ProfileInput) {
     if (!editor) return;
     setSaving(true);
@@ -621,17 +567,6 @@ export function ProfileManager() {
           Thêm hồ sơ
         </PrimaryButton>
       </Header>
-
-      <SummaryGrid aria-label="Tóm tắt hồ sơ">
-        <SummaryCard>
-          <span><UsersRound size={21} /></span>
-          <div><small>Tổng số hồ sơ</small><strong>{profiles.length}</strong></div>
-        </SummaryCard>
-        <SummaryCard>
-          <span><ArrowRight size={21} /></span>
-          <div><small>Cập nhật trong 7 ngày</small><strong>{recentlyUpdated}</strong></div>
-        </SummaryCard>
-      </SummaryGrid>
 
       <Panel>
         <Toolbar>
