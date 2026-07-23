@@ -576,6 +576,10 @@ const Form = styled.form`
   overscroll-behavior: contain;
   scroll-padding: 18px 0 32vh;
   -webkit-overflow-scrolling: touch;
+
+  @media (max-width: 520px) {
+    padding-bottom: calc(56px + env(safe-area-inset-bottom));
+  }
 `;
 
 const FormSections = styled.div`
