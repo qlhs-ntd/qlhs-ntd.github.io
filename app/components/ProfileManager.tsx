@@ -598,6 +598,11 @@ const MoneyInputWrap = styled.div`
     transition: color 140ms ease;
   }
 
+  .money-minor.is-placeholder {
+    color: #aeb4c2;
+    opacity: 0.72;
+  }
+
   .money-caret {
     position: relative;
     width: 0;
@@ -870,7 +875,7 @@ function MoneyField({ icon, label, value, onChange }: {
         <div className="money-display" aria-hidden="true">
           <span className={`money-major${displayedValue ? "" : " is-placeholder"}`}>{displayedValue || "0"}</span>
           <span className="money-caret" />
-          <span className="money-minor">.000</span>
+          <span className={`money-minor${displayedValue ? "" : " is-placeholder"}`}>.000</span>
         </div>
         <span className="money-currency" aria-hidden="true">VNĐ</span>
       </MoneyInputWrap>
