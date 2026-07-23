@@ -531,15 +531,8 @@ const MoneyInputWrap = styled.div`
   position: relative;
 
   input {
-    padding-right: 54px;
-    appearance: textfield;
-    -moz-appearance: textfield;
-
-    &::-webkit-inner-spin-button,
-    &::-webkit-outer-spin-button {
-      margin: 0;
-      -webkit-appearance: none;
-    }
+    padding-right: 92px;
+    text-align: right;
   }
 
   span {
@@ -558,6 +551,17 @@ const MoneyInputWrap = styled.div`
     pointer-events: none;
     text-transform: none;
     transform: translateY(-50%);
+  }
+
+  .money-thousands {
+    right: 48px;
+    display: flex;
+    min-width: 40px;
+    align-items: center;
+    justify-content: flex-start;
+    background: transparent;
+    color: #687086;
+    font-weight: 600;
   }
 `;
 
@@ -748,22 +752,31 @@ function MoneyField({ icon, label, value, onChange }: {
   value: number;
   onChange: (value: number) => void;
 }) {
+  const displayedValue = value
+    ? new Intl.NumberFormat("vi-VN").format(Math.round(value / 1000))
+    : "";
+
   return (
     <Field>
       <FieldLabel>{icon}{label}</FieldLabel>
       <MoneyInputWrap>
         <input
-          type="number"
-          min="0"
-          step="1000"
+          type="text"
           inputMode="numeric"
-          value={value || ""}
+          pattern="[0-9.]*"
+          value={displayedValue}
           onKeyDown={(event) => {
-            if (["e", "E", "+", "-"].includes(event.key)) event.preventDefault();
+            if (!event.ctrlKey && !event.metaKey && event.key.length === 1 && !/^\d$/.test(event.key)) {
+              event.preventDefault();
+            }
           }}
-          onChange={(event) => onChange(Number(event.target.value) || 0)}
+          onChange={(event) => {
+            const digits = event.target.value.replace(/\D/g, "");
+            onChange((Number(digits) || 0) * 1000);
+          }}
           placeholder="0"
         />
+        <span className="money-thousands" aria-hidden="true">.000</span>
         <span aria-hidden="true">đ</span>
       </MoneyInputWrap>
     </Field>
