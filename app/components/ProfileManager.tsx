@@ -477,14 +477,6 @@ const FormSection = styled.section`
   }
 `;
 
-const SectionTitle = styled.h3`
-  margin: 0 0 2px;
-  color: var(--ink);
-  font-size: 16px;
-  letter-spacing: -0.015em;
-  text-transform: capitalize;
-`;
-
 const Field = styled.label`
   display: grid;
   gap: 8px;
@@ -736,8 +728,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
         <Form onSubmit={submit}>
           <FormSections>
             <FormSection>
-              <SectionTitle>Thông tin khách</SectionTitle>
-
               <Field>
                 Tên khách hàng
                 <input
@@ -798,8 +788,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             </FormSection>
 
             <FormSection>
-              <SectionTitle>Chi phí</SectionTitle>
-
               <MoneyField label="Chi phí" value={form.cost} onChange={(value) => updateField("cost", value)} />
               <MoneyField label="Chi phí LPTB" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
               <MoneyField label="Chi phí khác" value={form.otherCost} onChange={(value) => updateField("otherCost", value)} />
@@ -813,8 +801,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             </FormSection>
 
             <FormSection>
-              <SectionTitle>Tiến trình hồ sơ</SectionTitle>
-
               <MoneyField label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
 
               <Field>
