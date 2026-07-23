@@ -771,6 +771,13 @@ const MoneyInputWrap = styled.div`
     font-variant-numeric: tabular-nums;
     cursor: text;
     opacity: 0;
+    appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      margin: 0;
+      appearance: none;
+    }
 
     &:focus {
       border: 0;
@@ -1109,6 +1116,7 @@ function MoneyField({ icon, label, value, onChange }: {
   const displayedValue = value
     ? new Intl.NumberFormat("vi-VN").format(Math.round(value / 1000))
     : "";
+  const numericInputValue = value ? Math.round(value / 1000) : "";
 
   return (
     <Field as="div">
@@ -1116,26 +1124,20 @@ function MoneyField({ icon, label, value, onChange }: {
       <MoneyInputWrap>
         <input
           aria-label={label}
-          type="text"
+          type="number"
           inputMode="numeric"
-          pattern="[0-9.]*"
-          value={displayedValue}
-          onFocus={(event) => {
-            const end = event.currentTarget.value.length;
-            event.currentTarget.setSelectionRange(end, end);
-          }}
-          onClick={(event) => {
-            const end = event.currentTarget.value.length;
-            event.currentTarget.setSelectionRange(end, end);
-          }}
+          min="0"
+          step="1"
+          autoComplete="off"
+          value={numericInputValue}
           onKeyDown={(event) => {
             if (!event.ctrlKey && !event.metaKey && event.key.length === 1 && !/^\d$/.test(event.key)) {
               event.preventDefault();
             }
           }}
           onChange={(event) => {
-            const digits = event.target.value.replace(/\D/g, "");
-            onChange((Number(digits) || 0) * 1000);
+            const amountInThousands = Math.max(0, Math.trunc(Number(event.target.value) || 0));
+            onChange(amountInThousands * 1000);
           }}
           placeholder="0"
         />
@@ -1283,13 +1285,18 @@ function ProfileModal({ state, saving, onClose, onSave }: {
           </HeaderActions>
         </ModalHeader>
 
-        <Form id="profile-form" onSubmit={submit} onFocusCapture={revealFocusedField}>
+        <Form id="profile-form" autoComplete="off" onSubmit={submit} onFocusCapture={revealFocusedField}>
           <FormSections>
             <FormSection>
               <Field>
                 <FieldLabel><UserRound size={14} />Tên khách hàng</FieldLabel>
                 <input
                   autoFocus
+                  type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="words"
+                  spellCheck={false}
                   required
                   maxLength={120}
                   value={form.customerName}
@@ -1302,6 +1309,11 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 <FieldLabel><ContactRound size={14} />Tên chủ phương tiện</FieldLabel>
                 <input
                   aria-label="Tên chủ phương tiện"
+                  type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="words"
+                  spellCheck={false}
                   required
                   maxLength={120}
                   value={form.vehicleOwnerName}
@@ -1333,6 +1345,11 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><IdCard size={14} />Biển số xe</FieldLabel>
                 <input
+                  type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
                   required
                   maxLength={30}
                   value={form.vehiclePlate}
@@ -1410,6 +1427,11 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><BadgeCheck size={14} />Biển số xe mới</FieldLabel>
                 <input
+                  type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
                   maxLength={30}
                   value={form.newVehiclePlate}
                   onChange={(event) => updateField("newVehiclePlate", event.target.value)}
