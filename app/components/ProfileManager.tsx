@@ -598,11 +598,18 @@ const MoneyInputWrap = styled.div`
   }
 
   .money-caret {
-    width: 1px;
+    position: relative;
+    width: 0;
     height: 18px;
-    margin: 0 1px;
-    background: var(--primary);
     opacity: 0;
+
+    &::after {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 1px;
+      background: var(--primary);
+      content: "";
+    }
   }
 
   input:focus + .money-display .money-caret {
