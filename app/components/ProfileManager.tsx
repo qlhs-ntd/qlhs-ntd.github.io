@@ -28,7 +28,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { FormEvent, type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type FocusEvent, FormEvent, type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { AppShell } from "./AppShell";
 import {
@@ -487,7 +487,9 @@ const Overlay = styled.div`
 
   @media (max-width: 520px) {
     align-items: end;
+    overflow: hidden;
     padding: 0;
+    overscroll-behavior: none;
   }
 `;
 
@@ -563,6 +565,8 @@ const Form = styled.form`
   min-height: 0;
   overflow-y: auto;
   padding: 22px 24px 24px;
+  overscroll-behavior: contain;
+  scroll-padding: 18px 0 32vh;
   -webkit-overflow-scrolling: touch;
 `;
 
@@ -1089,6 +1093,25 @@ function ProfileModal({ state, saving, onClose, onSave }: {
     });
   }
 
+  function revealFocusedField(event: FocusEvent<HTMLFormElement>) {
+    if (window.innerWidth > 520) return;
+
+    const formElement = event.currentTarget;
+    const fieldElement = event.target as HTMLElement;
+
+    window.requestAnimationFrame(() => {
+      const formRect = formElement.getBoundingClientRect();
+      const fieldRect = fieldElement.getBoundingClientRect();
+      const targetTop =
+        formElement.scrollTop +
+        fieldRect.top -
+        formRect.top -
+        Math.max(18, (formElement.clientHeight - fieldRect.height) * 0.28);
+
+      formElement.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+    });
+  }
+
   return (
     <Overlay role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !saving && onClose()}>
       <Modal role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
@@ -1119,7 +1142,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
           </HeaderActions>
         </ModalHeader>
 
-        <Form id="profile-form" onSubmit={submit}>
+        <Form id="profile-form" onSubmit={submit} onFocusCapture={revealFocusedField}>
           <FormSections>
             <FormSection>
               <Field>
