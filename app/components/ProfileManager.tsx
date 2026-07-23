@@ -378,7 +378,7 @@ const Overlay = styled.div`
 
 const Modal = styled.div`
   display: flex;
-  width: min(1240px, 100%);
+  width: min(1120px, 100%);
   max-height: calc(100vh - 48px);
   flex-direction: column;
   overflow: hidden;
