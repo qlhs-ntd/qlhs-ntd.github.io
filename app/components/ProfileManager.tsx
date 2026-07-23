@@ -662,7 +662,7 @@ function MoneyField({ label, value, onChange }: {
         inputMode="numeric"
         value={value || ""}
         onChange={(event) => onChange(Number(event.target.value) || 0)}
-        placeholder="0"
+        placeholder="--"
       />
     </Field>
   );
@@ -749,7 +749,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   maxLength={120}
                   value={form.customerName}
                   onChange={(event) => updateField("customerName", event.target.value)}
-                  placeholder="Ví dụ: Nguyễn Văn An"
+                  placeholder="--"
                 />
               </Field>
 
@@ -760,7 +760,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   maxLength={120}
                   value={form.vehicleOwnerName}
                   onChange={(event) => updateField("vehicleOwnerName", event.target.value)}
-                  placeholder="Ví dụ: Trần Minh Bình"
+                  placeholder="--"
                 />
               </Field>
 
@@ -771,14 +771,14 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   maxLength={30}
                   value={form.vehiclePlate}
                   onChange={(event) => updateField("vehiclePlate", event.target.value)}
-                  placeholder="Ví dụ: 61A-123.45"
+                  placeholder="--"
                 />
               </Field>
 
               <Field>
                 Loại xe
                 <select required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
-                  <option value="" disabled>Chọn loại xe</option>
+                  <option value="" disabled>--</option>
                   {VEHICLE_TYPES.map((type) => <option key={type}>{type}</option>)}
                 </select>
               </Field>
@@ -786,7 +786,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 Cơ quan nhận
                 <select required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
-                  <option value="" disabled>Chọn cơ quan nhận</option>
+                  <option value="" disabled>--</option>
                   {RECEIVING_AGENCIES.map((agency) => <option key={agency}>{agency}</option>)}
                 </select>
               </Field>
@@ -794,7 +794,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 Loại dịch vụ
                 <select required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
-                  <option value="" disabled>Chọn loại dịch vụ</option>
+                  <option value="" disabled>--</option>
                   {SERVICE_TYPES.map((service) => <option key={service}>{service}</option>)}
                 </select>
               </Field>
@@ -851,7 +851,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   maxLength={30}
                   value={form.newVehiclePlate}
                   onChange={(event) => updateField("newVehiclePlate", event.target.value)}
-                  placeholder="Nhập khi đã có biển số mới"
+                  placeholder="--"
                 />
               </Field>
 
