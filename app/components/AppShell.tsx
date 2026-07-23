@@ -15,11 +15,11 @@ const Sidebar = styled.aside`
   inset: 0 auto 0 0;
   z-index: 20;
   display: flex;
-  width: 244px;
+  width: 84px;
   flex-direction: column;
   border-right: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.88);
-  padding: 28px 20px 22px;
+  padding: 28px 14px 22px;
   backdrop-filter: blur(18px);
 
   @media (max-width: 860px) {
@@ -38,9 +38,11 @@ const Sidebar = styled.aside`
 const Navigation = styled.nav`
   display: grid;
   gap: 7px;
+  width: 100%;
 
   @media (max-width: 860px) {
     display: flex;
+    width: auto;
     justify-content: center;
   }
 `;
@@ -48,16 +50,20 @@ const Navigation = styled.nav`
 const NavItem = styled(Link)<{ $active: boolean }>`
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
   min-height: 48px;
   border-radius: 13px;
-  padding: 0 14px;
+  padding: 0;
   background: ${({ $active }) => ($active ? "#edf0ff" : "transparent")};
   color: ${({ $active }) => ($active ? "var(--primary)" : "#5f6779")};
   font-size: 14px;
   font-weight: 650;
   text-decoration: none;
   transition: 150ms ease;
+
+  span {
+    display: none;
+  }
 
   &:hover {
     background: ${({ $active }) => ($active ? "#edf0ff" : "#f3f4f8")};
@@ -66,17 +72,13 @@ const NavItem = styled(Link)<{ $active: boolean }>`
 
   @media (max-width: 860px) {
     min-height: 44px;
-    padding: 0 13px;
-
-    span {
-      display: none;
-    }
+    width: 48px;
   }
 `;
 
 const Main = styled.main`
   min-height: 100vh;
-  margin-left: 244px;
+  margin-left: 84px;
   padding: 30px clamp(24px, 5vw, 72px) 72px;
 
   @media (max-width: 860px) {
@@ -101,7 +103,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     <Shell>
       <Sidebar>
         <Navigation aria-label="Điều hướng chính">
-          <NavItem href="/" $active={pathname === "/"} aria-current={pathname === "/" ? "page" : undefined}>
+          <NavItem
+            href="/"
+            $active={pathname === "/"}
+            aria-current={pathname === "/" ? "page" : undefined}
+            aria-label="Hồ sơ"
+            title="Hồ sơ"
+          >
             <FolderOpen size={19} />
             <span>Hồ sơ</span>
           </NavItem>
@@ -109,6 +117,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             href="/doanh-thu"
             $active={pathname === "/doanh-thu"}
             aria-current={pathname === "/doanh-thu" ? "page" : undefined}
+            aria-label="Doanh thu"
+            title="Doanh thu"
           >
             <ChartNoAxesCombined size={19} />
             <span>Doanh thu</span>
