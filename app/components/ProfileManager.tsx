@@ -528,6 +528,7 @@ const FieldLabel = styled.span`
 `;
 
 const MoneyInputWrap = styled.div`
+  position: relative;
   display: flex;
   width: 100%;
   height: 48px;
@@ -545,22 +546,68 @@ const MoneyInputWrap = styled.div`
   }
 
   input {
-    width: 100%;
-    max-width: none;
-    height: auto;
-    flex: 0 0 auto;
+    position: absolute;
+    inset: 0 48px 0 0;
+    z-index: 2;
+    width: calc(100% - 48px);
+    height: 100%;
     border: 0;
-    border-radius: 0;
+    border-radius: 12px 0 0 12px;
     background: transparent;
-    padding: 0;
+    padding: 0 14px;
+    color: transparent;
+    caret-color: transparent;
     text-align: left;
     font-variant-numeric: tabular-nums;
+    cursor: text;
+    opacity: 0;
 
     &:focus {
       border: 0;
       background: transparent;
       box-shadow: none;
     }
+  }
+
+  .money-display {
+    display: flex;
+    min-width: 0;
+    align-items: baseline;
+    pointer-events: none;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .money-major {
+    color: var(--ink);
+    font-size: 18px;
+    font-weight: 720;
+    line-height: 1;
+  }
+
+  .money-major.is-placeholder {
+    color: #aeb4c2;
+    opacity: 0.72;
+  }
+
+  .money-minor {
+    color: #687086;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .money-caret {
+    width: 1px;
+    height: 18px;
+    margin: 0 1px;
+    background: var(--primary);
+    opacity: 0;
+  }
+
+  input:focus + .money-display .money-caret {
+    opacity: 1;
+    animation: money-caret-blink 1s steps(1) infinite;
   }
 
   > span {
@@ -577,43 +624,14 @@ const MoneyInputWrap = styled.div`
     text-transform: none;
   }
 
-  .money-thousands {
-    display: flex;
-    min-width: 40px;
-    align-items: center;
-    justify-content: flex-start;
-    background: transparent;
-    color: #687086;
-    font-size: 14px;
-    font-weight: 500;
-  }
-
   .money-currency {
     margin-left: auto;
   }
-`;
 
-const MoneyValueWrap = styled.div`
-  display: grid;
-  width: fit-content;
-  min-width: 1ch;
-  max-width: calc(100% - 88px);
-  align-items: center;
-
-  > * {
-    grid-area: 1 / 1;
-  }
-
-  span {
-    visibility: hidden;
-    white-space: pre;
-    font-size: 14px;
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-  }
-
-  input {
-    min-width: 0;
+  @keyframes money-caret-blink {
+    50% {
+      opacity: 0;
+    }
   }
 `;
 
@@ -806,31 +824,43 @@ function MoneyField({ icon, label, value, onChange }: {
   const displayedValue = value
     ? new Intl.NumberFormat("vi-VN").format(Math.round(value / 1000))
     : "";
+  const [majorPart, ...minorParts] = displayedValue.split(".");
+  const enteredMinor = minorParts.length ? `.${minorParts.join(".")}` : "";
 
   return (
     <Field>
       <FieldLabel>{icon}{label}</FieldLabel>
       <MoneyInputWrap>
-        <MoneyValueWrap>
-          <span aria-hidden="true">{displayedValue || "0"}</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9.]*"
-            value={displayedValue}
-            onKeyDown={(event) => {
-              if (!event.ctrlKey && !event.metaKey && event.key.length === 1 && !/^\d$/.test(event.key)) {
-                event.preventDefault();
-              }
-            }}
-            onChange={(event) => {
-              const digits = event.target.value.replace(/\D/g, "");
-              onChange((Number(digits) || 0) * 1000);
-            }}
-            placeholder="0"
-          />
-        </MoneyValueWrap>
-        <span className="money-thousands" aria-hidden="true">.000</span>
+        <input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9.]*"
+          value={displayedValue}
+          onFocus={(event) => {
+            const end = event.currentTarget.value.length;
+            event.currentTarget.setSelectionRange(end, end);
+          }}
+          onClick={(event) => {
+            const end = event.currentTarget.value.length;
+            event.currentTarget.setSelectionRange(end, end);
+          }}
+          onKeyDown={(event) => {
+            if (!event.ctrlKey && !event.metaKey && event.key.length === 1 && !/^\d$/.test(event.key)) {
+              event.preventDefault();
+            }
+          }}
+          onChange={(event) => {
+            const digits = event.target.value.replace(/\D/g, "");
+            onChange((Number(digits) || 0) * 1000);
+          }}
+          placeholder="0"
+        />
+        <div className="money-display" aria-hidden="true">
+          <span className={`money-major${displayedValue ? "" : " is-placeholder"}`}>{majorPart || "0"}</span>
+          {enteredMinor && <span className="money-minor">{enteredMinor}</span>}
+          <span className="money-caret" />
+          <span className="money-minor">.000</span>
+        </div>
         <span className="money-currency" aria-hidden="true">đ</span>
       </MoneyInputWrap>
     </Field>
