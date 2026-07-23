@@ -860,6 +860,17 @@ const CheckGroup = styled.div`
     gap: 10px;
     padding: 8px 0;
   }
+
+  @media (max-width: 520px) {
+    align-items: center;
+    flex-direction: row;
+    gap: 12px;
+
+    label {
+      gap: 4px;
+      white-space: nowrap;
+    }
+  }
 `;
 
 const CostSummary = styled.div`
