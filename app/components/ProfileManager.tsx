@@ -528,17 +528,42 @@ const FieldLabel = styled.span`
 `;
 
 const MoneyInputWrap = styled.div`
-  position: relative;
+  display: flex;
+  width: 100%;
+  height: 48px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfbfd;
+  padding: 0 8px 0 14px;
+  transition: 130ms ease;
+
+  &:focus-within {
+    border-color: rgba(56, 89, 217, 0.6);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(56, 89, 217, 0.08);
+  }
 
   input {
-    padding-right: 92px;
+    width: auto;
+    max-width: calc(100% - 88px);
+    height: auto;
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
     text-align: left;
+    font-variant-numeric: tabular-nums;
+
+    &:focus {
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
   }
 
   span {
-    position: absolute;
-    top: 50%;
-    right: 8px;
     display: grid;
     min-width: 34px;
     height: 32px;
@@ -550,11 +575,9 @@ const MoneyInputWrap = styled.div`
     font-weight: 750;
     pointer-events: none;
     text-transform: none;
-    transform: translateY(-50%);
   }
 
   .money-thousands {
-    right: 48px;
     display: flex;
     min-width: 40px;
     align-items: center;
@@ -562,6 +585,10 @@ const MoneyInputWrap = styled.div`
     background: transparent;
     color: #687086;
     font-weight: 600;
+  }
+
+  .money-currency {
+    margin-left: auto;
   }
 `;
 
@@ -765,6 +792,7 @@ function MoneyField({ icon, label, value, onChange }: {
           inputMode="numeric"
           pattern="[0-9.]*"
           value={displayedValue}
+          style={{ width: `${Math.max(displayedValue.length, 1) + 0.5}ch` }}
           onKeyDown={(event) => {
             if (!event.ctrlKey && !event.metaKey && event.key.length === 1 && !/^\d$/.test(event.key)) {
               event.preventDefault();
@@ -777,7 +805,7 @@ function MoneyField({ icon, label, value, onChange }: {
           placeholder="0"
         />
         <span className="money-thousands" aria-hidden="true">.000</span>
-        <span aria-hidden="true">đ</span>
+        <span className="money-currency" aria-hidden="true">đ</span>
       </MoneyInputWrap>
     </Field>
   );
