@@ -506,6 +506,8 @@ const Modal = styled.div`
   @media (max-width: 520px) {
     max-height: calc(100dvh - 12px);
     border-radius: 22px 22px 0 0;
+    -webkit-text-size-adjust: 88%;
+    text-size-adjust: 88%;
   }
 `;
 
