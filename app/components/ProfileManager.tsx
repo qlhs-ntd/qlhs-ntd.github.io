@@ -597,6 +597,17 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(parsed);
 }
 
+function formatCurrentTime(value: Date) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(value);
+}
+
 function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value || 0)} đ`;
 }
@@ -647,6 +658,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
   const [form, setForm] = useState<ProfileInput>(() =>
     state.profile ? profileToInput(state.profile) : createEmptyProfileInput(),
   );
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const { totalCost, profit } = calculateProfileCosts(form);
 
   function updateField<Key extends keyof ProfileInput>(key: Key, value: ProfileInput[Key]) {
@@ -654,12 +666,14 @@ function ProfileModal({ state, saving, onClose, onSave }: {
   }
 
   useEffect(() => {
+    const clock = window.setInterval(() => setCurrentTime(new Date()), 1000);
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !saving) onClose();
     };
     document.addEventListener("keydown", closeOnEscape);
     document.body.style.overflow = "hidden";
     return () => {
+      window.clearInterval(clock);
       document.removeEventListener("keydown", closeOnEscape);
       document.body.style.overflow = "";
     };
@@ -682,7 +696,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
         <ModalHeader>
           <div>
             <h2 id="profile-modal-title">{state.mode === "create" ? "Thêm hồ sơ mới" : "Chỉnh sửa hồ sơ"}</h2>
-            <p>Nhập đầy đủ thông tin rồi bấm lưu để cập nhật dữ liệu.</p>
+            <p>Thời gian hiện tại: {formatCurrentTime(currentTime)}</p>
           </div>
           <CloseButton type="button" onClick={onClose} disabled={saving} aria-label="Đóng cửa sổ">
             <X size={18} />
