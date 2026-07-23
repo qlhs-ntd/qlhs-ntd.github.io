@@ -538,6 +538,44 @@ const MoneyInputWrap = styled.div`
   }
 `;
 
+const SelectWrap = styled.div`
+  position: relative;
+
+  select {
+    appearance: none;
+    padding-right: 52px;
+    cursor: pointer;
+  }
+
+  &::before,
+  &::after {
+    position: absolute;
+    pointer-events: none;
+    content: "";
+  }
+
+  &::after {
+    top: 50%;
+    right: 8px;
+    width: 34px;
+    height: 32px;
+    border-radius: 8px;
+    background: #edf0ff;
+    transform: translateY(-50%);
+  }
+
+  &::before {
+    top: 50%;
+    right: 21px;
+    z-index: 1;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid var(--primary);
+    border-bottom: 2px solid var(--primary);
+    transform: translateY(-65%) rotate(45deg);
+  }
+`;
+
 const CheckGroup = styled.div`
   display: flex;
   min-height: 48px;
@@ -811,32 +849,35 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   maxLength={30}
                   value={form.vehiclePlate}
                   onChange={(event) => updateField("vehiclePlate", event.target.value)}
-                  placeholder="--"
+                  placeholder="60X-123.45"
                 />
               </Field>
 
               <Field>
                 Loại xe
-                <select required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
-                  <option value="" disabled>--</option>
-                  {VEHICLE_TYPES.map((type) => <option key={type}>{type}</option>)}
-                </select>
+                <SelectWrap>
+                  <select required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
+                    {VEHICLE_TYPES.map((type) => <option key={type}>{type}</option>)}
+                  </select>
+                </SelectWrap>
               </Field>
 
               <Field>
                 Cơ quan nhận
-                <select required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
-                  <option value="" disabled>--</option>
-                  {RECEIVING_AGENCIES.map((agency) => <option key={agency}>{agency}</option>)}
-                </select>
+                <SelectWrap>
+                  <select required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
+                    {RECEIVING_AGENCIES.map((agency) => <option key={agency}>{agency}</option>)}
+                  </select>
+                </SelectWrap>
               </Field>
 
               <Field>
                 Loại dịch vụ
-                <select required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
-                  <option value="" disabled>--</option>
-                  {SERVICE_TYPES.map((service) => <option key={service}>{service}</option>)}
-                </select>
+                <SelectWrap>
+                  <select required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
+                    {SERVICE_TYPES.map((service) => <option key={service}>{service}</option>)}
+                  </select>
+                </SelectWrap>
               </Field>
             </FormSection>
 
@@ -858,9 +899,11 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
               <Field>
                 Trạng thái
-                <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-                  {PROFILE_STATUSES.map((status) => <option key={status}>{status}</option>)}
-                </select>
+                <SelectWrap>
+                  <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
+                    {PROFILE_STATUSES.map((status) => <option key={status}>{status}</option>)}
+                  </select>
+                </SelectWrap>
               </Field>
 
               <Field as="div">
