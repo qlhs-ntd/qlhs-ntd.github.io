@@ -36,12 +36,12 @@ const Sidebar = styled.aside`
 
   @media (max-width: 640px) {
     inset: auto auto max(14px, env(safe-area-inset-bottom)) 50%;
-    width: min(250px, calc(100vw - 28px));
+    width: min(230px, calc(100vw - 28px));
     height: auto;
     border: 1px solid rgba(255, 255, 255, 0.82);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.9);
-    padding: 5px;
+    padding: 4px;
     box-shadow: 0 16px 45px rgba(27, 35, 64, 0.2);
     transform: translateX(-50%);
   }
@@ -60,7 +60,7 @@ const Navigation = styled.nav`
 
   @media (max-width: 640px) {
     width: 100%;
-    gap: 4px;
+    gap: 3px;
   }
 `;
 
@@ -127,21 +127,22 @@ const NavItem = styled(Link)<{ $active: boolean }>`
 
   @media (max-width: 640px) {
     width: auto;
-    min-height: 58px;
+    min-height: 46px;
     flex: 1 1 0;
     flex-direction: column;
-    gap: 3px;
+    gap: 1px;
     border-radius: 999px;
     background: ${({ $active }) => ($active ? "#edf0ff" : "transparent")};
-    font-size: 11px;
+    font-size: 10px;
+    line-height: 1;
 
     span {
       display: block;
     }
 
     svg {
-      width: 18px;
-      height: 18px;
+      width: 21px;
+      height: 21px;
     }
   }
 `;
@@ -157,7 +158,7 @@ const Main = styled.main`
   }
 
   @media (max-width: 640px) {
-    padding: 22px 14px calc(108px + env(safe-area-inset-bottom));
+    padding: 22px 14px calc(92px + env(safe-area-inset-bottom));
   }
 `;
 
