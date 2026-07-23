@@ -676,7 +676,7 @@ const FieldLabel = styled.span`
 
 const SuggestionList = styled.div<{ $mobileOnly?: boolean; $alignDesktopRight?: boolean; $floating?: boolean }>`
   position: ${({ $floating }) => ($floating ? "absolute" : "static")};
-  top: ${({ $floating }) => ($floating ? "calc(100% - 2.5px)" : "auto")};
+  top: ${({ $floating }) => ($floating ? "calc(100% - 3.5px)" : "auto")};
   right: ${({ $floating }) => ($floating ? "0" : "auto")};
   z-index: ${({ $floating }) => ($floating ? "20" : "auto")};
   display: ${({ $mobileOnly }) => ($mobileOnly ? "none" : "flex")};
