@@ -475,6 +475,8 @@ const Toast = styled.div<{ $error: boolean }>`
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
+  height: 100vh;
+  height: 100dvh;
   z-index: 50;
   display: grid;
   place-items: center;
@@ -493,6 +495,7 @@ const Modal = styled.div`
   display: flex;
   width: min(980px, 100%);
   max-height: calc(100vh - 48px);
+  max-height: calc(100dvh - 48px);
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.7);
@@ -501,17 +504,20 @@ const Modal = styled.div`
   box-shadow: 0 30px 90px rgba(14, 22, 45, 0.28);
 
   @media (max-width: 520px) {
+    max-height: calc(100dvh - 12px);
     border-radius: 22px 22px 0 0;
   }
 `;
 
 const ModalHeader = styled.div`
   position: relative;
+  z-index: 2;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   border-bottom: 1px solid var(--line);
+  background: white;
   padding: 15px 20px;
   flex: 0 0 auto;
 
@@ -552,8 +558,10 @@ const ModalHeader = styled.div`
 `;
 
 const Form = styled.form`
+  min-height: 0;
   overflow-y: auto;
   padding: 22px 24px 24px;
+  -webkit-overflow-scrolling: touch;
 `;
 
 const FormSections = styled.div`
