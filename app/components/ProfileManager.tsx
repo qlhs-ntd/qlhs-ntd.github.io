@@ -662,7 +662,7 @@ function MoneyField({ label, value, onChange }: {
         inputMode="numeric"
         value={value || ""}
         onChange={(event) => onChange(Number(event.target.value) || 0)}
-        placeholder="--"
+        placeholder="0"
       />
     </Field>
   );
