@@ -676,7 +676,7 @@ const FieldLabel = styled.span`
 
 const SuggestionList = styled.div<{ $mobileOnly?: boolean; $alignDesktopRight?: boolean; $floating?: boolean }>`
   position: ${({ $floating }) => ($floating ? "absolute" : "static")};
-  top: ${({ $floating }) => ($floating ? "calc(100% - 1px)" : "auto")};
+  top: ${({ $floating }) => ($floating ? "calc(100% - 2.5px)" : "auto")};
   right: ${({ $floating }) => ($floating ? "0" : "auto")};
   z-index: ${({ $floating }) => ($floating ? "20" : "auto")};
   display: ${({ $mobileOnly }) => ($mobileOnly ? "none" : "flex")};
@@ -710,7 +710,7 @@ const SuggestionList = styled.div<{ $mobileOnly?: boolean; $alignDesktopRight?: 
     background: #edf0ff;
     padding: 0 10px;
     color: var(--primary);
-    font-size: 12px;
+    font-size: ${({ $floating }) => ($floating ? "11px" : "12px")};
     font-weight: 700;
     line-height: 1;
     text-transform: none;
@@ -1331,7 +1331,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                         setOwnerSuggestionsOpen(false);
                       }}
                     >
-                      Nhập Tên Khách Hàng
+                      Lấy Tên Khách Hàng
                     </button>
                   </SuggestionList>
                 )}
