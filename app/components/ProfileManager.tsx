@@ -491,7 +491,7 @@ const Overlay = styled.div`
   @media (max-width: 520px) {
     align-items: center;
     overflow: hidden;
-    padding: 10px 0;
+    padding: 0;
     overscroll-behavior: none;
   }
 `;
@@ -510,6 +510,8 @@ const Modal = styled.div`
   box-shadow: 0 30px 90px rgba(14, 22, 45, 0.28);
 
   @media (max-width: 520px) {
+    height: var(--modal-viewport-height, 100dvh);
+    max-height: none;
     border-radius: 22px;
     -webkit-text-size-adjust: 88%;
     text-size-adjust: 88%;
