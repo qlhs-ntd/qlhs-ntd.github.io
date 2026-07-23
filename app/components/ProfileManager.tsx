@@ -504,6 +504,40 @@ const Field = styled.label`
   }
 `;
 
+const MoneyInputWrap = styled.div`
+  position: relative;
+
+  input {
+    padding-right: 54px;
+    appearance: textfield;
+    -moz-appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      margin: 0;
+      -webkit-appearance: none;
+    }
+  }
+
+  span {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    display: grid;
+    min-width: 34px;
+    height: 32px;
+    place-items: center;
+    border-radius: 8px;
+    background: #edf0ff;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 750;
+    pointer-events: none;
+    text-transform: none;
+    transform: translateY(-50%);
+  }
+`;
+
 const CheckGroup = styled.div`
   display: flex;
   min-height: 48px;
@@ -655,15 +689,21 @@ function MoneyField({ label, value, onChange }: {
   return (
     <Field>
       {label}
-      <input
-        type="number"
-        min="0"
-        step="1000"
-        inputMode="numeric"
-        value={value || ""}
-        onChange={(event) => onChange(Number(event.target.value) || 0)}
-        placeholder="0"
-      />
+      <MoneyInputWrap>
+        <input
+          type="number"
+          min="0"
+          step="1000"
+          inputMode="numeric"
+          value={value || ""}
+          onKeyDown={(event) => {
+            if (["e", "E", "+", "-"].includes(event.key)) event.preventDefault();
+          }}
+          onChange={(event) => onChange(Number(event.target.value) || 0)}
+          placeholder="0"
+        />
+        <span aria-hidden="true">đ</span>
+      </MoneyInputWrap>
     </Field>
   );
 }
