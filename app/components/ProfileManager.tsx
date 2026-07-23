@@ -870,6 +870,11 @@ const CheckGroup = styled.div`
       gap: 4px;
       white-space: nowrap;
     }
+
+    input {
+      width: 19px;
+      height: 19px;
+    }
   }
 `;
 
