@@ -909,6 +909,16 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 </SelectWrap>
               </Field>
 
+              <Field>
+                Biển số xe mới
+                <input
+                  maxLength={30}
+                  value={form.newVehiclePlate}
+                  onChange={(event) => updateField("newVehiclePlate", event.target.value)}
+                  placeholder="--"
+                />
+              </Field>
+
               <Field as="div">
                 Theo dõi giấy tờ
                 <CheckGroup>
@@ -929,16 +939,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                     Nợ giấy đăng kí
                   </label>
                 </CheckGroup>
-              </Field>
-
-              <Field>
-                Biển số xe mới
-                <input
-                  maxLength={30}
-                  value={form.newVehiclePlate}
-                  onChange={(event) => updateField("newVehiclePlate", event.target.value)}
-                  placeholder="--"
-                />
               </Field>
 
               <CostSummary>
