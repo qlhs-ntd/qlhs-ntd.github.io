@@ -8,6 +8,9 @@ const normalizedBasePath = rawBasePath
 const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
+  compiler: {
+    styledComponents: true,
+  },
   images: {
     unoptimized: true,
   },

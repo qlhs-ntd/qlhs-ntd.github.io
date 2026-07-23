@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.scss";
+import StyledComponentsRegistry from "./StyledComponentsRegistry";
 
 export function generateMetadata(): Metadata {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -33,7 +34,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body>{children}</body>
+      <body>
+        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+      </body>
     </html>
   );
 }
