@@ -10,7 +10,6 @@ import {
   Search,
   Trash2,
   UserRound,
-  X,
 } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
@@ -414,19 +413,11 @@ const ModalHeader = styled.div`
     color: var(--muted);
     font-size: 13px;
   }
-`;
 
-const CloseButton = styled.button`
-  display: grid;
-  width: 36px;
-  height: 36px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: white;
-  color: #697185;
-  cursor: pointer;
+  @media (max-width: 600px) {
+    align-items: stretch;
+    flex-direction: column;
+  }
 `;
 
 const Form = styled.form`
@@ -563,11 +554,17 @@ const CostSummary = styled.div`
 
 `;
 
-const FormActions = styled.div`
+const HeaderActions = styled.div`
   display: flex;
+  flex: 0 0 auto;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 26px;
+
+  @media (max-width: 600px) {
+    button {
+      flex: 1;
+    }
+  }
 `;
 
 const SecondaryButton = styled.button`
@@ -720,12 +717,28 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             <h2 id="profile-modal-title">{state.mode === "create" ? "Thêm hồ sơ mới" : "Chỉnh sửa hồ sơ"}</h2>
             <p>{formatCurrentTime(currentTime)}</p>
           </div>
-          <CloseButton type="button" onClick={onClose} disabled={saving} aria-label="Đóng cửa sổ">
-            <X size={18} />
-          </CloseButton>
+          <HeaderActions>
+            <SecondaryButton type="button" onClick={onClose} disabled={saving}>Huỷ</SecondaryButton>
+            <PrimaryButton
+              type="submit"
+              form="profile-form"
+              disabled={
+                saving ||
+                !form.customerName.trim() ||
+                !form.vehicleOwnerName.trim() ||
+                !form.vehiclePlate.trim() ||
+                !form.vehicleType ||
+                !form.receivingAgency ||
+                !form.serviceType
+              }
+            >
+              {saving ? <LoaderCircle className="spin" size={17} /> : <CheckCircle2 size={17} />}
+              {saving ? "Đang lưu..." : "Lưu hồ sơ"}
+            </PrimaryButton>
+          </HeaderActions>
         </ModalHeader>
 
-        <Form onSubmit={submit}>
+        <Form id="profile-form" onSubmit={submit}>
           <FormSections>
             <FormSection>
               <Field>
@@ -849,24 +862,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             </FormSection>
           </FormSections>
 
-          <FormActions>
-            <SecondaryButton type="button" onClick={onClose} disabled={saving}>Huỷ</SecondaryButton>
-            <PrimaryButton
-              type="submit"
-              disabled={
-                saving ||
-                !form.customerName.trim() ||
-                !form.vehicleOwnerName.trim() ||
-                !form.vehiclePlate.trim() ||
-                !form.vehicleType ||
-                !form.receivingAgency ||
-                !form.serviceType
-              }
-            >
-              {saving ? <LoaderCircle className="spin" size={17} /> : <CheckCircle2 size={17} />}
-              {saving ? "Đang lưu..." : "Lưu hồ sơ"}
-            </PrimaryButton>
-          </FormActions>
         </Form>
       </Modal>
     </Overlay>
