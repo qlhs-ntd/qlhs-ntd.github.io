@@ -627,13 +627,12 @@ const SelectWrap = styled.div`
 const CheckGroup = styled.div`
   display: flex;
   min-height: 48px;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 10px 18px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  align-items: center;
+  flex-direction: row;
+  gap: 18px;
+  border: 0;
   background: transparent;
-  padding: 10px 14px;
+  padding: 10px 0;
 
   label {
     display: inline-flex;
