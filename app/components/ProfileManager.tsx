@@ -864,16 +864,17 @@ const CheckGroup = styled.div`
   @media (max-width: 520px) {
     align-items: center;
     flex-direction: row;
-    gap: 12px;
+    gap: 20px;
 
     label {
-      gap: 4px;
+      gap: 2px;
       white-space: nowrap;
     }
 
     input {
       width: 19px;
       height: 19px;
+      margin: 0;
     }
   }
 `;
