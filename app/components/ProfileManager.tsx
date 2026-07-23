@@ -922,16 +922,16 @@ const CheckGroup = styled.div`
 
     label {
       gap: 0;
-      border-radius: 10px;
+      border-radius: 999px;
       background: #edf0ff;
-      padding: 6px 9px 6px 6px;
+      padding: 8px 13px 8px 9px;
       white-space: nowrap;
     }
 
     input {
       width: 19px;
       height: 19px;
-      margin: 0;
+      margin: 0 -2px 0 0;
     }
   }
 `;
