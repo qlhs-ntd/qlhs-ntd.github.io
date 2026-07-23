@@ -99,26 +99,36 @@ const MonthTabs = styled.div`
   width: fit-content;
   max-width: 100%;
   justify-content: flex-start;
-  gap: 6px;
+  gap: 4px;
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.88);
-  padding: 6px;
+  padding: 4px;
   box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
     display: none;
   }
+
+  @media (max-width: 640px) {
+    width: 100%;
+
+    &::before,
+    &::after {
+      flex: 0 0 calc(50% - 38px);
+      content: "";
+    }
+  }
 `;
 
 const ActiveMonthPill = styled.span<{ $left: number; $width: number; $visible: boolean }>`
   position: absolute;
-  top: 6px;
+  top: 4px;
   left: 0;
   width: ${({ $width }) => `${$width}px`};
-  height: 44px;
+  height: 36px;
   border-radius: 999px;
   background: var(--primary);
   box-shadow: 0 7px 18px rgba(56, 89, 217, 0.24);
@@ -138,14 +148,14 @@ const ActiveMonthPill = styled.span<{ $left: number; $width: number; $visible: b
 const MonthTab = styled.button<{ $active: boolean }>`
   position: relative;
   z-index: 1;
-  min-height: 44px;
+  min-height: 36px;
   flex: 0 0 auto;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  padding: 0 18px;
+  padding: 0 14px;
   color: ${({ $active }) => ($active ? "white" : "#687086")};
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: color 180ms ease, background 180ms ease;
@@ -1193,6 +1203,13 @@ export function ProfileManager() {
     };
 
     updatePill();
+    const activeTab = container.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]');
+    if (!activeTab) return;
+    const centeredLeft = activeTab.offsetLeft - (container.clientWidth - activeTab.offsetWidth) / 2;
+    container.scrollTo({
+      left: Math.max(0, centeredLeft),
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
     const observer = new ResizeObserver(updatePill);
     observer.observe(container);
     return () => observer.disconnect();
