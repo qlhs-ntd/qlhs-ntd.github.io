@@ -896,7 +896,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   maxLength={30}
                   value={form.newVehiclePlate}
                   onChange={(event) => updateField("newVehiclePlate", event.target.value)}
-                  placeholder="--"
+                  placeholder="60X-123.45"
                 />
               </Field>
 
