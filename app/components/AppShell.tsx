@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChartNoAxesCombined, Files, FolderOpen, Sparkles } from "lucide-react";
+import { ChartNoAxesCombined, FolderOpen } from "lucide-react";
 import type { ReactNode } from "react";
 import styled from "styled-components";
 
@@ -28,61 +28,20 @@ const Sidebar = styled.aside`
     height: 76px;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     border-right: 0;
     border-bottom: 1px solid var(--line);
     padding: 13px 18px;
   }
 `;
 
-const Brand = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--ink);
-  text-decoration: none;
-`;
-
-const BrandMark = styled.span`
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border-radius: 13px;
-  background: linear-gradient(145deg, #4969e5, #2946bd);
-  color: white;
-  box-shadow: 0 10px 24px rgba(56, 89, 217, 0.28);
-`;
-
-const BrandText = styled.span`
-  display: grid;
-  gap: 2px;
-
-  strong {
-    font-size: 15px;
-    letter-spacing: -0.02em;
-  }
-
-  small {
-    color: var(--muted);
-    font-size: 11px;
-  }
-
-  @media (max-width: 520px) {
-    small {
-      display: none;
-    }
-  }
-`;
-
 const Navigation = styled.nav`
   display: grid;
   gap: 7px;
-  margin-top: 52px;
 
   @media (max-width: 860px) {
     display: flex;
-    margin-top: 0;
+    justify-content: center;
   }
 `;
 
@@ -115,26 +74,6 @@ const NavItem = styled(Link)<{ $active: boolean }>`
   }
 `;
 
-const SidebarNote = styled.div`
-  margin-top: auto;
-  border: 1px solid #e5e8f6;
-  border-radius: 16px;
-  background: #f8f9ff;
-  padding: 15px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.55;
-
-  svg {
-    margin-bottom: 9px;
-    color: var(--primary);
-  }
-
-  @media (max-width: 860px) {
-    display: none;
-  }
-`;
-
 const Main = styled.main`
   min-height: 100vh;
   margin-left: 244px;
@@ -161,16 +100,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <Shell>
       <Sidebar>
-        <Brand href="/" aria-label="Về trang danh sách hồ sơ">
-          <BrandMark>
-            <Files size={21} strokeWidth={2.2} />
-          </BrandMark>
-          <BrandText>
-            <strong>Hồ Sơ Việt</strong>
-            <small>Quản lý tập trung</small>
-          </BrandText>
-        </Brand>
-
         <Navigation aria-label="Điều hướng chính">
           <NavItem href="/" $active={pathname === "/"} aria-current={pathname === "/" ? "page" : undefined}>
             <FolderOpen size={19} />
@@ -185,11 +114,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span>Doanh thu</span>
           </NavItem>
         </Navigation>
-
-        <SidebarNote>
-          <Sparkles size={18} />
-          Dữ liệu hồ sơ có thể đồng bộ trực tiếp với Google Sheets qua Apps Script.
-        </SidebarNote>
       </Sidebar>
 
       <Main>
@@ -198,4 +122,3 @@ export function AppShell({ children }: { children: ReactNode }) {
     </Shell>
   );
 }
-
