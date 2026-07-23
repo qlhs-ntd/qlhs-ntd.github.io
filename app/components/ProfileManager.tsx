@@ -918,10 +918,13 @@ const CheckGroup = styled.div`
   @media (max-width: 520px) {
     align-items: center;
     flex-direction: row;
-    gap: 20px;
+    gap: 26px;
 
     label {
-      gap: 2px;
+      gap: 0;
+      border-radius: 10px;
+      background: #edf0ff;
+      padding: 6px 9px 6px 6px;
       white-space: nowrap;
     }
 
