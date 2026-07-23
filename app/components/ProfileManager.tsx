@@ -510,6 +510,14 @@ const Modal = styled.div`
     border-radius: 22px 22px 0 0;
     -webkit-text-size-adjust: 88%;
     text-size-adjust: 88%;
+
+    input:not([type="checkbox"]),
+    select,
+    textarea {
+      font-size: 16px !important;
+      -webkit-text-size-adjust: 100% !important;
+      text-size-adjust: 100% !important;
+    }
   }
 `;
 
