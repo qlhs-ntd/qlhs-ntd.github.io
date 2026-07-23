@@ -544,37 +544,22 @@ const SelectWrap = styled.div`
   select {
     display: block;
     appearance: none;
-    padding: 0 52px 0 14px;
+    padding: 0 38px 0 14px;
     line-height: 46px;
     text-indent: 0;
     cursor: pointer;
   }
 
-  &::before,
   &::after {
     position: absolute;
+    top: 50%;
+    right: 16px;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid var(--primary);
+    border-bottom: 1.5px solid var(--primary);
     pointer-events: none;
     content: "";
-  }
-
-  &::after {
-    top: 50%;
-    right: 8px;
-    width: 34px;
-    height: 32px;
-    border-radius: 8px;
-    background: #edf0ff;
-    transform: translateY(-50%);
-  }
-
-  &::before {
-    top: 50%;
-    right: 21px;
-    z-index: 1;
-    width: 7px;
-    height: 7px;
-    border-right: 2px solid var(--primary);
-    border-bottom: 2px solid var(--primary);
     transform: translateY(-65%) rotate(45deg);
   }
 `;
