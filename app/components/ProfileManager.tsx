@@ -137,7 +137,7 @@ const MonthTab = styled.button<{ $active: boolean }>`
   transition: color 180ms ease, background 180ms ease;
 
   &:hover {
-    background: ${({ $active }) => ($active ? "transparent" : "#f1f3f8")};
+    background: transparent;
     color: ${({ $active }) => ($active ? "white" : "var(--ink)")};
   }
 `;
