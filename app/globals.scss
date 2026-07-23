@@ -59,6 +59,11 @@ select:focus-visible {
   background: rgba(56, 89, 217, 0.18);
 }
 
+::placeholder {
+  color: #aeb4c2;
+  opacity: 0.72;
+}
+
 .spin {
   animation: spin 0.8s linear infinite;
 }

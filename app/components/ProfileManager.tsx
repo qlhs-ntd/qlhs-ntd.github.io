@@ -196,10 +196,6 @@ const SearchBox = styled.label`
     color: var(--ink);
     font-size: 13px;
 
-    &::placeholder {
-      color: #9aa0af;
-    }
-
     &:focus {
       border-color: rgba(56, 89, 217, 0.55);
       background: white;
