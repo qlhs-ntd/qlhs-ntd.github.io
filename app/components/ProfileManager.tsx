@@ -501,6 +501,7 @@ const Modal = styled.div`
   width: min(980px, 100%);
   height: calc(100vh - 20px);
   height: calc(var(--modal-viewport-height, 100dvh) - 20px);
+  max-height: 1100px;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.7);
