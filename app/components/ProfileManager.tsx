@@ -78,6 +78,42 @@ const PrimaryButton = styled.button`
   }
 `;
 
+const MonthTabs = styled.div`
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 6px;
+  box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const MonthTab = styled.button<{ $active: boolean }>`
+  min-width: 112px;
+  min-height: 44px;
+  flex: 1 0 auto;
+  border: 0;
+  border-radius: 11px;
+  background: ${({ $active }) => ($active ? "var(--primary)" : "transparent")};
+  color: ${({ $active }) => ($active ? "white" : "#687086")};
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 150ms ease;
+
+  &:hover {
+    background: ${({ $active }) => ($active ? "var(--primary-dark)" : "#f1f3f8")};
+    color: ${({ $active }) => ($active ? "white" : "var(--ink)")};
+  }
+`;
+
 const Panel = styled.section`
   overflow: hidden;
   border: 1px solid var(--line);
@@ -405,6 +441,22 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(parsed);
 }
 
+function monthKey(value: Date) {
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getRecentMonths(count: number) {
+  const current = new Date();
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(current.getFullYear(), current.getMonth() - index, 1);
+    return {
+      key: monthKey(date),
+      label: `Tháng ${date.getMonth() + 1}`,
+      year: date.getFullYear(),
+    };
+  });
+}
+
 function ProfileModal({ state, saving, onClose, onSave }: {
   state: EditorState;
   saving: boolean;
@@ -481,6 +533,8 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 }
 
 export function ProfileManager() {
+  const monthTabs = useMemo(() => getRecentMonths(5), []);
+  const [selectedMonth, setSelectedMonth] = useState(() => monthKey(new Date()));
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -512,11 +566,13 @@ export function ProfileManager() {
 
   const visibleProfiles = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
-    if (!normalizedQuery) return profiles;
-    return profiles.filter((profile) =>
-      normalize(`${profile.customerName} ${profile.vehicleOwnerName}`).includes(normalizedQuery),
-    );
-  }, [profiles, query]);
+    return profiles.filter((profile) => {
+      const createdAt = new Date(profile.createdAt);
+      if (Number.isNaN(createdAt.getTime()) || monthKey(createdAt) !== selectedMonth) return false;
+      if (!normalizedQuery) return true;
+      return normalize(`${profile.customerName} ${profile.vehicleOwnerName}`).includes(normalizedQuery);
+    });
+  }, [profiles, query, selectedMonth]);
 
   async function saveProfile(input: ProfileInput) {
     if (!editor) return;
@@ -568,6 +624,22 @@ export function ProfileManager() {
         </PrimaryButton>
       </Header>
 
+      <MonthTabs role="tablist" aria-label="Lọc hồ sơ theo tháng">
+        {monthTabs.map((month) => (
+          <MonthTab
+            key={month.key}
+            type="button"
+            role="tab"
+            $active={selectedMonth === month.key}
+            aria-selected={selectedMonth === month.key}
+            aria-label={`${month.label} năm ${month.year}`}
+            onClick={() => setSelectedMonth(month.key)}
+          >
+            {month.label}
+          </MonthTab>
+        ))}
+      </MonthTabs>
+
       <Panel>
         <Toolbar>
           <h2>Thông tin khách hàng</h2>
@@ -587,7 +659,7 @@ export function ProfileManager() {
           <StateBox><div><LoaderCircle className="spin" size={30} /><h3>Đang tải hồ sơ</h3><p>Vui lòng chờ trong giây lát.</p></div></StateBox>
         ) : visibleProfiles.length === 0 ? (
           <StateBox>
-            <div><Inbox size={34} /><h3>{query ? "Không tìm thấy kết quả" : "Chưa có hồ sơ"}</h3><p>{query ? "Hãy thử tìm bằng một tên khác." : "Bấm “Thêm hồ sơ” để tạo bản ghi đầu tiên."}</p></div>
+            <div><Inbox size={34} /><h3>{query ? "Không tìm thấy kết quả" : "Chưa có hồ sơ trong tháng này"}</h3><p>{query ? "Hãy thử tìm bằng một tên khác." : "Bấm “Thêm hồ sơ” để tạo bản ghi đầu tiên."}</p></div>
           </StateBox>
         ) : (
           <TableWrap>
