@@ -490,19 +490,21 @@ const Overlay = styled.div`
 
   @media (max-width: 520px) {
     align-items: center;
-    overflow: visible;
+    overflow: hidden;
     padding: 0;
     overscroll-behavior: none;
+  }
+`;
 
-    &::after {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      left: 0;
-      height: 100vh;
-      background: white;
-      content: "";
-    }
+const MobileModalPageCover = styled.div`
+  display: none;
+
+  @media (max-width: 520px) {
+    position: fixed;
+    inset: 0;
+    z-index: 49;
+    display: block;
+    background: white;
   }
 `;
 
@@ -593,7 +595,7 @@ const Form = styled.form`
   -webkit-overflow-scrolling: touch;
 
   @media (max-width: 520px) {
-    padding-bottom: calc(56px + env(safe-area-inset-bottom));
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
   }
 `;
 
@@ -1250,7 +1252,9 @@ function ProfileModal({ state, saving, onClose, onSave }: {
   }
 
   return (
-    <Overlay ref={overlayRef} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !saving && onClose()}>
+    <>
+      <MobileModalPageCover aria-hidden="true" />
+      <Overlay ref={overlayRef} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !saving && onClose()}>
       <Modal role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
         <ModalHeader>
           <div>
@@ -1431,7 +1435,8 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
         </Form>
       </Modal>
-    </Overlay>
+      </Overlay>
+    </>
   );
 }
 
