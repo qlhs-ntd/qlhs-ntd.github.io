@@ -1207,7 +1207,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 <FieldLabel><CarFront size={14} />Loại xe</FieldLabel>
                 <SelectWrap>
                   <select required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
-                    {VEHICLE_TYPES.map((type) => <option key={type}>{type}</option>)}
+                    {VEHICLE_TYPES.map((type) => <option key={type} value={type}>{type.toLocaleUpperCase("vi-VN")}</option>)}
                   </select>
                 </SelectWrap>
               </Field>
@@ -1216,7 +1216,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 <FieldLabel><Building2 size={14} />Cơ quan nhận</FieldLabel>
                 <SelectWrap>
                   <select required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
-                    {RECEIVING_AGENCIES.map((agency) => <option key={agency}>{agency}</option>)}
+                    {RECEIVING_AGENCIES.map((agency) => <option key={agency} value={agency}>{agency.toLocaleUpperCase("vi-VN")}</option>)}
                   </select>
                 </SelectWrap>
               </Field>
@@ -1225,7 +1225,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 <FieldLabel><BriefcaseBusiness size={14} />Loại dịch vụ</FieldLabel>
                 <SelectWrap>
                   <select required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
-                    {SERVICE_TYPES.map((service) => <option key={service}>{service}</option>)}
+                    {SERVICE_TYPES.map((service) => <option key={service} value={service}>{service.toLocaleUpperCase("vi-VN")}</option>)}
                   </select>
                 </SelectWrap>
               </Field>
@@ -1283,7 +1283,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 <FieldLabel><ClipboardCheck size={14} />Trạng thái</FieldLabel>
                 <SelectWrap>
                   <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-                    {PROFILE_STATUSES.map((status) => <option key={status}>{status}</option>)}
+                    {PROFILE_STATUSES.map((status) => <option key={status} value={status}>{status.toLocaleUpperCase("vi-VN")}</option>)}
                   </select>
                 </SelectWrap>
               </Field>
