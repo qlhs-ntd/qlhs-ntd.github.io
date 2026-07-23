@@ -6,7 +6,68 @@ const HEADERS = [
   "Tên Chủ Phương Tiện",
   "Ngày Tạo",
   "Cập Nhật Lúc",
+  "Biển Số Xe",
+  "Loại Xe",
+  "Cơ Quan Nhận",
+  "Loại Dịch Vụ",
+  "Chi Phí",
+  "Chi Phí LPTB",
+  "Chi Phí Khác",
+  "Phát Sinh Hộp Đen, Phù Hiệu",
+  "Phát Sinh Khác",
+  "Chi Phí Ban Đầu",
+  "Trạng Thái",
+  "Biển Số Xe Mới",
+  "Nợ Biển Số",
+  "Nợ Giấy Đăng Kí",
+  "Tổng Chi Phí",
+  "Lợi Nhuận",
 ];
+
+const VEHICLE_TYPES = [
+  "Ô tô con",
+  "Đầu kéo",
+  "Tải có mui",
+  "SMRM",
+  "Xe máy chuyên dùng",
+  "Xe máy",
+  "Tải tự đổ",
+];
+
+const RECEIVING_AGENCIES = [
+  "Bình Hòa",
+  "Tân Đông Hiệp",
+  "Tân Khánh",
+  "Rạch Chiết",
+  "Lái Thiêu",
+  "Giao Thông Bắc Tân Uyên",
+  "Giao Thông QL13",
+  "An Phú",
+  "Bình Cơ",
+  "Giao Thông An Sương",
+  "Hòa Lợi",
+  "CSGT Đồng Nai",
+  "CSGT Bắc Tân Uyên",
+  "CSGT Quốc Lộ 13",
+  "PC08",
+  "Phòng CSGT Đồng Nai",
+  "Thanh An",
+  "Đông Hưng Thuận",
+  "Dĩ An",
+];
+
+const SERVICE_TYPES = [
+  "Thu hồi",
+  "Đăng ký sang tên",
+  "Thu hồi và sang tên",
+  "Phạt nguội",
+  "Cấp lại",
+  "Cấp đổi",
+  "Đăng ký lần đầu",
+  "Cấp đổi và cải tạo",
+];
+
+const PROFILE_STATUSES = ["Đang xử lí", "Đã thanh toán", "Hoàn tất"];
 
 function doGet(event) {
   try {
@@ -60,14 +121,16 @@ function getSheet() {
     sheet = spreadsheet.insertSheet(SHEET_NAME);
   }
 
-  if (sheet.getLastRow() === 0) {
-    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
-    sheet.getRange(1, 1, 1, HEADERS.length)
-      .setFontWeight("bold")
-      .setBackground("#3859d9")
-      .setFontColor("#ffffff");
-    sheet.setFrozenRows(1);
+  if (sheet.getMaxColumns() < HEADERS.length) {
+    sheet.insertColumnsAfter(sheet.getMaxColumns(), HEADERS.length - sheet.getMaxColumns());
   }
+
+  sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+  sheet.getRange(1, 1, 1, HEADERS.length)
+    .setFontWeight("bold")
+    .setBackground("#3859d9")
+    .setFontColor("#ffffff");
+  sheet.setFrozenRows(1);
 
   return sheet;
 }
@@ -88,16 +151,10 @@ function createProfile(record) {
   const clean = validateRecord(record);
   const sheet = getSheet();
   const now = new Date();
-  const id = Utilities.getUuid();
+  const profile = buildProfile(Utilities.getUuid(), clean, now, now);
 
-  sheet.appendRow([id, clean.customerName, clean.vehicleOwnerName, now, now]);
-  return {
-    id: id,
-    customerName: clean.customerName,
-    vehicleOwnerName: clean.vehicleOwnerName,
-    createdAt: now.toISOString(),
-    updatedAt: now.toISOString(),
-  };
+  sheet.appendRow(profileToRow(profile));
+  return profile;
 }
 
 function updateProfile(id, record) {
@@ -108,21 +165,9 @@ function updateProfile(id, record) {
   if (rowNumber === -1) throw new Error("Không tìm thấy hồ sơ cần cập nhật.");
 
   const createdAt = sheet.getRange(rowNumber, 4).getValue() || new Date();
-  const updatedAt = new Date();
-  sheet.getRange(rowNumber, 2, 1, 4).setValues([[
-    clean.customerName,
-    clean.vehicleOwnerName,
-    createdAt,
-    updatedAt,
-  ]]);
-
-  return {
-    id: id,
-    customerName: clean.customerName,
-    vehicleOwnerName: clean.vehicleOwnerName,
-    createdAt: toIsoString(createdAt),
-    updatedAt: updatedAt.toISOString(),
-  };
+  const profile = buildProfile(id, clean, createdAt, new Date());
+  sheet.getRange(rowNumber, 1, 1, HEADERS.length).setValues([profileToRow(profile)]);
+  return profile;
 }
 
 function deleteProfile(id) {
@@ -147,26 +192,158 @@ function findRowById(sheet, id) {
 }
 
 function validateRecord(record) {
-  const customerName = String(record.customerName || "").trim();
-  const vehicleOwnerName = String(record.vehicleOwnerName || "").trim();
+  const customerName = cleanText(record.customerName);
+  const vehicleOwnerName = cleanText(record.vehicleOwnerName);
+  const vehiclePlate = cleanText(record.vehiclePlate);
+  const vehicleType = cleanText(record.vehicleType);
+  const receivingAgency = cleanText(record.receivingAgency);
+  const serviceType = cleanText(record.serviceType);
+  const status = cleanText(record.status) || PROFILE_STATUSES[0];
 
-  if (!customerName) throw new Error("Tên Khách Hàng không được để trống.");
-  if (!vehicleOwnerName) throw new Error("Tên Chủ Phương Tiện không được để trống.");
+  if (!customerName) throw new Error("Tên khách hàng không được để trống.");
+  if (!vehicleOwnerName) throw new Error("Tên chủ phương tiện không được để trống.");
+  if (!vehiclePlate) throw new Error("Biển số xe không được để trống.");
   if (customerName.length > 120 || vehicleOwnerName.length > 120) {
     throw new Error("Tên không được dài quá 120 ký tự.");
   }
+  if (VEHICLE_TYPES.indexOf(vehicleType) === -1) throw new Error("Loại xe không hợp lệ.");
+  if (RECEIVING_AGENCIES.indexOf(receivingAgency) === -1) throw new Error("Cơ quan nhận không hợp lệ.");
+  if (SERVICE_TYPES.indexOf(serviceType) === -1) throw new Error("Loại dịch vụ không hợp lệ.");
+  if (PROFILE_STATUSES.indexOf(status) === -1) throw new Error("Trạng thái không hợp lệ.");
 
-  return { customerName: customerName, vehicleOwnerName: vehicleOwnerName };
+  const clean = {
+    customerName: customerName,
+    vehicleOwnerName: vehicleOwnerName,
+    vehiclePlate: vehiclePlate,
+    vehicleType: vehicleType,
+    receivingAgency: receivingAgency,
+    serviceType: serviceType,
+    cost: toAmount(record.cost),
+    registrationFeeCost: toAmount(record.registrationFeeCost),
+    otherCost: toAmount(record.otherCost),
+    blackBoxBadgeCost: toAmount(record.blackBoxBadgeCost),
+    otherIncidentalCost: toAmount(record.otherIncidentalCost),
+    initialCost: toAmount(record.initialCost),
+    status: status,
+    newVehiclePlate: cleanText(record.newVehiclePlate),
+    owesVehiclePlate: toBoolean(record.owesVehiclePlate),
+    owesRegistration: toBoolean(record.owesRegistration),
+  };
+
+  clean.totalCost = clean.cost + clean.registrationFeeCost + clean.otherCost + clean.blackBoxBadgeCost + clean.otherIncidentalCost;
+  clean.profit = clean.totalCost - clean.initialCost;
+  return clean;
+}
+
+function buildProfile(id, clean, createdAt, updatedAt) {
+  return {
+    id: id,
+    customerName: clean.customerName,
+    vehicleOwnerName: clean.vehicleOwnerName,
+    vehiclePlate: clean.vehiclePlate,
+    vehicleType: clean.vehicleType,
+    receivingAgency: clean.receivingAgency,
+    serviceType: clean.serviceType,
+    cost: clean.cost,
+    registrationFeeCost: clean.registrationFeeCost,
+    otherCost: clean.otherCost,
+    blackBoxBadgeCost: clean.blackBoxBadgeCost,
+    otherIncidentalCost: clean.otherIncidentalCost,
+    initialCost: clean.initialCost,
+    status: clean.status,
+    newVehiclePlate: clean.newVehiclePlate,
+    owesVehiclePlate: clean.owesVehiclePlate,
+    owesRegistration: clean.owesRegistration,
+    totalCost: clean.totalCost,
+    profit: clean.profit,
+    createdAt: toIsoString(createdAt),
+    updatedAt: toIsoString(updatedAt),
+  };
+}
+
+function profileToRow(profile) {
+  return [
+    profile.id,
+    profile.customerName,
+    profile.vehicleOwnerName,
+    new Date(profile.createdAt),
+    new Date(profile.updatedAt),
+    profile.vehiclePlate,
+    profile.vehicleType,
+    profile.receivingAgency,
+    profile.serviceType,
+    profile.cost,
+    profile.registrationFeeCost,
+    profile.otherCost,
+    profile.blackBoxBadgeCost,
+    profile.otherIncidentalCost,
+    profile.initialCost,
+    profile.status,
+    profile.newVehiclePlate,
+    profile.owesVehiclePlate,
+    profile.owesRegistration,
+    profile.totalCost,
+    profile.profit,
+  ];
 }
 
 function rowToProfile(row) {
-  return {
-    id: String(row[0]),
+  const input = {
     customerName: String(row[1] || ""),
     vehicleOwnerName: String(row[2] || ""),
+    vehiclePlate: String(row[5] || ""),
+    vehicleType: String(row[6] || ""),
+    receivingAgency: String(row[7] || ""),
+    serviceType: String(row[8] || ""),
+    cost: toAmount(row[9]),
+    registrationFeeCost: toAmount(row[10]),
+    otherCost: toAmount(row[11]),
+    blackBoxBadgeCost: toAmount(row[12]),
+    otherIncidentalCost: toAmount(row[13]),
+    initialCost: toAmount(row[14]),
+    status: String(row[15] || PROFILE_STATUSES[0]),
+    newVehiclePlate: String(row[16] || ""),
+    owesVehiclePlate: toBoolean(row[17]),
+    owesRegistration: toBoolean(row[18]),
+  };
+  const totalCost = input.cost + input.registrationFeeCost + input.otherCost + input.blackBoxBadgeCost + input.otherIncidentalCost;
+
+  return {
+    id: String(row[0]),
+    customerName: input.customerName,
+    vehicleOwnerName: input.vehicleOwnerName,
+    vehiclePlate: input.vehiclePlate,
+    vehicleType: input.vehicleType,
+    receivingAgency: input.receivingAgency,
+    serviceType: input.serviceType,
+    cost: input.cost,
+    registrationFeeCost: input.registrationFeeCost,
+    otherCost: input.otherCost,
+    blackBoxBadgeCost: input.blackBoxBadgeCost,
+    otherIncidentalCost: input.otherIncidentalCost,
+    initialCost: input.initialCost,
+    status: input.status,
+    newVehiclePlate: input.newVehiclePlate,
+    owesVehiclePlate: input.owesVehiclePlate,
+    owesRegistration: input.owesRegistration,
+    totalCost: totalCost,
+    profit: totalCost - input.initialCost,
     createdAt: toIsoString(row[3]),
     updatedAt: toIsoString(row[4]),
   };
+}
+
+function cleanText(value) {
+  return String(value || "").trim();
+}
+
+function toAmount(value) {
+  const amount = Number(value);
+  return isFinite(amount) ? Math.max(0, amount) : 0;
+}
+
+function toBoolean(value) {
+  return value === true || String(value).toLowerCase() === "true";
 }
 
 function toIsoString(value) {

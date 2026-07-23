@@ -16,9 +16,15 @@ import { FormEvent, useCallback, useEffect, useLayoutEffect, useMemo, useRef, us
 import styled from "styled-components";
 import { AppShell } from "./AppShell";
 import {
+  calculateProfileCosts,
+  createEmptyProfileInput,
+  PROFILE_STATUSES,
   profileService,
+  RECEIVING_AGENCIES,
+  SERVICE_TYPES,
   type ProfileInput,
   type ProfileRecord,
+  VEHICLE_TYPES,
 } from "../lib/profiles";
 
 const Header = styled.header`
@@ -208,7 +214,7 @@ const TableWrap = styled.div`
 
 const Table = styled.table`
   width: 100%;
-  min-width: 720px;
+  min-width: 1240px;
   border-collapse: collapse;
 
   th {
@@ -256,6 +262,21 @@ const PersonCell = styled.div`
     background: #edf0ff;
     color: var(--primary);
   }
+`;
+
+const StatusPill = styled.span<{ $status: string }>`
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  border-radius: 999px;
+  background: ${({ $status }) =>
+    $status === "Hoàn tất" ? "#e9f8ef" : $status === "Đã thanh toán" ? "#edf0ff" : "#fff5df"};
+  padding: 0 10px;
+  color: ${({ $status }) =>
+    $status === "Hoàn tất" ? "#217448" : $status === "Đã thanh toán" ? "var(--primary)" : "#946516"};
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
 `;
 
 const ActionGroup = styled.div`
@@ -356,7 +377,11 @@ const Overlay = styled.div`
 `;
 
 const Modal = styled.div`
-  width: min(520px, 100%);
+  display: flex;
+  width: min(920px, 100%);
+  max-height: calc(100vh - 48px);
+  flex-direction: column;
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 22px;
   background: white;
@@ -374,6 +399,7 @@ const ModalHeader = styled.div`
   gap: 16px;
   border-bottom: 1px solid var(--line);
   padding: 22px 24px 18px;
+  flex: 0 0 auto;
 
   h2 {
     margin: 0 0 5px;
@@ -403,18 +429,30 @@ const CloseButton = styled.button`
 `;
 
 const Form = styled.form`
+  overflow-y: auto;
   padding: 22px 24px 24px;
 `;
 
-const Field = styled.label`
+const FormGrid = styled.div`
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+
+  @media (max-width: 680px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Field = styled.label<{ $full?: boolean }>`
+  display: grid;
+  grid-column: ${({ $full }) => ($full ? "1 / -1" : "auto")};
   gap: 8px;
-  margin-bottom: 18px;
   color: #3d465b;
   font-size: 13px;
   font-weight: 680;
 
-  input {
+  input,
+  select {
     width: 100%;
     height: 48px;
     border: 1px solid var(--line);
@@ -432,6 +470,68 @@ const Field = styled.label`
       box-shadow: 0 0 0 4px rgba(56, 89, 217, 0.08);
       outline: none;
     }
+
+    &:disabled {
+      color: #7d8496;
+      cursor: not-allowed;
+    }
+  }
+`;
+
+const CheckGroup = styled.div`
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfbfd;
+  padding: 10px 14px;
+
+  label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #505a70;
+    font-size: 13px;
+    font-weight: 620;
+    cursor: pointer;
+  }
+
+  input {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--primary);
+  }
+`;
+
+const CostSummary = styled.div`
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  border: 1px solid #dfe4f8;
+  border-radius: 14px;
+  background: #f7f8ff;
+  padding: 15px;
+
+  div {
+    display: grid;
+    gap: 4px;
+  }
+
+  span {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  strong {
+    color: var(--ink);
+    font-size: 18px;
+  }
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
   }
 `;
 
@@ -456,6 +556,27 @@ const SecondaryButton = styled.button`
 
 type EditorState = { mode: "create"; profile?: undefined } | { mode: "edit"; profile: ProfileRecord };
 
+function profileToInput(profile: ProfileRecord): ProfileInput {
+  return {
+    customerName: profile.customerName,
+    vehicleOwnerName: profile.vehicleOwnerName,
+    vehiclePlate: profile.vehiclePlate,
+    vehicleType: profile.vehicleType,
+    receivingAgency: profile.receivingAgency,
+    serviceType: profile.serviceType,
+    cost: profile.cost,
+    registrationFeeCost: profile.registrationFeeCost,
+    otherCost: profile.otherCost,
+    blackBoxBadgeCost: profile.blackBoxBadgeCost,
+    otherIncidentalCost: profile.otherIncidentalCost,
+    initialCost: profile.initialCost,
+    status: profile.status,
+    newVehiclePlate: profile.newVehiclePlate,
+    owesVehiclePlate: profile.owesVehiclePlate,
+    owesRegistration: profile.owesRegistration,
+  };
+}
+
 function normalize(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
@@ -464,6 +585,22 @@ function formatDate(value: string) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "—";
   return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(parsed);
+}
+
+function formatDateTime(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "—";
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(parsed);
+}
+
+function formatCurrency(value: number) {
+  return `${new Intl.NumberFormat("vi-VN").format(value || 0)} đ`;
 }
 
 function monthKey(value: Date) {
@@ -482,14 +619,41 @@ function getYearEndMonths() {
   });
 }
 
+function MoneyField({ label, value, onChange }: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <Field>
+      {label}
+      <input
+        type="number"
+        min="0"
+        step="1000"
+        inputMode="numeric"
+        value={value || ""}
+        onChange={(event) => onChange(Number(event.target.value) || 0)}
+        placeholder="0"
+      />
+    </Field>
+  );
+}
+
 function ProfileModal({ state, saving, onClose, onSave }: {
   state: EditorState;
   saving: boolean;
   onClose: () => void;
   onSave: (input: ProfileInput) => Promise<void>;
 }) {
-  const [customerName, setCustomerName] = useState(state.profile?.customerName ?? "");
-  const [vehicleOwnerName, setVehicleOwnerName] = useState(state.profile?.vehicleOwnerName ?? "");
+  const [form, setForm] = useState<ProfileInput>(() =>
+    state.profile ? profileToInput(state.profile) : createEmptyProfileInput(),
+  );
+  const { totalCost, profit } = calculateProfileCosts(form);
+
+  function updateField<Key extends keyof ProfileInput>(key: Key, value: ProfileInput[Key]) {
+    setForm((current) => ({ ...current, [key]: value }));
+  }
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -505,7 +669,13 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    await onSave({ customerName: customerName.trim(), vehicleOwnerName: vehicleOwnerName.trim() });
+    await onSave({
+      ...form,
+      customerName: form.customerName.trim(),
+      vehicleOwnerName: form.vehicleOwnerName.trim(),
+      vehiclePlate: form.vehiclePlate.trim(),
+      newVehiclePlate: form.newVehiclePlate.trim(),
+    });
   }
 
   return (
@@ -522,31 +692,145 @@ function ProfileModal({ state, saving, onClose, onSave }: {
         </ModalHeader>
 
         <Form onSubmit={submit}>
-          <Field>
-            Tên Khách Hàng
-            <input
-              autoFocus
-              required
-              maxLength={120}
-              value={customerName}
-              onChange={(event) => setCustomerName(event.target.value)}
-              placeholder="Ví dụ: Nguyễn Văn An"
-            />
-          </Field>
-          <Field>
-            Tên Chủ Phương Tiện
-            <input
-              required
-              maxLength={120}
-              value={vehicleOwnerName}
-              onChange={(event) => setVehicleOwnerName(event.target.value)}
-              placeholder="Ví dụ: Trần Minh Bình"
-            />
-          </Field>
+          <FormGrid>
+            <Field>
+              Thời gian tạo
+              <input
+                disabled
+                value={state.mode === "create" ? "Tự động khi lưu hồ sơ" : formatDateTime(state.profile.createdAt)}
+              />
+            </Field>
+
+            <Field>
+              Trạng thái
+              <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
+                {PROFILE_STATUSES.map((status) => <option key={status}>{status}</option>)}
+              </select>
+            </Field>
+
+            <Field>
+              Tên khách hàng
+              <input
+                autoFocus
+                required
+                maxLength={120}
+                value={form.customerName}
+                onChange={(event) => updateField("customerName", event.target.value)}
+                placeholder="Ví dụ: Nguyễn Văn An"
+              />
+            </Field>
+
+            <Field>
+              Tên chủ phương tiện
+              <input
+                required
+                maxLength={120}
+                value={form.vehicleOwnerName}
+                onChange={(event) => updateField("vehicleOwnerName", event.target.value)}
+                placeholder="Ví dụ: Trần Minh Bình"
+              />
+            </Field>
+
+            <Field>
+              Biển số xe
+              <input
+                required
+                maxLength={30}
+                value={form.vehiclePlate}
+                onChange={(event) => updateField("vehiclePlate", event.target.value)}
+                placeholder="Ví dụ: 61A-123.45"
+              />
+            </Field>
+
+            <Field>
+              Loại xe
+              <select required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
+                <option value="" disabled>Chọn loại xe</option>
+                {VEHICLE_TYPES.map((type) => <option key={type}>{type}</option>)}
+              </select>
+            </Field>
+
+            <Field>
+              Cơ quan nhận
+              <select required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
+                <option value="" disabled>Chọn cơ quan nhận</option>
+                {RECEIVING_AGENCIES.map((agency) => <option key={agency}>{agency}</option>)}
+              </select>
+            </Field>
+
+            <Field>
+              Loại dịch vụ
+              <select required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
+                <option value="" disabled>Chọn loại dịch vụ</option>
+                {SERVICE_TYPES.map((service) => <option key={service}>{service}</option>)}
+              </select>
+            </Field>
+
+            <MoneyField label="Chi phí" value={form.cost} onChange={(value) => updateField("cost", value)} />
+            <MoneyField label="Chi phí LPTB" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
+            <MoneyField label="Chi phí khác" value={form.otherCost} onChange={(value) => updateField("otherCost", value)} />
+            <MoneyField label="Phát sinh Hộp đen, Phù hiệu" value={form.blackBoxBadgeCost} onChange={(value) => updateField("blackBoxBadgeCost", value)} />
+            <MoneyField label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
+            <MoneyField label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
+
+            <Field>
+              Biển số xe mới
+              <input
+                maxLength={30}
+                value={form.newVehiclePlate}
+                onChange={(event) => updateField("newVehiclePlate", event.target.value)}
+                placeholder="Nhập khi đã có biển số mới"
+              />
+            </Field>
+
+            <Field $full as="div">
+              Theo dõi giấy tờ
+              <CheckGroup>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={form.owesVehiclePlate}
+                    onChange={(event) => updateField("owesVehiclePlate", event.target.checked)}
+                  />
+                  Nợ biển số
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={form.owesRegistration}
+                    onChange={(event) => updateField("owesRegistration", event.target.checked)}
+                  />
+                  Nợ giấy đăng kí
+                </label>
+              </CheckGroup>
+            </Field>
+
+            <CostSummary>
+              <div>
+                <span>Tổng chi phí</span>
+                <strong>{formatCurrency(totalCost)}</strong>
+              </div>
+              <div>
+                <span>Lợi nhuận</span>
+                <strong>{formatCurrency(profit)}</strong>
+              </div>
+            </CostSummary>
+          </FormGrid>
 
           <FormActions>
             <SecondaryButton type="button" onClick={onClose} disabled={saving}>Huỷ</SecondaryButton>
-            <PrimaryButton type="submit" disabled={saving || !customerName.trim() || !vehicleOwnerName.trim()}>
+            <PrimaryButton
+              type="submit"
+              disabled={
+                saving ||
+                !form.customerName.trim() ||
+                !form.vehicleOwnerName.trim() ||
+                !form.vehiclePlate.trim() ||
+                !form.vehicleType ||
+                !form.receivingAgency ||
+                !form.serviceType
+              }
+            >
               {saving ? <LoaderCircle className="spin" size={17} /> : <CheckCircle2 size={17} />}
               {saving ? "Đang lưu..." : "Lưu hồ sơ"}
             </PrimaryButton>
@@ -587,7 +871,8 @@ export function ProfileManager() {
   }, []);
 
   useEffect(() => {
-    void loadProfiles();
+    const timer = window.setTimeout(() => void loadProfiles(), 0);
+    return () => window.clearTimeout(timer);
   }, [loadProfiles]);
 
   useEffect(() => {
@@ -618,7 +903,14 @@ export function ProfileManager() {
       const createdAt = new Date(profile.createdAt);
       if (Number.isNaN(createdAt.getTime()) || monthKey(createdAt) !== selectedMonth) return false;
       if (!normalizedQuery) return true;
-      return normalize(`${profile.customerName} ${profile.vehicleOwnerName}`).includes(normalizedQuery);
+      return normalize([
+        profile.customerName,
+        profile.vehicleOwnerName,
+        profile.vehiclePlate,
+        profile.newVehiclePlate,
+        profile.receivingAgency,
+        profile.serviceType,
+      ].join(" ")).includes(normalizedQuery);
     });
   }, [profiles, query, selectedMonth]);
 
@@ -696,8 +988,8 @@ export function ProfileManager() {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Tìm theo tên..."
-              aria-label="Tìm hồ sơ theo tên"
+              placeholder="Tìm tên, biển số..."
+              aria-label="Tìm hồ sơ theo tên hoặc biển số"
             />
           </SearchBox>
           <PrimaryButton type="button" onClick={() => setEditor({ mode: "create" })}>
@@ -719,6 +1011,12 @@ export function ProfileManager() {
                 <tr>
                   <th>Tên khách hàng</th>
                   <th>Tên chủ phương tiện</th>
+                  <th>Biển số xe</th>
+                  <th>Loại dịch vụ</th>
+                  <th>Cơ quan nhận</th>
+                  <th>Trạng thái</th>
+                  <th>Tổng chi phí</th>
+                  <th>Lợi nhuận</th>
                   <th>Cập nhật</th>
                   <th aria-label="Thao tác" />
                 </tr>
@@ -728,6 +1026,12 @@ export function ProfileManager() {
                   <tr key={profile.id}>
                     <td><PersonCell><span><UserRound size={16} /></span>{profile.customerName}</PersonCell></td>
                     <td>{profile.vehicleOwnerName}</td>
+                    <td>{profile.vehiclePlate || "—"}</td>
+                    <td>{profile.serviceType || "—"}</td>
+                    <td>{profile.receivingAgency || "—"}</td>
+                    <td><StatusPill $status={profile.status}>{profile.status || "Đang xử lí"}</StatusPill></td>
+                    <td>{formatCurrency(profile.totalCost)}</td>
+                    <td>{formatCurrency(profile.profit)}</td>
                     <td>{formatDate(profile.updatedAt)}</td>
                     <td>
                       <ActionGroup>
