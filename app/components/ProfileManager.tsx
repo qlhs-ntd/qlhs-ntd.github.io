@@ -406,6 +406,7 @@ const ModalHeader = styled.div`
     color: var(--ink);
     font-size: 20px;
     letter-spacing: -0.025em;
+    text-transform: capitalize;
   }
 
   p {
