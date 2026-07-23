@@ -8,6 +8,7 @@ const normalizedBasePath = rawBasePath
 const nextConfig: NextConfig = {
   output: "export",
   trailingSlash: true,
+  allowedDevOrigins: ["192.168.2.26"],
   compiler: {
     styledComponents: true,
   },

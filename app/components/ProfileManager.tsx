@@ -122,12 +122,6 @@ const MonthTabs = styled.div`
 
   @media (max-width: 640px) {
     width: 100%;
-
-    &::before,
-    &::after {
-      flex: 0 0 calc(50% - 38px);
-      content: "";
-    }
   }
 `;
 
