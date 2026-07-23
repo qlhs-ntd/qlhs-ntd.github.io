@@ -77,11 +77,11 @@ const NavItem = styled(Link)<{ $active: boolean }>`
 const Main = styled.main`
   min-height: 100vh;
   margin-left: 244px;
-  padding: 46px clamp(24px, 5vw, 72px) 72px;
+  padding: 30px clamp(24px, 5vw, 72px) 72px;
 
   @media (max-width: 860px) {
     margin-left: 0;
-    padding: 108px 20px 56px;
+    padding: 94px 20px 56px;
   }
 
   @media (max-width: 520px) {

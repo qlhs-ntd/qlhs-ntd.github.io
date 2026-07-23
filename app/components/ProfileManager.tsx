@@ -36,7 +36,7 @@ const Header = styled.header`
 
 const TitleBlock = styled.div`
   h1 {
-    margin: 0 0 6px;
+    margin: 0 0 10px;
     color: var(--ink);
     font-size: clamp(28px, 4vw, 40px);
     letter-spacing: -0.045em;
