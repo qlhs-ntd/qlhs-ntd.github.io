@@ -592,7 +592,7 @@ const MoneyInputWrap = styled.div`
 
   .money-minor {
     color: #687086;
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 500;
     line-height: 1;
   }
