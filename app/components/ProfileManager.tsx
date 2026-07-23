@@ -591,10 +591,11 @@ const MoneyInputWrap = styled.div`
   }
 
   .money-minor {
-    color: #687086;
+    color: var(--ink);
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 720;
     line-height: 1;
+    transition: color 140ms ease;
   }
 
   .money-caret {
@@ -615,6 +616,10 @@ const MoneyInputWrap = styled.div`
   input:focus + .money-display .money-caret {
     opacity: 1;
     animation: money-caret-blink 1s steps(1) infinite;
+  }
+
+  input:focus + .money-display .money-minor {
+    color: #aeb4c2;
   }
 
   > span {
