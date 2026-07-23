@@ -832,8 +832,6 @@ function MoneyField({ icon, label, value, onChange }: {
   const displayedValue = value
     ? new Intl.NumberFormat("vi-VN").format(Math.round(value / 1000))
     : "";
-  const [majorPart, ...minorParts] = displayedValue.split(".");
-  const enteredMinor = minorParts.length ? `.${minorParts.join(".")}` : "";
 
   return (
     <Field>
@@ -864,8 +862,7 @@ function MoneyField({ icon, label, value, onChange }: {
           placeholder="0"
         />
         <div className="money-display" aria-hidden="true">
-          <span className={`money-major${displayedValue ? "" : " is-placeholder"}`}>{majorPart || "0"}</span>
-          {enteredMinor && <span className="money-minor">{enteredMinor}</span>}
+          <span className={`money-major${displayedValue ? "" : " is-placeholder"}`}>{displayedValue || "0"}</span>
           <span className="money-caret" />
           <span className="money-minor">.000</span>
         </div>
