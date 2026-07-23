@@ -467,6 +467,7 @@ const Field = styled.label`
   color: #3d465b;
   font-size: 13px;
   font-weight: 680;
+  text-transform: capitalize;
 
   input,
   select {
@@ -479,6 +480,7 @@ const Field = styled.label`
     color: var(--ink);
     font-size: 14px;
     font-weight: 500;
+    text-transform: none;
     transition: 130ms ease;
 
     &:focus {
