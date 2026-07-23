@@ -572,7 +572,7 @@ const CheckGroup = styled.div`
   gap: 10px 18px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #fbfbfd;
+  background: transparent;
   padding: 10px 14px;
 
   label {
