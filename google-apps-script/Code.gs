@@ -28,7 +28,7 @@ const VEHICLE_TYPES = [
   "Ô tô con",
   "Đầu kéo",
   "Tải có mui",
-  "SMRM",
+  "Sơ mi rơ mooc",
   "Xe máy chuyên dùng",
   "Xe máy",
   "Tải tự đổ",
@@ -195,7 +195,8 @@ function validateRecord(record) {
   const customerName = cleanText(record.customerName);
   const vehicleOwnerName = cleanText(record.vehicleOwnerName);
   const vehiclePlate = cleanText(record.vehiclePlate);
-  const vehicleType = cleanText(record.vehicleType);
+  const vehicleTypeValue = cleanText(record.vehicleType);
+  const vehicleType = vehicleTypeValue === "SMRM" ? "Sơ mi rơ mooc" : vehicleTypeValue;
   const receivingAgency = cleanText(record.receivingAgency);
   const serviceType = cleanText(record.serviceType);
   const status = cleanText(record.status) || PROFILE_STATUSES[0];
@@ -292,7 +293,7 @@ function rowToProfile(row) {
     customerName: String(row[1] || ""),
     vehicleOwnerName: String(row[2] || ""),
     vehiclePlate: String(row[5] || ""),
-    vehicleType: String(row[6] || ""),
+    vehicleType: String(row[6] || "") === "SMRM" ? "Sơ mi rơ mooc" : String(row[6] || ""),
     receivingAgency: String(row[7] || ""),
     serviceType: String(row[8] || ""),
     cost: toAmount(row[9]),

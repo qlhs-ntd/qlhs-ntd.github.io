@@ -2,7 +2,7 @@ export const VEHICLE_TYPES = [
   "Ô tô con",
   "Đầu kéo",
   "Tải có mui",
-  "SMRM",
+  "Sơ mi rơ mooc",
   "Xe máy chuyên dùng",
   "Xe máy",
   "Tải tự đổ",
@@ -122,7 +122,7 @@ function normalizeInput(input: Partial<ProfileInput>): ProfileInput {
   return {
     ...createEmptyProfileInput(),
     ...input,
-    vehicleType: input.vehicleType || VEHICLE_TYPES[0],
+    vehicleType: input.vehicleType === "SMRM" ? "Sơ mi rơ mooc" : input.vehicleType || VEHICLE_TYPES[0],
     receivingAgency: input.receivingAgency || RECEIVING_AGENCIES[0],
     serviceType: input.serviceType || SERVICE_TYPES[0],
     status: input.status || PROFILE_STATUSES[0],
