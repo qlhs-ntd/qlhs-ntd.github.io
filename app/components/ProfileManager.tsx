@@ -698,7 +698,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
         <ModalHeader>
           <div>
             <h2 id="profile-modal-title">{state.mode === "create" ? "Thêm hồ sơ mới" : "Chỉnh sửa hồ sơ"}</h2>
-            <p>Thời gian hiện tại: {formatCurrentTime(currentTime)}</p>
+            <p>{formatCurrentTime(currentTime)}</p>
           </div>
           <CloseButton type="button" onClick={onClose} disabled={saving} aria-label="Đóng cửa sổ">
             <X size={18} />
