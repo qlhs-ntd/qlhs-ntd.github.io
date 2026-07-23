@@ -638,6 +638,7 @@ const MoneyInputWrap = styled.div`
 
   .money-currency {
     margin-left: auto;
+    padding: 0 8px;
   }
 
   @keyframes money-caret-blink {
