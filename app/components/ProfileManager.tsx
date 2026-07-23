@@ -490,9 +490,19 @@ const Overlay = styled.div`
 
   @media (max-width: 520px) {
     align-items: center;
-    overflow: hidden;
+    overflow: visible;
     padding: 0;
     overscroll-behavior: none;
+
+    &::after {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      left: 0;
+      height: 100vh;
+      background: white;
+      content: "";
+    }
   }
 `;
 
@@ -1162,10 +1172,12 @@ function ProfileModal({ state, saving, onClose, onSave }: {
       if (event.key === "Escape" && !saving) onClose();
     };
     document.addEventListener("keydown", closeOnEscape);
+    document.body.classList.add("profile-modal-open");
     document.body.style.overflow = "hidden";
     return () => {
       window.clearInterval(clock);
       document.removeEventListener("keydown", closeOnEscape);
+      document.body.classList.remove("profile-modal-open");
       document.body.style.overflow = "";
     };
   }, [onClose, saving]);

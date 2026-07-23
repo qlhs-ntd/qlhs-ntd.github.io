@@ -44,6 +44,12 @@ const Sidebar = styled.aside`
     padding: 4px;
     box-shadow: 0 16px 45px rgba(27, 35, 64, 0.2);
     transform: translateX(-50%);
+
+    body.profile-modal-open & {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
   }
 `;
 
