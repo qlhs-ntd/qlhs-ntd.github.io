@@ -125,7 +125,7 @@ const Main = styled.main`
 `;
 
 const MainInner = styled.div`
-  width: 100%;
+  width: min(1300px, 100%);
   margin: 0 auto;
 `;
 
