@@ -711,6 +711,14 @@ const CheckGroup = styled.div`
     height: 17px;
     accent-color: var(--primary);
   }
+
+  @media (max-width: 1024px) {
+    min-height: 0;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px 0;
+  }
 `;
 
 const CostSummary = styled.div`
