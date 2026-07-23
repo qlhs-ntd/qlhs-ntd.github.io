@@ -1,3 +1,4 @@
+const SPREADSHEET_ID = "19dqKPEW439W6R1FvjQNte54yV5wwZQ7LJqHxf30vGFc";
 const SHEET_NAME = "HoSo";
 const HEADERS = [
   "ID",
@@ -52,7 +53,7 @@ function doPost(event) {
 }
 
 function getSheet() {
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = spreadsheet.getSheetByName(SHEET_NAME);
 
   if (!sheet) {
@@ -178,4 +179,3 @@ function jsonResponse(payload) {
     .createTextOutput(JSON.stringify(payload))
     .setMimeType(ContentService.MimeType.JSON);
 }
-
