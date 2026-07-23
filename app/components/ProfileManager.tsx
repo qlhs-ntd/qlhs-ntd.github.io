@@ -1,10 +1,16 @@
 "use client";
 
 import {
+  BadgeDollarSign,
+  BriefcaseBusiness,
+  Building2,
+  CarFront,
   CheckCircle2,
   CircleAlert,
+  ClipboardCheck,
   FilePlus2,
   Inbox,
+  ListChecks,
   LoaderCircle,
   PencilLine,
   Search,
@@ -500,6 +506,17 @@ const Field = styled.label`
   }
 `;
 
+const FieldLabel = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  svg {
+    flex: 0 0 auto;
+    color: var(--primary);
+  }
+`;
+
 const MoneyInputWrap = styled.div`
   position: relative;
 
@@ -597,10 +614,17 @@ const CostSummary = styled.div`
   padding: 15px;
 
   span {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     margin-bottom: 4px;
     color: var(--muted);
     font-size: 12px;
+
+    svg {
+      flex: 0 0 auto;
+      color: var(--primary);
+    }
   }
 
   strong {
@@ -710,7 +734,7 @@ function MoneyField({ label, value, onChange }: {
 }) {
   return (
     <Field>
-      {label}
+      <FieldLabel><BadgeDollarSign size={14} />{label}</FieldLabel>
       <MoneyInputWrap>
         <input
           type="number"
@@ -804,7 +828,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
           <FormSections>
             <FormSection>
               <Field>
-                Tên khách hàng
+                <FieldLabel><UserRound size={14} />Tên khách hàng</FieldLabel>
                 <input
                   autoFocus
                   required
@@ -816,7 +840,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                Tên chủ phương tiện
+                <FieldLabel><UserRound size={14} />Tên chủ phương tiện</FieldLabel>
                 <input
                   required
                   maxLength={120}
@@ -827,7 +851,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                Biển số xe
+                <FieldLabel><CarFront size={14} />Biển số xe</FieldLabel>
                 <input
                   required
                   maxLength={30}
@@ -838,7 +862,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                Loại xe
+                <FieldLabel><CarFront size={14} />Loại xe</FieldLabel>
                 <SelectWrap>
                   <select required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
                     {VEHICLE_TYPES.map((type) => <option key={type}>{type}</option>)}
@@ -847,7 +871,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                Cơ quan nhận
+                <FieldLabel><Building2 size={14} />Cơ quan nhận</FieldLabel>
                 <SelectWrap>
                   <select required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
                     {RECEIVING_AGENCIES.map((agency) => <option key={agency}>{agency}</option>)}
@@ -856,7 +880,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                Loại dịch vụ
+                <FieldLabel><BriefcaseBusiness size={14} />Loại dịch vụ</FieldLabel>
                 <SelectWrap>
                   <select required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
                     {SERVICE_TYPES.map((service) => <option key={service}>{service}</option>)}
@@ -873,7 +897,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <MoneyField label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
 
               <CostSummary>
-                <span>Tổng chi phí</span>
+                <span><BadgeDollarSign size={13} />Tổng chi phí</span>
                 <strong>{formatCurrency(totalCost)}</strong>
               </CostSummary>
             </FormSection>
@@ -882,7 +906,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <MoneyField label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
 
               <Field>
-                Trạng thái
+                <FieldLabel><ClipboardCheck size={14} />Trạng thái</FieldLabel>
                 <SelectWrap>
                   <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
                     {PROFILE_STATUSES.map((status) => <option key={status}>{status}</option>)}
@@ -891,7 +915,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                Biển số xe mới
+                <FieldLabel><CarFront size={14} />Biển số xe mới</FieldLabel>
                 <input
                   maxLength={30}
                   value={form.newVehiclePlate}
@@ -901,7 +925,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field as="div">
-                Theo dõi giấy tờ
+                <FieldLabel><ListChecks size={14} />Theo dõi giấy tờ</FieldLabel>
                 <CheckGroup>
                   <label>
                     <input
@@ -923,7 +947,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <CostSummary>
-                <span>Lợi nhuận</span>
+                <span><BadgeDollarSign size={13} />Lợi nhuận</span>
                 <strong>{formatCurrency(profit)}</strong>
               </CostSummary>
             </FormSection>
