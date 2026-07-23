@@ -652,7 +652,6 @@ const Field = styled.label`
     &:focus {
       border-color: rgba(56, 89, 217, 0.6);
       background: white;
-      box-shadow: 0 0 0 4px rgba(56, 89, 217, 0.08);
       outline: none;
     }
 
@@ -710,7 +709,6 @@ const MoneyInputWrap = styled.div`
   &:focus-within {
     border-color: rgba(56, 89, 217, 0.6);
     background: white;
-    box-shadow: 0 0 0 4px rgba(56, 89, 217, 0.08);
   }
 
   input {
