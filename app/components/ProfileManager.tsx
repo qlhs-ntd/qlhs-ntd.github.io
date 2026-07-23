@@ -934,25 +934,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             <FormSection>
               <MoneyField icon={<HandCoins size={14} />} label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
 
-              <Field>
-                <FieldLabel><ClipboardCheck size={14} />Trạng thái</FieldLabel>
-                <SelectWrap>
-                  <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-                    {PROFILE_STATUSES.map((status) => <option key={status}>{status}</option>)}
-                  </select>
-                </SelectWrap>
-              </Field>
-
-              <Field>
-                <FieldLabel><BadgeCheck size={14} />Biển số xe mới</FieldLabel>
-                <input
-                  maxLength={30}
-                  value={form.newVehiclePlate}
-                  onChange={(event) => updateField("newVehiclePlate", event.target.value)}
-                  placeholder="60X-123.45"
-                />
-              </Field>
-
               <Field as="div">
                 <FieldLabel><ListChecks size={14} />Theo dõi giấy tờ</FieldLabel>
                 <CheckGroup>
@@ -973,6 +954,25 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                     Nợ giấy đăng kí
                   </label>
                 </CheckGroup>
+              </Field>
+
+              <Field>
+                <FieldLabel><BadgeCheck size={14} />Biển số xe mới</FieldLabel>
+                <input
+                  maxLength={30}
+                  value={form.newVehiclePlate}
+                  onChange={(event) => updateField("newVehiclePlate", event.target.value)}
+                  placeholder="60X-123.45"
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel><ClipboardCheck size={14} />Trạng thái</FieldLabel>
+                <SelectWrap>
+                  <select value={form.status} onChange={(event) => updateField("status", event.target.value)}>
+                    {PROFILE_STATUSES.map((status) => <option key={status}>{status}</option>)}
+                  </select>
+                </SelectWrap>
               </Field>
 
               <CostSummary>
