@@ -672,6 +672,27 @@ const FieldLabel = styled.span`
   }
 `;
 
+const SuggestionList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -2px;
+
+  button {
+    min-height: 28px;
+    border: 0;
+    border-radius: 999px;
+    background: #edf0ff;
+    padding: 0 10px;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    text-transform: none;
+    cursor: pointer;
+  }
+`;
+
 const MoneyInputWrap = styled.div`
   position: relative;
   display: flex;
@@ -1016,6 +1037,8 @@ function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value || 0)} VNĐ`;
 }
 
+const MONEY_SUGGESTIONS = [1000000, 1500000, 2000000] as const;
+
 function monthKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -1038,23 +1061,27 @@ function MoneyField({ icon, label, value, onChange }: {
   value: number;
   onChange: (value: number) => void;
 }) {
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const displayedValue = value
     ? new Intl.NumberFormat("vi-VN").format(Math.round(value / 1000))
     : "";
 
   return (
-    <Field>
+    <Field as="div">
       <FieldLabel>{icon}{label}</FieldLabel>
       <MoneyInputWrap>
         <input
+          aria-label={label}
           type="text"
           inputMode="numeric"
           pattern="[0-9.]*"
           value={displayedValue}
           onFocus={(event) => {
+            setSuggestionsOpen(true);
             const end = event.currentTarget.value.length;
             event.currentTarget.setSelectionRange(end, end);
           }}
+          onBlur={() => setSuggestionsOpen(false)}
           onClick={(event) => {
             const end = event.currentTarget.value.length;
             event.currentTarget.setSelectionRange(end, end);
@@ -1077,6 +1104,30 @@ function MoneyField({ icon, label, value, onChange }: {
         </div>
         <span className="money-currency" aria-hidden="true">VNĐ</span>
       </MoneyInputWrap>
+      {suggestionsOpen && (
+        <SuggestionList aria-label={`Gợi ý ${label}`}>
+          {MONEY_SUGGESTIONS.slice(0, 5).map((amount) => {
+            const chooseAmount = () => {
+              onChange(amount);
+              setSuggestionsOpen(false);
+            };
+
+            return (
+              <button
+                key={amount}
+                type="button"
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  chooseAmount();
+                }}
+                onClick={chooseAmount}
+              >
+                {new Intl.NumberFormat("vi-VN").format(amount)}
+              </button>
+            );
+          })}
+        </SuggestionList>
+      )}
     </Field>
   );
 }
@@ -1091,6 +1142,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
     state.profile ? profileToInput(state.profile) : createEmptyProfileInput(),
   );
   const [currentTime, setCurrentTime] = useState(() => new Date());
+  const [ownerSuggestionsOpen, setOwnerSuggestionsOpen] = useState(false);
   const { totalCost, profit } = calculateProfileCosts(form);
 
   function updateField<Key extends keyof ProfileInput>(key: Key, value: ProfileInput[Key]) {
@@ -1186,15 +1238,36 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 />
               </Field>
 
-              <Field>
+              <Field as="div">
                 <FieldLabel><ContactRound size={14} />Tên chủ phương tiện</FieldLabel>
                 <input
+                  aria-label="Tên chủ phương tiện"
                   required
                   maxLength={120}
                   value={form.vehicleOwnerName}
+                  onFocus={() => setOwnerSuggestionsOpen(true)}
+                  onBlur={() => setOwnerSuggestionsOpen(false)}
                   onChange={(event) => updateField("vehicleOwnerName", event.target.value)}
                   placeholder="Nhập tên chủ phương tiện"
                 />
+                {ownerSuggestionsOpen && form.customerName.trim() && (
+                  <SuggestionList aria-label="Gợi ý tên chủ phương tiện">
+                    <button
+                      type="button"
+                      onPointerDown={(event) => {
+                        event.preventDefault();
+                        updateField("vehicleOwnerName", form.customerName.trim());
+                        setOwnerSuggestionsOpen(false);
+                      }}
+                      onClick={() => {
+                        updateField("vehicleOwnerName", form.customerName.trim());
+                        setOwnerSuggestionsOpen(false);
+                      }}
+                    >
+                      Cùng với Tên Khách Hàng
+                    </button>
+                  </SuggestionList>
+                )}
               </Field>
 
               <Field>
