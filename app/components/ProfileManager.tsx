@@ -23,10 +23,10 @@ import {
 
 const Header = styled.header`
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 28px;
+  margin-bottom: 18px;
 
   @media (max-width: 640px) {
     align-items: stretch;
@@ -85,7 +85,6 @@ const MonthTabs = styled.div`
   max-width: 100%;
   justify-content: flex-start;
   gap: 6px;
-  margin-bottom: 18px;
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -167,6 +166,10 @@ const Toolbar = styled.div`
   @media (max-width: 560px) {
     align-items: stretch;
     flex-direction: column;
+
+    ${PrimaryButton} {
+      width: 100%;
+    }
   }
 `;
 
@@ -669,37 +672,31 @@ export function ProfileManager() {
           <h1>Tổng hợp hồ sơ</h1>
           <p>Danh sách quản lí hồ sơ xe</p>
         </TitleBlock>
-        <PrimaryButton type="button" onClick={() => setEditor({ mode: "create" })}>
-          <FilePlus2 size={18} />
-          Thêm hồ sơ
-        </PrimaryButton>
+        <MonthTabs ref={monthTabsRef} role="tablist" aria-label="Lọc hồ sơ theo tháng">
+          <ActiveMonthPill
+            aria-hidden="true"
+            $left={activePill.left}
+            $width={activePill.width}
+            $visible={activePill.visible}
+          />
+          {monthTabs.map((month) => (
+            <MonthTab
+              key={month.key}
+              type="button"
+              role="tab"
+              $active={selectedMonth === month.key}
+              aria-selected={selectedMonth === month.key}
+              aria-label={`${month.label} năm ${month.year}`}
+              onClick={() => setSelectedMonth(month.key)}
+            >
+              {month.label}
+            </MonthTab>
+          ))}
+        </MonthTabs>
       </Header>
-
-      <MonthTabs ref={monthTabsRef} role="tablist" aria-label="Lọc hồ sơ theo tháng">
-        <ActiveMonthPill
-          aria-hidden="true"
-          $left={activePill.left}
-          $width={activePill.width}
-          $visible={activePill.visible}
-        />
-        {monthTabs.map((month) => (
-          <MonthTab
-            key={month.key}
-            type="button"
-            role="tab"
-            $active={selectedMonth === month.key}
-            aria-selected={selectedMonth === month.key}
-            aria-label={`${month.label} năm ${month.year}`}
-            onClick={() => setSelectedMonth(month.key)}
-          >
-            {month.label}
-          </MonthTab>
-        ))}
-      </MonthTabs>
 
       <Panel>
         <Toolbar>
-          <h2>Thông tin khách hàng</h2>
           <SearchBox>
             <Search size={17} />
             <input
@@ -710,6 +707,10 @@ export function ProfileManager() {
               aria-label="Tìm hồ sơ theo tên"
             />
           </SearchBox>
+          <PrimaryButton type="button" onClick={() => setEditor({ mode: "create" })}>
+            <FilePlus2 size={18} />
+            Thêm hồ sơ
+          </PrimaryButton>
         </Toolbar>
 
         {loading ? (
