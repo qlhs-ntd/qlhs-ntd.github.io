@@ -652,6 +652,7 @@ const SelectWrap = styled.div`
     line-height: 46px;
     text-indent: 0;
     text-transform: uppercase;
+    font-weight: 600;
     cursor: pointer;
   }
 
