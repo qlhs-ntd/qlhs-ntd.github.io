@@ -584,7 +584,8 @@ const MoneyInputWrap = styled.div`
     justify-content: flex-start;
     background: transparent;
     color: #687086;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
   }
 
   .money-currency {
