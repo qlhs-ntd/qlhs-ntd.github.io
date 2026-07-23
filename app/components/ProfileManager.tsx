@@ -26,6 +26,7 @@ import {
   TrendingUp,
   UserRound,
   Wallet,
+  X,
 } from "lucide-react";
 import { FormEvent, type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
@@ -176,7 +177,7 @@ const Panel = styled.section`
   box-shadow: var(--shadow);
 `;
 
-const Toolbar = styled.div`
+const Toolbar = styled.div<{ $mobileSearchOpen: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -191,11 +192,17 @@ const Toolbar = styled.div`
   }
 
   @media (max-width: 560px) {
-    align-items: stretch;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
+    gap: 10px;
+    padding: 14px;
 
     ${PrimaryButton} {
-      width: 100%;
+      display: ${({ $mobileSearchOpen }) => ($mobileSearchOpen ? "none" : "inline-flex")};
+      width: auto;
+      min-height: 42px;
+      margin-left: auto;
+      padding: 0 14px;
     }
   }
 `;
@@ -227,6 +234,89 @@ const SearchBox = styled.label`
     &:focus {
       border-color: rgba(56, 89, 217, 0.55);
       background: white;
+    }
+  }
+
+  @media (max-width: 560px) {
+    display: none;
+  }
+`;
+
+const MobileSearch = styled.div<{ $open: boolean }>`
+  display: none;
+
+  @media (max-width: 560px) {
+    display: flex;
+    min-width: 0;
+    flex: ${({ $open }) => ($open ? "1 1 auto" : "0 0 auto")};
+  }
+`;
+
+const MobileSearchButton = styled.button`
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fafbfc;
+  padding: 0;
+  color: #70798e;
+  cursor: pointer;
+`;
+
+const MobileSearchField = styled.div`
+  position: relative;
+  width: 100%;
+  animation: mobile-search-open 180ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  > svg {
+    position: absolute;
+    top: 50%;
+    left: 13px;
+    color: #8a91a3;
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  input {
+    width: 100%;
+    height: 42px;
+    border: 1px solid rgba(56, 89, 217, 0.55);
+    border-radius: 12px;
+    background: white;
+    padding: 0 44px 0 40px;
+    color: var(--ink);
+    font-size: 13px;
+    outline: none;
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
+  }
+
+  button {
+    position: absolute;
+    top: 50%;
+    right: 5px;
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    padding: 0;
+    color: #697185;
+    cursor: pointer;
+    transform: translateY(-50%);
+  }
+
+  @keyframes mobile-search-open {
+    from {
+      opacity: 0;
+      transform: scaleX(0.86);
+      transform-origin: left;
     }
   }
 `;
@@ -1166,6 +1256,7 @@ export function ProfileManager() {
   const [activePill, setActivePill] = useState({ left: 0, width: 0, visible: false });
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [query, setQuery] = useState("");
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -1301,7 +1392,7 @@ export function ProfileManager() {
       </Header>
 
       <Panel>
-        <Toolbar>
+        <Toolbar $mobileSearchOpen={mobileSearchOpen}>
           <SearchBox>
             <Search size={17} />
             <input
@@ -1312,6 +1403,39 @@ export function ProfileManager() {
               aria-label="Tìm hồ sơ theo tên hoặc biển số"
             />
           </SearchBox>
+          <MobileSearch $open={mobileSearchOpen}>
+            {mobileSearchOpen ? (
+              <MobileSearchField>
+                <Search size={17} />
+                <input
+                  autoFocus
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Tìm tên, biển số..."
+                  aria-label="Tìm hồ sơ theo tên hoặc biển số"
+                />
+                <button
+                  type="button"
+                  aria-label="Đóng tìm kiếm"
+                  onClick={() => {
+                    setQuery("");
+                    setMobileSearchOpen(false);
+                  }}
+                >
+                  <X size={17} />
+                </button>
+              </MobileSearchField>
+            ) : (
+              <MobileSearchButton
+                type="button"
+                aria-label="Mở tìm kiếm"
+                onClick={() => setMobileSearchOpen(true)}
+              >
+                <Search size={18} />
+              </MobileSearchButton>
+            )}
+          </MobileSearch>
           <PrimaryButton type="button" onClick={() => setEditor({ mode: "create" })}>
             <FilePlus2 size={18} />
             Thêm hồ sơ
