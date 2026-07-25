@@ -41,7 +41,12 @@ export const SERVICE_TYPES = [
   "Cấp đổi và cải tạo",
 ] as const;
 
-export const PROFILE_STATUSES = ["Đang xử lí", "Đã thanh toán", "Hoàn tất"] as const;
+export const PROFILE_STATUSES = [
+  "Đang xử lí",
+  "Đang chờ thanh toán",
+  "Đã thanh toán",
+  "Hoàn tất",
+] as const;
 
 export type ProfileInput = {
   customerName: string;
@@ -76,7 +81,10 @@ type ScriptResponse<T> = {
   message?: string;
 };
 
-const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL?.trim();
+const DEFAULT_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbzv0TOLz1fiff42H4Rs2GGm3K7rcQTrzLhc994TUmI21aaCAzREVBLV1Ze2h21rDwdOyA/exec";
+
+const scriptUrl = process.env.NEXT_PUBLIC_GOOGLE_SCRIPT_URL?.trim() || DEFAULT_SCRIPT_URL;
 
 export function createEmptyProfileInput(): ProfileInput {
   return {
@@ -150,39 +158,7 @@ function normalizeRecord(record: Partial<ProfileRecord>): ProfileRecord {
   };
 }
 
-let demoProfiles: ProfileRecord[] = [
-  normalizeRecord({
-    id: "demo-001",
-    customerName: "Nguyễn Minh Anh",
-    vehicleOwnerName: "Nguyễn Văn Bình",
-    vehiclePlate: "61A-123.45",
-    vehicleType: "Ô tô con",
-    receivingAgency: "Bình Hòa",
-    serviceType: "Đăng ký sang tên",
-    cost: 1500000,
-    registrationFeeCost: 800000,
-    otherCost: 200000,
-    initialCost: 1200000,
-    status: "Đang xử lí",
-    createdAt: "2026-08-18T09:30:00.000Z",
-    updatedAt: "2026-08-18T09:30:00.000Z",
-  }),
-  normalizeRecord({
-    id: "demo-002",
-    customerName: "Trần Hoàng Nam",
-    vehicleOwnerName: "Trần Hoàng Nam",
-    vehiclePlate: "60C-456.78",
-    vehicleType: "Tải có mui",
-    receivingAgency: "Rạch Chiết",
-    serviceType: "Thu hồi",
-    cost: 900000,
-    otherIncidentalCost: 150000,
-    initialCost: 600000,
-    status: "Hoàn tất",
-    createdAt: "2026-09-20T04:15:00.000Z",
-    updatedAt: "2026-09-22T08:10:00.000Z",
-  }),
-];
+let demoProfiles: ProfileRecord[] = [];
 
 async function requestScript<T>(action: string, payload?: Record<string, unknown>) {
   if (!scriptUrl) {

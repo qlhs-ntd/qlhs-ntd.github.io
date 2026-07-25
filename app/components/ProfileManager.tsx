@@ -8,16 +8,22 @@ import {
   Building2,
   Calculator,
   CarFront,
+  Check,
   CheckCircle2,
+  ChevronDown,
   CircleAlert,
   ClipboardCheck,
+  Clock,
   Coins,
-  ContactRound,
+  Copy,
+  CornerLeftDown,
+  createLucideIcon,
   FilePlus2,
   HandCoins,
   IdCard,
   Inbox,
   ListChecks,
+  Loader,
   LoaderCircle,
   PencilLine,
   ReceiptText,
@@ -42,6 +48,12 @@ import {
   type ProfileRecord,
   VEHICLE_TYPES,
 } from "../lib/profiles";
+
+const UserShield = createLucideIcon("user-shield", [
+  ["path", { d: "M10 15H6a4 4 0 0 0-4 4v2", key: "1nfge6" }],
+  ["path", { d: "M22 17.5c0 2.499-1.75 3.749-3.83 4.474a.5.5 0 0 1-.335-.005c-2.085-.72-3.835-1.97-3.835-4.47V14a.5.5 0 0 1 .5-.499c1 0 2.25-.6 3.12-1.36a.6.6 0 0 1 .76-.001c.875.765 2.12 1.36 3.12 1.36a.5.5 0 0 1 .5.5z", key: "16j3tf" }],
+  ["circle", { cx: "9", cy: "7", r: "4", key: "nufk8" }],
+]);
 
 const Header = styled.header`
   display: flex;
@@ -105,7 +117,7 @@ const PrimaryButton = styled.button`
 const MonthTabs = styled.div`
   position: relative;
   display: flex;
-  width: fit-content;
+  width: min(386px, 100%);
   max-width: 100%;
   justify-content: flex-start;
   gap: 4px;
@@ -123,6 +135,7 @@ const MonthTabs = styled.div`
 
   @media (max-width: 640px) {
     width: 100%;
+    align-self: center;
   }
 `;
 
@@ -151,14 +164,15 @@ const ActiveMonthPill = styled.span<{ $left: number; $width: number; $visible: b
 const MonthTab = styled.button<{ $active: boolean }>`
   position: relative;
   z-index: 1;
+  width: 80px;
   min-height: 36px;
   flex: 0 0 auto;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  padding: 0 14px;
+  padding: 0;
   color: ${({ $active }) => ($active ? "white" : "#687086")};
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: color 180ms ease, background 180ms ease;
@@ -321,59 +335,299 @@ const MobileSearchField = styled.div`
   }
 `;
 
-const TableWrap = styled.div`
-  overflow-x: auto;
+const ProfileList = styled.div`
+  display: grid;
+  gap: 0;
 `;
 
-const Table = styled.table`
-  width: 100%;
-  min-width: 1240px;
-  border-collapse: collapse;
+const ProfileGroup = styled.div`
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 18px;
+  border-right: 1px solid #eff0f4;
+`;
 
-  th {
-    background: #fafbfc;
-    padding: 13px 20px;
-    color: #7d8496;
-    font-size: 11px;
-    font-weight: 750;
-    letter-spacing: 0.07em;
-    text-align: left;
-    text-transform: uppercase;
+const ProfileRow = styled.article`
+  position: relative;
+  display: grid;
+  grid-template-columns:
+    minmax(230px, 1fr)
+    minmax(225px, 1.35fr)
+    minmax(220px, 1.2fr)
+    72px;
+  border-top: 1px solid #eff0f4;
+  padding: 36px 20px;
+  color: #4c5569;
+  font-size: 16px;
+  transition: background 120ms ease;
+
+  &:hover {
+    background: #fbfcff;
   }
 
-  td {
-    border-top: 1px solid #eff0f4;
-    padding: 16px 20px;
-    color: #4c5569;
-    font-size: 13px;
-    vertical-align: middle;
+  > ${ProfileGroup}:first-child {
+    padding-left: 0;
   }
 
-  tbody tr {
-    transition: background 120ms ease;
+  > ${ProfileGroup}:last-child {
+    border-right: 0;
+    padding-right: 18px;
+  }
 
-    &:hover {
-      background: #fbfcff;
+  @media (max-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 24px 16px;
+    font-size: 15px;
+
+    > ${ProfileGroup},
+    > ${ProfileGroup}:first-child,
+    > ${ProfileGroup}:last-child {
+      border-right: 0;
+      border-bottom: 1px solid #eff0f4;
+      padding: 18px 0;
+    }
+
+    > ${ProfileGroup}:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  @media (max-width: 1100px) {
+    > ${ProfileGroup}:first-child > [aria-label="Trạng thái"] {
+      padding-right: 82px;
+    }
+
+    > ${ProfileGroup}[aria-label="Chi phí hồ sơ"] {
+      padding-top: 10px;
+      padding-bottom: 8px;
+    }
+
+    > ${ProfileGroup}[aria-label="Chi phí hồ sơ"][data-cost-expanded="false"] {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    > ${ProfileGroup}[aria-label="Tổng kết chi phí"] {
+      border-bottom: 0;
+      padding-top: 10px;
+    }
+
+    > ${ProfileGroup}[aria-label="Thao tác hồ sơ"],
+    > ${ProfileGroup}[aria-label="Thao tác hồ sơ"]:last-child {
+      position: absolute;
+      top: 38px;
+      right: 16px;
+      width: auto;
+      border: 0;
+      padding: 0;
     }
   }
 `;
 
-const PersonCell = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  color: var(--ink);
-  font-weight: 650;
+const ProfileField = styled.div`
+  display: grid;
+  gap: 5px;
+`;
 
-  > span {
-    display: grid;
-    width: 34px;
-    height: 34px;
+const ProfileValue = styled.span<{ $primary?: boolean }>`
+  overflow-wrap: anywhere;
+  color: #4c5569;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.4;
+
+  @media (max-width: 1100px) {
+    font-size: 14px;
+  }
+`;
+
+const ProfileValueRow = styled.div`
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+`;
+
+const MobileCopyButton = styled.button<{ $copied?: boolean }>`
+  display: none;
+
+  @media (max-width: 1100px) {
+    display: inline-grid;
+    width: 24px;
+    height: 24px;
     flex: 0 0 auto;
     place-items: center;
-    border-radius: 11px;
-    background: #edf0ff;
-    color: var(--primary);
+    border: 0;
+    border-radius: 9px;
+    background: ${({ $copied }) => ($copied ? "#e7f6ec" : "#f1f2f5")};
+    padding: 0;
+    color: ${({ $copied }) => ($copied ? "#217448" : "#20242e")};
+    cursor: pointer;
+    transition: background 160ms ease, color 160ms ease, transform 120ms ease;
+
+    svg {
+      width: 11px;
+      height: 11px;
+    }
+
+    &:active {
+      transform: scale(0.94);
+    }
+  }
+`;
+
+const CostValueActions = styled.div`
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+`;
+
+const ProfileIcon = styled.span<{ $tone?: "danger" | "success" }>`
+  display: grid;
+  width: 27px;
+  height: 27px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: ${({ $tone }) =>
+    $tone === "danger" ? "#fff1f3" : $tone === "success" ? "#e9f8ef" : "#f0f2fb"};
+  color: ${({ $tone }) =>
+    $tone === "danger" ? "var(--danger)" : $tone === "success" ? "#217448" : "var(--primary)"};
+`;
+
+const CostList = styled.div<{ $expanded?: boolean }>`
+  display: grid;
+  gap: 10px;
+
+  @media (max-width: 1100px) {
+    display: ${({ $expanded }) => ($expanded ? "grid" : "none")};
+  }
+`;
+
+const CostLine = styled.div<{
+  $total?: boolean;
+  $profit?: boolean;
+  $amountTone?: "primary" | "danger" | "success";
+}>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: #4c5569;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.4;
+
+  @media (max-width: 1100px) {
+    font-size: 14px;
+  }
+
+  > span {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 6px;
+    color: ${({ $amountTone }) =>
+      $amountTone === "primary"
+        ? "var(--primary)"
+        : $amountTone === "danger"
+          ? "var(--danger)"
+          : $amountTone === "success"
+            ? "#217448"
+            : "inherit"};
+    text-transform: capitalize;
+
+    svg {
+      flex: 0 0 auto;
+    }
+  }
+
+  strong {
+    flex: 0 0 auto;
+    color: ${({ $amountTone }) =>
+      $amountTone === "primary"
+        ? "var(--primary)"
+        : $amountTone === "danger"
+          ? "var(--danger)"
+          : $amountTone === "success"
+            ? "#217448"
+            : "inherit"};
+    font-weight: inherit;
+    white-space: nowrap;
+  }
+`;
+
+const MobilePaperwork = styled.div`
+  display: none;
+
+  @media (max-width: 1100px) {
+    display: grid;
+    gap: 10px;
+    border-top: 1px solid #e4e7ee;
+    padding-top: 12px;
+  }
+`;
+
+const DesktopPaperworkLine = styled(CostLine)`
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
+const GroupDivider = styled.div`
+  height: 1px;
+  background: #e4e7ee;
+`;
+
+const SummaryDivider = styled(GroupDivider)`
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
+const CostDetailsDivider = styled(GroupDivider)`
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
+const CostTotalLine = styled(CostLine)`
+  @media (max-width: 1100px) {
+    order: -2;
+  }
+`;
+
+const CostToggleButton = styled.button<{ $expanded: boolean }>`
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--primary);
+  font: inherit;
+  text-align: left;
+  text-transform: capitalize;
+  cursor: default;
+
+  .cost-toggle-chevron {
+    display: none;
+    flex: 0 0 auto;
+    transition: transform 160ms ease;
+  }
+
+  @media (max-width: 1100px) {
+    cursor: pointer;
+
+    .cost-toggle-chevron {
+      display: block;
+      transform: rotate(${({ $expanded }) => ($expanded ? "180deg" : "0deg")});
+    }
   }
 `;
 
@@ -381,27 +635,48 @@ const StatusPill = styled.span<{ $status: string }>`
   display: inline-flex;
   min-height: 28px;
   align-items: center;
+  gap: 5px;
   border-radius: 999px;
   background: ${({ $status }) =>
-    $status === "Hoàn tất" ? "#e9f8ef" : $status === "Đã thanh toán" ? "#edf0ff" : "#fff5df"};
+    $status === "Hoàn tất" || $status === "Đã hoàn tất"
+      ? "#217448"
+      : $status === "Đã thanh toán"
+        ? "var(--primary)"
+        : $status === "Đang chờ thanh toán"
+          ? "#7656c9"
+        : "#c99300"};
   padding: 0 10px;
-  color: ${({ $status }) =>
-    $status === "Hoàn tất" ? "#217448" : $status === "Đã thanh toán" ? "var(--primary)" : "#946516"};
-  font-size: 11px;
-  font-weight: 750;
+  color: white;
+  font-size: 15px;
+  font-weight: 650;
   white-space: nowrap;
+
+  @media (max-width: 1100px) {
+    font-size: 14px;
+  }
+
+  svg {
+    flex: 0 0 auto;
+  }
 `;
 
 const ActionGroup = styled.div`
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  justify-content: flex-start;
   gap: 7px;
+
+  @media (max-width: 1100px) {
+    flex-direction: row;
+    gap: 6px;
+  }
 `;
 
 const IconButton = styled.button<{ $danger?: boolean }>`
   display: inline-grid;
   width: 36px;
   height: 36px;
+  order: ${({ $danger }) => ($danger ? -1 : 0)};
   place-items: center;
   border: 1px solid ${({ $danger }) => ($danger ? "#f4d9de" : "var(--line)")};
   border-radius: 10px;
@@ -418,6 +693,20 @@ const IconButton = styled.button<{ $danger?: boolean }>`
   &:disabled {
     cursor: wait;
     opacity: 0.45;
+  }
+
+  @media (max-width: 1100px) {
+    width: 32px;
+    height: 32px;
+    order: ${({ $danger }) => ($danger ? 1 : 2)};
+    border-color: ${({ $danger }) => ($danger ? "#efd2d8" : "#dfe2e8")};
+    border-radius: 9px;
+    background: ${({ $danger }) => ($danger ? "#fff8f9" : "#f1f2f5")};
+
+    svg {
+      width: 15px;
+      height: 15px;
+    }
   }
 `;
 
@@ -448,11 +737,11 @@ const StateBox = styled.div`
   }
 `;
 
-const Toast = styled.div<{ $error: boolean }>`
+const Toast = styled.div<{ $error: boolean; $closing: boolean }>`
   position: fixed;
   right: 24px;
   bottom: 24px;
-  z-index: 60;
+  z-index: 80;
   display: flex;
   max-width: min(390px, calc(100vw - 28px));
   align-items: center;
@@ -466,9 +755,48 @@ const Toast = styled.div<{ $error: boolean }>`
   font-size: 13px;
   font-weight: 650;
 
-  @media (max-width: 520px) {
-    right: 14px;
-    bottom: 14px;
+  @media (max-width: 1100px) {
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    width: max-content;
+    justify-content: center;
+    border-radius: 999px;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    text-align: center;
+    transform: translateX(-50%);
+    animation: ${({ $closing }) =>
+      $closing
+        ? "mobile-toast-slide-up 280ms cubic-bezier(0.4, 0, 0.2, 1) both"
+        : "mobile-toast-slide-down 320ms cubic-bezier(0.16, 1, 0.3, 1) both"};
+  }
+
+  @keyframes mobile-toast-slide-down {
+    from {
+      opacity: 0;
+      transform: translate3d(-50%, -22px, 0);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  @keyframes mobile-toast-slide-up {
+    from {
+      opacity: 1;
+      transform: translate3d(-50%, 0, 0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translate3d(-50%, -18px, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 `;
 
@@ -488,7 +816,7 @@ const Overlay = styled.div`
   padding: 10px 24px;
   backdrop-filter: blur(5px);
 
-  @media (max-width: 520px) {
+  @media (max-width: 1100px) {
     align-items: center;
     overflow: hidden;
     padding: 0;
@@ -499,7 +827,7 @@ const Overlay = styled.div`
 const MobileModalPageCover = styled.div`
   display: none;
 
-  @media (max-width: 520px) {
+  @media (max-width: 1100px) {
     position: fixed;
     inset: 0;
     z-index: 49;
@@ -508,7 +836,9 @@ const MobileModalPageCover = styled.div`
   }
 `;
 
-const Modal = styled.div`
+const Modal = styled.div<{ $closing: boolean }>`
+  --modal-enter-offset: 34px;
+  --modal-edge-opacity: 0;
   display: flex;
   width: min(980px, 100%);
   height: fit-content;
@@ -520,8 +850,38 @@ const Modal = styled.div`
   border-radius: 22px;
   background: white;
   box-shadow: 0 30px 90px rgba(14, 22, 45, 0.28);
+  animation: ${({ $closing }) =>
+    $closing
+      ? "modal-slide-down 300ms cubic-bezier(0.4, 0, 0.2, 1) both"
+      : "modal-slide-up 440ms cubic-bezier(0.16, 1, 0.3, 1) both"};
 
-  @media (max-width: 520px) {
+  @keyframes modal-slide-up {
+    from {
+      opacity: var(--modal-edge-opacity);
+      transform: translate3d(0, var(--modal-enter-offset), 0);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes modal-slide-down {
+    from {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    to {
+      opacity: var(--modal-edge-opacity);
+      transform: translate3d(0, var(--modal-enter-offset), 0);
+    }
+  }
+
+  @media (max-width: 1100px) {
+    --modal-enter-offset: 100%;
+    --modal-edge-opacity: 1;
     height: var(--modal-viewport-height, 100dvh);
     max-height: none;
     border-radius: 0;
@@ -535,6 +895,10 @@ const Modal = styled.div`
       -webkit-text-size-adjust: 100% !important;
       text-size-adjust: 100% !important;
     }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 `;
 
@@ -564,7 +928,7 @@ const ModalHeader = styled.div`
     font-size: 13px;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 1100px) {
     min-height: 64px;
     align-items: center;
     justify-content: center;
@@ -594,7 +958,7 @@ const Form = styled.form`
   scroll-padding: 18px 0 32vh;
   -webkit-overflow-scrolling: touch;
 
-  @media (max-width: 520px) {
+  @media (max-width: 1100px) {
     padding-bottom: calc(96px + env(safe-area-inset-bottom));
   }
 `;
@@ -604,7 +968,7 @@ const FormSections = styled.div`
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
 
-  @media (max-width: 820px) {
+  @media (max-width: 1100px) {
     grid-template-columns: 1fr;
   }
 `;
@@ -626,7 +990,7 @@ const FormSection = styled.section`
     padding-right: 0;
   }
 
-  @media (max-width: 820px) {
+  @media (max-width: 1100px) {
     border-right: 0;
     border-bottom: 1px solid var(--line);
     padding: 18px 0;
@@ -691,8 +1055,9 @@ const FieldLabel = styled.span`
 
 const SuggestionList = styled.div<{ $alignDesktopRight?: boolean; $floating?: boolean }>`
   position: ${({ $floating }) => ($floating ? "absolute" : "static")};
-  top: ${({ $floating }) => ($floating ? "calc(100% - 3.5px)" : "auto")};
+  top: auto;
   right: ${({ $floating }) => ($floating ? "0" : "auto")};
+  bottom: ${({ $floating }) => ($floating ? "40px" : "auto")};
   z-index: ${({ $floating }) => ($floating ? "20" : "auto")};
   display: flex;
   flex-wrap: wrap;
@@ -700,39 +1065,27 @@ const SuggestionList = styled.div<{ $alignDesktopRight?: boolean; $floating?: bo
   margin-top: ${({ $floating }) => ($floating ? "0" : "-2px")};
   justify-content: ${({ $alignDesktopRight }) => ($alignDesktopRight ? "flex-end" : "flex-start")};
 
-  &::before {
-    position: absolute;
-    top: -6px;
-    right: 18px;
-    display: ${({ $floating }) => ($floating ? "block" : "none")};
-    width: 12px;
-    height: 12px;
-    background: #edf0ff;
-    content: "";
-    transform: rotate(45deg);
-  }
-
   button {
     position: relative;
     z-index: 1;
     display: inline-flex;
-    min-height: 28px;
+    min-height: 24px;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 4px;
     border: 0;
     border-radius: 999px;
     background: #edf0ff;
     padding: 0 10px;
     color: var(--primary);
-    font-size: ${({ $floating }) => ($floating ? "11px" : "12px")};
+    font-size: ${({ $floating }) => ($floating ? "9px" : "12px")};
     font-weight: 700;
     line-height: 1;
     text-transform: none;
     cursor: pointer;
   }
 
-  @media (max-width: 520px) {
+  @media (max-width: 1100px) {
     display: flex;
     justify-content: flex-start;
   }
@@ -880,13 +1233,13 @@ const SelectWrap = styled.div`
     padding: 0 38px 0 14px;
     line-height: 44px;
     text-indent: 0;
-    text-transform: uppercase;
+    text-transform: capitalize;
     font-weight: 600;
     cursor: pointer;
   }
 
   option {
-    text-transform: uppercase;
+    text-transform: capitalize;
   }
 
   &::after {
@@ -937,23 +1290,24 @@ const CheckGroup = styled.div`
     padding: 8px 0;
   }
 
-  @media (max-width: 520px) {
+  @media (max-width: 1100px) {
     align-items: center;
     flex-direction: row;
-    gap: 26px;
+    gap: 12px;
+    padding: 8px 4px;
 
     label {
       gap: 0;
       border-radius: 999px;
       background: #edf0ff;
-      padding: 8px 13px 8px 9px;
+      padding: 8px 15px 8px 11px;
       white-space: nowrap;
     }
 
     input {
-      width: 19px;
-      height: 19px;
-      margin: 0 -2px 0 0;
+      width: 17px;
+      height: 17px;
+      margin: 0 -1px 0 0;
     }
   }
 `;
@@ -993,7 +1347,7 @@ const HeaderActions = styled.div`
   justify-content: flex-end;
   gap: 10px;
 
-  @media (max-width: 600px) {
+  @media (max-width: 1100px) {
     position: absolute;
     inset: 0 12px;
     align-items: center;
@@ -1022,7 +1376,7 @@ const HeaderActions = styled.div`
 const MobileSaveLabel = styled.span`
   display: none;
 
-  @media (max-width: 600px) {
+  @media (max-width: 1100px) {
     display: inline;
   }
 `;
@@ -1039,7 +1393,219 @@ const SecondaryButton = styled.button`
   cursor: pointer;
 `;
 
+const DeleteOverlay = styled.div<{ $closing: boolean }>`
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  background: rgba(17, 24, 43, 0.52);
+  padding: 20px;
+  backdrop-filter: blur(5px);
+  animation: ${({ $closing }) => ($closing ? "delete-overlay-out 220ms ease both" : "delete-overlay-in 220ms ease both")};
+
+  @keyframes delete-overlay-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes delete-overlay-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`;
+
+const DeleteDialog = styled.div<{ $closing: boolean }>`
+  width: min(430px, 100%);
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 20px;
+  background: white;
+  padding: 24px;
+  box-shadow: 0 30px 90px rgba(14, 22, 45, 0.28);
+  animation: ${({ $closing }) =>
+    $closing
+      ? "delete-dialog-out 240ms cubic-bezier(0.4, 0, 0.2, 1) both"
+      : "delete-dialog-in 340ms cubic-bezier(0.16, 1, 0.3, 1) both"};
+
+  @keyframes delete-dialog-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 24px, 0) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+  }
+
+  @keyframes delete-dialog-out {
+    from {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translate3d(0, 18px, 0) scale(0.98);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`;
+
+const DeleteIcon = styled.span`
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 17px;
+  place-items: center;
+  border-radius: 14px;
+  background: #fff1f3;
+  color: var(--danger);
+`;
+
+const DeleteContent = styled.div`
+  h2 {
+    margin: 0 0 8px;
+    color: var(--ink);
+    font-size: 20px;
+    letter-spacing: -0.025em;
+  }
+
+  p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+`;
+
+const DeleteActions = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 23px;
+
+  button {
+    min-height: 44px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+`;
+
+const DeleteButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #c92f48;
+  background: var(--danger);
+  color: white;
+  cursor: pointer;
+  transition: 140ms ease;
+
+  &:hover:not(:disabled) {
+    background: #bd2f46;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+`;
+
 type EditorState = { mode: "create"; profile?: undefined } | { mode: "edit"; profile: ProfileRecord };
+
+function DeleteConfirmModal({
+  profile,
+  deleting,
+  onClose,
+  onConfirm,
+}: {
+  profile: ProfileRecord;
+  deleting: boolean;
+  onClose: () => void;
+  onConfirm: () => Promise<boolean>;
+}) {
+  const [closing, setClosing] = useState(false);
+
+  const requestClose = useCallback(() => {
+    if (deleting || closing) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      onClose();
+      return;
+    }
+    setClosing(true);
+  }, [closing, deleting, onClose]);
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") requestClose();
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.addEventListener("keydown", closeOnEscape);
+    document.body.classList.add("profile-modal-open");
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.body.classList.remove("profile-modal-open");
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [requestClose]);
+
+  async function confirmDelete() {
+    const deleted = await onConfirm();
+    if (!deleted) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) onClose();
+    else setClosing(true);
+  }
+
+  return (
+    <DeleteOverlay
+      $closing={closing}
+      role="presentation"
+      onMouseDown={(event) => event.target === event.currentTarget && requestClose()}
+    >
+      <DeleteDialog
+        $closing={closing}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-profile-title"
+        aria-describedby="delete-profile-description"
+        onAnimationEnd={(event) => {
+          if (closing && event.target === event.currentTarget) onClose();
+        }}
+      >
+        <DeleteIcon><Trash2 size={22} /></DeleteIcon>
+        <DeleteContent>
+          <h2 id="delete-profile-title">Xoá hồ sơ?</h2>
+          <p id="delete-profile-description">
+            Bạn có chắc muốn xoá hồ sơ của <strong>{profile.customerName}</strong>? Dữ liệu trong Google Sheets cũng sẽ bị xoá.
+          </p>
+        </DeleteContent>
+        <DeleteActions>
+          <SecondaryButton type="button" onClick={requestClose} disabled={deleting || closing}>Huỷ</SecondaryButton>
+          <DeleteButton type="button" onClick={() => void confirmDelete()} disabled={deleting || closing}>
+            {deleting ? <LoaderCircle className="spin" size={16} /> : <Trash2 size={16} />}
+            {deleting ? "Đang xoá..." : "Xoá Hồ Sơ"}
+          </DeleteButton>
+        </DeleteActions>
+      </DeleteDialog>
+    </DeleteOverlay>
+  );
+}
 
 function profileToInput(profile: ProfileRecord): ProfileInput {
   return {
@@ -1066,10 +1632,9 @@ function normalize(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-function formatDate(value: string) {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return "—";
-  return new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" }).format(parsed);
+function hasCopyableVehiclePlate(value: string) {
+  const normalizedValue = normalize(value.trim());
+  return Boolean(normalizedValue) && normalizedValue !== "cho cap" && normalizedValue !== "chua cap";
 }
 
 function formatCurrentTime(value: Date) {
@@ -1091,6 +1656,36 @@ function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value || 0)} VNĐ`;
 }
 
+function capitalizeWords(value: string) {
+  return value.replace(/(^|[\s/-])(\p{L})/gu, (_, separator: string, letter: string) =>
+    `${separator}${letter.toLocaleUpperCase("vi-VN")}`,
+  );
+}
+
+function formatCreatedAt(value: string) {
+  const createdAt = new Date(value);
+  if (Number.isNaN(createdAt.getTime())) return "—";
+
+  const date = new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(createdAt);
+  const time = new Intl.DateTimeFormat("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(createdAt);
+
+  return `${time} ${date}`;
+}
+
+function formatStatus(value: string) {
+  const status = value || "Đang xử lí";
+  return capitalizeWords(
+    status === "Hoàn tất" || status === "Đã hoàn tất" ? "Đã hoàn tất" : status,
+  );
+}
+
 function monthKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -1098,7 +1693,16 @@ function monthKey(value: Date) {
 const PROFILE_YEAR = 2026;
 
 function getYearEndMonths() {
-  return [8, 9, 10, 11, 12].map((month) => {
+  const months = [8, 9, 10, 11, 12];
+  const current = new Date();
+  const currentMonth = current.getMonth() + 1;
+
+  if (current.getFullYear() === PROFILE_YEAR && months.indexOf(currentMonth) === -1) {
+    months.push(currentMonth);
+    months.sort(function (a, b) { return a - b; });
+  }
+
+  return months.map((month) => {
     return {
       key: `${PROFILE_YEAR}-${String(month).padStart(2, "0")}`,
       label: `Tháng ${month}`,
@@ -1156,15 +1760,27 @@ function ProfileModal({ state, saving, onClose, onSave }: {
   state: EditorState;
   saving: boolean;
   onClose: () => void;
-  onSave: (input: ProfileInput) => Promise<void>;
+  onSave: (input: ProfileInput) => Promise<boolean>;
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const formScrollTopBeforeInputRef = useRef<number | null>(null);
+  const formScrollLockFrameRef = useRef<number | null>(null);
   const [form, setForm] = useState<ProfileInput>(() =>
     state.profile ? profileToInput(state.profile) : createEmptyProfileInput(),
   );
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [ownerSuggestionsOpen, setOwnerSuggestionsOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const { totalCost, profit } = calculateProfileCosts(form);
+
+  const requestClose = useCallback(() => {
+    if (saving || closing) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      onClose();
+      return;
+    }
+    setClosing(true);
+  }, [closing, onClose, saving]);
 
   function updateField<Key extends keyof ProfileInput>(key: Key, value: ProfileInput[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -1173,60 +1789,65 @@ function ProfileModal({ state, saving, onClose, onSave }: {
   useEffect(() => {
     const clock = window.setInterval(() => setCurrentTime(new Date()), 1000);
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !saving) onClose();
+      if (event.key === "Escape") requestClose();
     };
     document.addEventListener("keydown", closeOnEscape);
     document.body.classList.add("profile-modal-open");
     document.body.style.overflow = "hidden";
     return () => {
       window.clearInterval(clock);
+      if (formScrollLockFrameRef.current !== null) {
+        window.cancelAnimationFrame(formScrollLockFrameRef.current);
+      }
       document.removeEventListener("keydown", closeOnEscape);
       document.body.classList.remove("profile-modal-open");
       document.body.style.overflow = "";
     };
-  }, [onClose, saving]);
+  }, [requestClose]);
 
   useEffect(() => {
     const visualViewport = window.visualViewport;
 
-    const syncVisualViewport = () => {
+    const syncViewportSize = () => {
       const overlayElement = overlayRef.current;
       if (!overlayElement) return;
 
       const viewportHeight = visualViewport?.height ?? window.innerHeight;
-      const viewportTop = visualViewport?.offsetTop ?? 0;
       overlayElement.style.setProperty("--modal-viewport-height", `${viewportHeight}px`);
-      overlayElement.style.setProperty("--modal-viewport-top", `${Math.max(0, viewportTop)}px`);
-
-      window.requestAnimationFrame(() => {
-        const formElement = overlayElement.querySelector<HTMLFormElement>("#profile-form");
-        const activeElement = document.activeElement;
-        if (!formElement || !(activeElement instanceof HTMLElement) || !formElement.contains(activeElement)) return;
-        positionFieldInForm(formElement, activeElement, "auto");
-      });
     };
 
-    syncVisualViewport();
-    visualViewport?.addEventListener("resize", syncVisualViewport);
-    visualViewport?.addEventListener("scroll", syncVisualViewport);
-    window.addEventListener("resize", syncVisualViewport);
+    syncViewportSize();
+    visualViewport?.addEventListener("resize", syncViewportSize);
+    window.addEventListener("resize", syncViewportSize);
 
     return () => {
-      visualViewport?.removeEventListener("resize", syncVisualViewport);
-      visualViewport?.removeEventListener("scroll", syncVisualViewport);
-      window.removeEventListener("resize", syncVisualViewport);
+      visualViewport?.removeEventListener("resize", syncViewportSize);
+      window.removeEventListener("resize", syncViewportSize);
     };
   }, []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    await onSave({
+    const amountOrZero = (value: number) => Number.isFinite(value) && value > 0 ? value : 0;
+    const saved = await onSave({
       ...form,
       customerName: form.customerName.trim(),
       vehicleOwnerName: form.vehicleOwnerName.trim(),
       vehiclePlate: form.vehiclePlate.trim(),
       newVehiclePlate: form.newVehiclePlate.trim(),
+      cost: amountOrZero(form.cost),
+      registrationFeeCost: amountOrZero(form.registrationFeeCost),
+      otherCost: amountOrZero(form.otherCost),
+      blackBoxBadgeCost: amountOrZero(form.blackBoxBadgeCost),
+      otherIncidentalCost: amountOrZero(form.otherIncidentalCost),
+      initialCost: amountOrZero(form.initialCost),
+      owesVehiclePlate: form.owesVehiclePlate === true,
+      owesRegistration: form.owesRegistration === true,
     });
+    if (saved) {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) onClose();
+      else setClosing(true);
+    }
   }
 
   function positionFieldInForm(
@@ -1240,42 +1861,88 @@ function ProfileModal({ state, saving, onClose, onSave }: {
       formElement.scrollTop +
       fieldRect.top -
       formRect.top -
-      Math.max(18, (formElement.clientHeight - fieldRect.height) * 0.28);
+      Math.max(18, (formElement.clientHeight - fieldRect.height) * 0.36);
 
     formElement.scrollTo({ top: Math.max(0, targetTop), behavior });
   }
 
   function revealFocusedField(event: FocusEvent<HTMLFormElement>) {
-    if (window.innerWidth > 520) return;
+    if (window.innerWidth > 1100) return;
 
     const formElement = event.currentTarget;
     const fieldElement = event.target as HTMLElement;
     window.requestAnimationFrame(() => positionFieldInForm(formElement, fieldElement, "smooth"));
   }
 
+  function lockFormPosition(formElement: HTMLFormElement, inputElement: EventTarget | null) {
+    const scrollTop = formScrollTopBeforeInputRef.current;
+    if (scrollTop === null) return;
+    const lockStartedAt = performance.now();
+
+    if (formScrollLockFrameRef.current !== null) {
+      window.cancelAnimationFrame(formScrollLockFrameRef.current);
+    }
+
+    const restorePosition = () => {
+      if (document.activeElement !== inputElement) {
+        formScrollTopBeforeInputRef.current = null;
+        formScrollLockFrameRef.current = null;
+        return;
+      }
+
+      formElement.scrollTop = scrollTop;
+      if (performance.now() - lockStartedAt < 180) {
+        formScrollLockFrameRef.current = window.requestAnimationFrame(restorePosition);
+        return;
+      }
+
+      formScrollTopBeforeInputRef.current = null;
+      formScrollLockFrameRef.current = null;
+    };
+
+    formScrollLockFrameRef.current = window.requestAnimationFrame(restorePosition);
+  }
+
+  function rememberFormPositionBeforeInput(event: FormEvent<HTMLFormElement>) {
+    if (window.innerWidth > 1100) return;
+    formScrollTopBeforeInputRef.current = event.currentTarget.scrollTop;
+    lockFormPosition(event.currentTarget, event.target);
+  }
+
+  function keepFormPositionAfterInput(event: FormEvent<HTMLFormElement>) {
+    if (window.innerWidth > 1100 || formScrollTopBeforeInputRef.current === null) return;
+    lockFormPosition(event.currentTarget, event.target);
+  }
+
   return (
     <>
       <MobileModalPageCover aria-hidden="true" />
-      <Overlay ref={overlayRef} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !saving && onClose()}>
-      <Modal role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
+      <Overlay ref={overlayRef} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && requestClose()}>
+      <Modal
+        $closing={closing}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="profile-modal-title"
+        onAnimationEnd={(event) => {
+          if (closing && event.target === event.currentTarget) onClose();
+        }}
+      >
         <ModalHeader>
           <div>
             <h2 id="profile-modal-title">{state.mode === "create" ? "Thêm hồ sơ mới" : "Chỉnh sửa hồ sơ"}</h2>
             <p>{formatCurrentTime(currentTime)}</p>
           </div>
           <HeaderActions>
-            <SecondaryButton type="button" onClick={onClose} disabled={saving}>Huỷ</SecondaryButton>
+            <SecondaryButton type="button" onClick={requestClose} disabled={saving || closing}>Huỷ</SecondaryButton>
             <PrimaryButton
               type="submit"
               form="profile-form"
               disabled={
                 saving ||
+                closing ||
                 !form.customerName.trim() ||
                 !form.vehicleOwnerName.trim() ||
-                !form.vehiclePlate.trim() ||
-                !form.vehicleType ||
-                !form.receivingAgency ||
-                !form.serviceType
+                !form.vehiclePlate.trim()
               }
             >
               {saving ? <LoaderCircle className="spin" size={17} /> : <CheckCircle2 size={17} />}
@@ -1285,13 +1952,25 @@ function ProfileModal({ state, saving, onClose, onSave }: {
           </HeaderActions>
         </ModalHeader>
 
-        <Form id="profile-form" autoComplete="off" onSubmit={submit} onFocusCapture={revealFocusedField}>
+        <Form
+          id="profile-form"
+          autoComplete="off"
+          onSubmit={submit}
+          onFocusCapture={revealFocusedField}
+          onBeforeInputCapture={rememberFormPositionBeforeInput}
+          onKeyDownCapture={(event) => {
+            if (window.innerWidth <= 1100 && (event.key === "Backspace" || event.key === "Delete")) {
+              formScrollTopBeforeInputRef.current = event.currentTarget.scrollTop;
+              lockFormPosition(event.currentTarget, event.target);
+            }
+          }}
+          onInputCapture={keepFormPositionAfterInput}
+        >
           <FormSections>
             <FormSection>
               <Field>
                 <FieldLabel><UserRound size={14} />Tên khách hàng</FieldLabel>
                 <input
-                  autoFocus
                   aria-label="Tên khách hàng"
                   type="text"
                   autoComplete="off"
@@ -1307,7 +1986,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field as="div">
-                <FieldLabel><ContactRound size={14} />Tên chủ phương tiện</FieldLabel>
+                <FieldLabel><UserShield size={14} />Tên chủ phương tiện</FieldLabel>
                 <input
                   aria-label="Tên chủ phương tiện"
                   type="text"
@@ -1327,6 +2006,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   <SuggestionList $alignDesktopRight $floating aria-label="Gợi ý tên chủ phương tiện">
                     <button
                       type="button"
+                      aria-label="Điền tên khách hàng vào tên chủ phương tiện"
                       onPointerDown={(event) => {
                         event.preventDefault();
                         updateField("vehicleOwnerName", form.customerName.trim());
@@ -1337,7 +2017,8 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                         setOwnerSuggestionsOpen(false);
                       }}
                     >
-                      Lấy Tên Khách Hàng
+                      <CornerLeftDown size={10} aria-hidden="true" />
+                      Tên Khách Hàng
                     </button>
                   </SuggestionList>
                 )}
@@ -1363,8 +2044,8 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><CarFront size={14} />Loại xe</FieldLabel>
                 <SelectWrap>
-                  <select aria-label="Loại xe" required value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
-                    {VEHICLE_TYPES.map((type) => <option key={type} value={type}>{type.toLocaleUpperCase("vi-VN")}</option>)}
+                  <select aria-label="Loại xe" value={form.vehicleType} onChange={(event) => updateField("vehicleType", event.target.value)}>
+                    {VEHICLE_TYPES.map((type) => <option key={type} value={type}>{capitalizeWords(type)}</option>)}
                   </select>
                 </SelectWrap>
               </Field>
@@ -1372,8 +2053,8 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><Building2 size={14} />Cơ quan nhận</FieldLabel>
                 <SelectWrap>
-                  <select aria-label="Cơ quan nhận" required value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
-                    {RECEIVING_AGENCIES.map((agency) => <option key={agency} value={agency}>{agency.toLocaleUpperCase("vi-VN")}</option>)}
+                  <select aria-label="Cơ quan nhận" value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
+                    {RECEIVING_AGENCIES.map((agency) => <option key={agency} value={agency}>{capitalizeWords(agency)}</option>)}
                   </select>
                 </SelectWrap>
               </Field>
@@ -1381,8 +2062,8 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <Field>
                 <FieldLabel><BriefcaseBusiness size={14} />Loại dịch vụ</FieldLabel>
                 <SelectWrap>
-                  <select aria-label="Loại dịch vụ" required value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
-                    {SERVICE_TYPES.map((service) => <option key={service} value={service}>{service.toLocaleUpperCase("vi-VN")}</option>)}
+                  <select aria-label="Loại dịch vụ" value={form.serviceType} onChange={(event) => updateField("serviceType", event.target.value)}>
+                    {SERVICE_TYPES.map((service) => <option key={service} value={service}>{capitalizeWords(service)}</option>)}
                   </select>
                 </SelectWrap>
               </Field>
@@ -1392,18 +2073,16 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <MoneyField icon={<Wallet size={14} />} label="Chi phí" value={form.cost} onChange={(value) => updateField("cost", value)} />
               <MoneyField icon={<ReceiptText size={14} />} label="Chi phí LPTB" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
               <MoneyField icon={<Coins size={14} />} label="Chi phí khác" value={form.otherCost} onChange={(value) => updateField("otherCost", value)} />
-              <MoneyField icon={<Box size={14} />} label="Phát sinh Hộp đen, Phù hiệu" value={form.blackBoxBadgeCost} onChange={(value) => updateField("blackBoxBadgeCost", value)} />
+              <MoneyField icon={<Box size={14} />} label="Hộp đen, Phù hiệu" value={form.blackBoxBadgeCost} onChange={(value) => updateField("blackBoxBadgeCost", value)} />
               <MoneyField icon={<BadgePlus size={14} />} label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
 
               <CostSummary>
-                <span><Calculator size={13} />Tổng chi phí</span>
+                <span><Calculator size={13} />Tổng Chi Phí</span>
                 <strong>{formatCurrency(totalCost)}</strong>
               </CostSummary>
             </FormSection>
 
             <FormSection>
-              <MoneyField icon={<HandCoins size={14} />} label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
-
               <Field as="div">
                 <FieldLabel><ListChecks size={14} />Theo dõi giấy tờ</FieldLabel>
                 <CheckGroup>
@@ -1427,9 +2106,9 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                <FieldLabel><BadgeCheck size={14} />Biển số xe mới</FieldLabel>
+                <FieldLabel><BadgeCheck size={14} />Biển số mới</FieldLabel>
                 <input
-                  aria-label="Biển số xe mới"
+                  aria-label="Biển số mới"
                   type="text"
                   autoComplete="off"
                   autoCorrect="off"
@@ -1442,17 +2121,19 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 />
               </Field>
 
+              <MoneyField icon={<HandCoins size={14} />} label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
+
               <Field>
                 <FieldLabel><ClipboardCheck size={14} />Trạng thái</FieldLabel>
                 <SelectWrap>
                   <select aria-label="Trạng thái" value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-                    {PROFILE_STATUSES.map((status) => <option key={status} value={status}>{status.toLocaleUpperCase("vi-VN")}</option>)}
+                    {PROFILE_STATUSES.map((status) => <option key={status} value={status}>{capitalizeWords(status)}</option>)}
                   </select>
                 </SelectWrap>
               </Field>
 
               <CostSummary>
-                <span><TrendingUp size={13} />Lợi nhuận</span>
+                <span><TrendingUp size={13} />Lợi Nhuận</span>
                 <strong>{formatCurrency(profit)}</strong>
               </CostSummary>
             </FormSection>
@@ -1468,6 +2149,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 export function ProfileManager() {
   const monthTabs = useMemo(() => getYearEndMonths(), []);
   const monthTabsRef = useRef<HTMLDivElement>(null);
+  const copyResetTimerRef = useRef<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
   const [activePill, setActivePill] = useState({ left: 0, width: 0, visible: false });
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
@@ -1476,13 +2158,18 @@ export function ProfileManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<ProfileRecord | null>(null);
   const [editor, setEditor] = useState<EditorState | null>(null);
   const [toast, setToast] = useState<{ message: string; error: boolean } | null>(null);
+  const [toastClosing, setToastClosing] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [expandedCostIds, setExpandedCostIds] = useState<Set<string>>(() => new Set());
+  const isCurrentMonthSelected = selectedMonth === monthKey(new Date());
 
   useEffect(() => {
     const current = new Date();
     const currentMonth = current.getMonth() + 1;
-    if (current.getFullYear() === PROFILE_YEAR && currentMonth >= 8 && currentMonth <= 12) {
+    if (current.getFullYear() === PROFILE_YEAR) {
       setSelectedMonth(`${PROFILE_YEAR}-${String(currentMonth).padStart(2, "0")}`);
     }
   }, []);
@@ -1505,9 +2192,18 @@ export function ProfileManager() {
 
   useEffect(() => {
     if (!toast) return;
-    const timer = window.setTimeout(() => setToast(null), 3600);
-    return () => window.clearTimeout(timer);
+    setToastClosing(false);
+    const closeTimer = window.setTimeout(() => setToastClosing(true), 3280);
+    const removeTimer = window.setTimeout(() => setToast(null), 3600);
+    return () => {
+      window.clearTimeout(closeTimer);
+      window.clearTimeout(removeTimer);
+    };
   }, [toast]);
+
+  useEffect(() => () => {
+    if (copyResetTimerRef.current !== null) window.clearTimeout(copyResetTimerRef.current);
+  }, []);
 
   useLayoutEffect(() => {
     const container = monthTabsRef.current;
@@ -1549,8 +2245,38 @@ export function ProfileManager() {
     });
   }, [profiles, query, selectedMonth]);
 
+  async function copyProfileValue(value: string, label: string, key: string) {
+    const copyValue = value.trim();
+    if (!copyValue) return;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(copyValue);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = copyValue;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand("copy");
+        textarea.remove();
+        if (!copied) throw new Error("Không thể sao chép");
+      }
+      setCopiedKey(key);
+      if (copyResetTimerRef.current !== null) window.clearTimeout(copyResetTimerRef.current);
+      copyResetTimerRef.current = window.setTimeout(() => {
+        setCopiedKey(null);
+        copyResetTimerRef.current = null;
+      }, 1400);
+      setToast({ message: `Đã sao chép ${label}.`, error: false });
+    } catch {
+      setToast({ message: `Không thể sao chép ${label}.`, error: true });
+    }
+  }
+
   async function saveProfile(input: ProfileInput) {
-    if (!editor) return;
+    if (!editor) return false;
     setSaving(true);
     try {
       if (editor.mode === "create") {
@@ -1562,25 +2288,25 @@ export function ProfileManager() {
         setProfiles((current) => current.map((profile) => (profile.id === updated.id ? updated : profile)));
         setToast({ message: "Đã cập nhật hồ sơ.", error: false });
       }
-      setEditor(null);
+      return true;
     } catch (error) {
       setToast({ message: error instanceof Error ? error.message : "Không thể lưu hồ sơ.", error: true });
+      return false;
     } finally {
       setSaving(false);
     }
   }
 
   async function deleteProfile(profile: ProfileRecord) {
-    const confirmed = window.confirm(`Xoá hồ sơ của “${profile.customerName}”? Dữ liệu trong Google Sheets cũng sẽ bị xoá.`);
-    if (!confirmed) return;
-
     setDeletingId(profile.id);
     try {
       await profileService.remove(profile.id);
       setProfiles((current) => current.filter((item) => item.id !== profile.id));
       setToast({ message: "Đã xoá hồ sơ.", error: false });
+      return true;
     } catch (error) {
       setToast({ message: error instanceof Error ? error.message : "Không thể xoá hồ sơ.", error: true });
+      return false;
     } finally {
       setDeletingId(null);
     }
@@ -1660,7 +2386,12 @@ export function ProfileManager() {
               </MobileSearchButton>
             )}
           </MobileSearch>
-          <PrimaryButton type="button" onClick={() => setEditor({ mode: "create" })}>
+          <PrimaryButton
+            type="button"
+            disabled={!isCurrentMonthSelected}
+            title={!isCurrentMonthSelected ? "Chỉ có thể thêm hồ sơ vào tháng hiện tại" : undefined}
+            onClick={() => setEditor({ mode: "create" })}
+          >
             <FilePlus2 size={18} />
             Thêm hồ sơ
           </PrimaryButton>
@@ -1673,54 +2404,165 @@ export function ProfileManager() {
             <div><Inbox size={34} /><h3>{query ? "Không tìm thấy kết quả" : "Chưa có hồ sơ trong tháng này"}</h3><p>{query ? "Hãy thử tìm bằng một tên khác." : "Bấm “Thêm hồ sơ” để tạo bản ghi đầu tiên."}</p></div>
           </StateBox>
         ) : (
-          <TableWrap>
-            <Table>
-              <thead>
-                <tr>
-                  <th>Tên khách hàng</th>
-                  <th>Tên chủ phương tiện</th>
-                  <th>Biển số xe</th>
-                  <th>Loại dịch vụ</th>
-                  <th>Cơ quan nhận</th>
-                  <th>Trạng thái</th>
-                  <th>Tổng chi phí</th>
-                  <th>Lợi nhuận</th>
-                  <th>Cập nhật</th>
-                  <th aria-label="Thao tác" />
-                </tr>
-              </thead>
-              <tbody>
-                {visibleProfiles.map((profile) => (
-                  <tr key={profile.id}>
-                    <td><PersonCell><span><UserRound size={16} /></span>{profile.customerName}</PersonCell></td>
-                    <td>{profile.vehicleOwnerName}</td>
-                    <td>{profile.vehiclePlate || "—"}</td>
-                    <td>{profile.serviceType || "—"}</td>
-                    <td>{profile.receivingAgency || "—"}</td>
-                    <td><StatusPill $status={profile.status}>{profile.status || "Đang xử lí"}</StatusPill></td>
-                    <td>{formatCurrency(profile.totalCost)}</td>
-                    <td>{formatCurrency(profile.profit)}</td>
-                    <td>{formatDate(profile.updatedAt)}</td>
-                    <td>
-                      <ActionGroup>
-                        <IconButton type="button" onClick={() => setEditor({ mode: "edit", profile })} aria-label={`Sửa hồ sơ ${profile.customerName}`} title="Sửa hồ sơ">
-                          <PencilLine size={16} />
-                        </IconButton>
-                        <IconButton $danger type="button" disabled={deletingId === profile.id} onClick={() => void deleteProfile(profile)} aria-label={`Xoá hồ sơ ${profile.customerName}`} title="Xoá hồ sơ">
-                          {deletingId === profile.id ? <LoaderCircle className="spin" size={16} /> : <Trash2 size={16} />}
-                        </IconButton>
-                      </ActionGroup>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </TableWrap>
+          <ProfileList aria-label="Danh sách hồ sơ">
+            {visibleProfiles.map((profile) => (
+              <ProfileRow key={profile.id} aria-label={`Hồ sơ ${profile.customerName}`}>
+                <ProfileGroup>
+                  <ProfileField aria-label="Trạng thái">
+                    <div>
+                      <StatusPill $status={profile.status}>
+                        {profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất"
+                          ? <CheckCircle2 size={12} />
+                          : profile.status === "Đã thanh toán"
+                            ? <BadgeCheck size={12} />
+                            : profile.status === "Đang chờ thanh toán"
+                              ? <Clock size={12} />
+                            : <Loader className="spin" size={12} />}
+                        {formatStatus(profile.status)}
+                      </StatusPill>
+                    </div>
+                  </ProfileField>
+                  <ProfileField aria-label="Ngày giờ tạo hồ sơ">
+                    <ProfileValueRow>
+                      <ProfileIcon><Clock size={14} /></ProfileIcon>
+                      <ProfileValue>{formatCreatedAt(profile.createdAt)}</ProfileValue>
+                    </ProfileValueRow>
+                  </ProfileField>
+                  <ProfileField aria-label="Cơ quan nhận và loại dịch vụ">
+                    <ProfileValueRow>
+                      <ProfileIcon><Building2 size={14} /></ProfileIcon>
+                      <ProfileValue>
+                        {[
+                          profile.receivingAgency ? capitalizeWords(profile.receivingAgency) : "",
+                          profile.serviceType ? capitalizeWords(profile.serviceType) : "",
+                        ].filter(Boolean).join(" - ") || "—"}
+                      </ProfileValue>
+                    </ProfileValueRow>
+                  </ProfileField>
+                  <GroupDivider />
+                    <ProfileField aria-label="Tên khách">
+                      <ProfileValueRow>
+                        <ProfileIcon><UserRound size={14} /></ProfileIcon>
+                        <ProfileValue $primary>{profile.customerName || "—"}</ProfileValue>
+                        {profile.customerName && (
+                          <MobileCopyButton $copied={copiedKey === `${profile.id}:customer`} type="button" aria-label="Sao chép tên khách hàng" title="Sao chép tên khách hàng" onClick={() => void copyProfileValue(profile.customerName, "tên khách hàng", `${profile.id}:customer`)}>
+                            {copiedKey === `${profile.id}:customer` ? <Check size={12} /> : <Copy size={12} />}
+                          </MobileCopyButton>
+                        )}
+                      </ProfileValueRow>
+                    </ProfileField>
+                    <ProfileField aria-label="Tên chủ phương tiện">
+                      <ProfileValueRow>
+                        <ProfileIcon><UserShield size={14} /></ProfileIcon>
+                        <ProfileValue>{profile.vehicleOwnerName || "—"}</ProfileValue>
+                        {profile.vehicleOwnerName && (
+                          <MobileCopyButton $copied={copiedKey === `${profile.id}:owner`} type="button" aria-label="Sao chép tên người đại diện" title="Sao chép tên người đại diện" onClick={() => void copyProfileValue(profile.vehicleOwnerName, "tên người đại diện", `${profile.id}:owner`)}>
+                            {copiedKey === `${profile.id}:owner` ? <Check size={12} /> : <Copy size={12} />}
+                          </MobileCopyButton>
+                        )}
+                      </ProfileValueRow>
+                    </ProfileField>
+                    <ProfileField aria-label="Loại xe và biển số xe">
+                      <ProfileValueRow>
+                        <ProfileIcon><CarFront size={14} /></ProfileIcon>
+                        <ProfileValue>
+                          {[
+                            profile.vehicleType ? capitalizeWords(profile.vehicleType) : "",
+                            profile.vehiclePlate,
+                          ].filter(Boolean).join(" - ") || "—"}
+                        </ProfileValue>
+                        {profile.vehiclePlate && (
+                          <MobileCopyButton $copied={copiedKey === `${profile.id}:old-plate`} type="button" aria-label="Sao chép biển số hiện tại" title="Sao chép biển số hiện tại" onClick={() => void copyProfileValue(profile.vehiclePlate, "biển số hiện tại", `${profile.id}:old-plate`)}>
+                            {copiedKey === `${profile.id}:old-plate` ? <Check size={12} /> : <Copy size={12} />}
+                          </MobileCopyButton>
+                        )}
+                      </ProfileValueRow>
+                    </ProfileField>
+                    <MobilePaperwork aria-label="Theo dõi giấy tờ và biển số mới">
+                      <CostLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></CostLine>
+                      <CostLine><span><ProfileIcon><ListChecks size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></CostLine>
+                      <CostLine>
+                        <span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span>
+                        <CostValueActions>
+                          <strong>{profile.newVehiclePlate || "Chờ Cấp"}</strong>
+                          {hasCopyableVehiclePlate(profile.newVehiclePlate) && (
+                            <MobileCopyButton $copied={copiedKey === `${profile.id}:new-plate`} type="button" aria-label="Sao chép biển số mới" title="Sao chép biển số mới" onClick={() => void copyProfileValue(profile.newVehiclePlate, "biển số mới", `${profile.id}:new-plate`)}>
+                              {copiedKey === `${profile.id}:new-plate` ? <Check size={12} /> : <Copy size={12} />}
+                            </MobileCopyButton>
+                          )}
+                        </CostValueActions>
+                      </CostLine>
+                    </MobilePaperwork>
+                </ProfileGroup>
+
+                <ProfileGroup
+                  aria-label="Chi phí hồ sơ"
+                  data-cost-expanded={expandedCostIds.has(profile.id) ? "true" : "false"}
+                >
+                  <CostList id={`cost-details-${profile.id}`} $expanded={expandedCostIds.has(profile.id)}>
+                    <CostLine><span><ProfileIcon><Wallet size={13} /></ProfileIcon>Chi phí</span><strong>{formatCurrency(profile.cost)}</strong></CostLine>
+                    <CostLine><span><ProfileIcon><ReceiptText size={13} /></ProfileIcon>Chi phí LPTB</span><strong>{formatCurrency(profile.registrationFeeCost)}</strong></CostLine>
+                    <CostLine><span><ProfileIcon><Coins size={13} /></ProfileIcon>Chi phí khác</span><strong>{formatCurrency(profile.otherCost)}</strong></CostLine>
+                    <CostLine><span><ProfileIcon><Box size={13} /></ProfileIcon>Hộp đen, Phù hiệu</span><strong>{formatCurrency(profile.blackBoxBadgeCost)}</strong></CostLine>
+                    <CostLine><span><ProfileIcon><BadgePlus size={13} /></ProfileIcon>Phát sinh khác</span><strong>{formatCurrency(profile.otherIncidentalCost)}</strong></CostLine>
+                  </CostList>
+                  <CostDetailsDivider />
+                  <CostTotalLine $total $amountTone="primary">
+                    <CostToggleButton
+                      type="button"
+                      $expanded={expandedCostIds.has(profile.id)}
+                      aria-expanded={expandedCostIds.has(profile.id)}
+                      aria-controls={`cost-details-${profile.id}`}
+                      onClick={() => setExpandedCostIds((current) => {
+                        const next = new Set(current);
+                        if (next.has(profile.id)) next.delete(profile.id);
+                        else next.add(profile.id);
+                        return next;
+                      })}
+                    >
+                      <ProfileIcon><Calculator size={14} /></ProfileIcon>
+                      Tổng chi phí
+                      <ChevronDown className="cost-toggle-chevron" size={14} />
+                    </CostToggleButton>
+                    <strong>{formatCurrency(profile.totalCost)}</strong>
+                  </CostTotalLine>
+                </ProfileGroup>
+
+                <ProfileGroup aria-label="Tổng kết chi phí">
+                  <DesktopPaperworkLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></DesktopPaperworkLine>
+                  <DesktopPaperworkLine><span><ProfileIcon><ListChecks size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></DesktopPaperworkLine>
+                  <DesktopPaperworkLine><span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span><strong>{profile.newVehiclePlate || "Chờ Cấp"}</strong></DesktopPaperworkLine>
+                  <SummaryDivider />
+                  <CostLine $total $amountTone="danger"><span><ProfileIcon $tone="danger"><HandCoins size={14} /></ProfileIcon>Chi phí ban đầu</span><strong>{formatCurrency(profile.initialCost)}</strong></CostLine>
+                  <CostLine $total $profit $amountTone="success"><span><ProfileIcon $tone="success"><TrendingUp size={14} /></ProfileIcon>Lợi nhuận</span><strong>{formatCurrency(profile.profit)}</strong></CostLine>
+                </ProfileGroup>
+
+                <ProfileGroup aria-label="Thao tác hồ sơ">
+                  <ActionGroup>
+                    <IconButton type="button" onClick={() => setEditor({ mode: "edit", profile })} aria-label={`Sửa hồ sơ ${profile.customerName}`} title="Sửa hồ sơ">
+                      <PencilLine size={16} />
+                    </IconButton>
+                    <IconButton $danger type="button" disabled={deletingId === profile.id} onClick={() => setDeleteConfirmation(profile)} aria-label={`Xoá hồ sơ ${profile.customerName}`} title="Xoá hồ sơ">
+                      {deletingId === profile.id ? <LoaderCircle className="spin" size={16} /> : <Trash2 size={16} />}
+                    </IconButton>
+                  </ActionGroup>
+                </ProfileGroup>
+              </ProfileRow>
+            ))}
+          </ProfileList>
         )}
       </Panel>
 
       {editor && <ProfileModal state={editor} saving={saving} onClose={() => setEditor(null)} onSave={saveProfile} />}
-      {toast && <Toast $error={toast.error}>{toast.error ? <CircleAlert size={18} /> : <CheckCircle2 size={18} />}{toast.message}</Toast>}
+      {deleteConfirmation && (
+        <DeleteConfirmModal
+          profile={deleteConfirmation}
+          deleting={deletingId === deleteConfirmation.id}
+          onClose={() => setDeleteConfirmation(null)}
+          onConfirm={() => deleteProfile(deleteConfirmation)}
+        />
+      )}
+      {toast && <Toast $error={toast.error} $closing={toastClosing}>{toast.error ? <CircleAlert size={18} /> : <CheckCircle2 size={18} />}{toast.message}</Toast>}
     </AppShell>
   );
 }
