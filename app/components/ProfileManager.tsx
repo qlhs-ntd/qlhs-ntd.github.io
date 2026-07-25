@@ -984,6 +984,7 @@ const Overlay = styled.div`
   @media (max-width: 1100px) {
     align-items: center;
     overflow: hidden;
+    overflow-x: hidden;
     padding: 0;
     overscroll-behavior: none;
   }
@@ -1047,8 +1048,10 @@ const Modal = styled.div<{ $closing: boolean }>`
   @media (max-width: 1100px) {
     --modal-enter-offset: 100%;
     --modal-edge-opacity: 1;
+    max-width: 100vw;
     height: var(--modal-viewport-height, 100dvh);
     max-height: none;
+    overflow-x: hidden;
     border-radius: 0;
     -webkit-text-size-adjust: 88%;
     text-size-adjust: 88%;
@@ -1117,7 +1120,10 @@ const ModalHeader = styled.div`
 `;
 
 const Form = styled.form`
+  width: 100%;
+  min-width: 0;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 22px 24px 24px;
   overscroll-behavior: contain;
@@ -1125,12 +1131,15 @@ const Form = styled.form`
   -webkit-overflow-scrolling: touch;
 
   @media (max-width: 1100px) {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom));
+    padding-bottom: calc(36px + env(safe-area-inset-bottom));
+    scroll-padding: 18px 0 24px;
   }
 `;
 
 const FormSections = styled.div`
   display: grid;
+  width: 100%;
+  min-width: 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
 
@@ -1227,8 +1236,11 @@ const MoneyInputWrap = styled.div`
   position: relative;
   display: flex;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   height: 46px;
   align-items: center;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #fbfbfd;
@@ -1358,6 +1370,8 @@ const MoneyInputWrap = styled.div`
 
 const InputActionWrap = styled.div<{ $hasAction: boolean }>`
   position: relative;
+  min-width: 0;
+  max-width: 100%;
 
   input {
     padding-right: ${({ $hasAction }) => ($hasAction ? "54px" : "14px")};
@@ -2107,13 +2121,24 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
   ) {
     const formRect = formElement.getBoundingClientRect();
     const fieldRect = fieldElement.getBoundingClientRect();
-    const targetTop =
-      formElement.scrollTop +
-      fieldRect.top -
-      formRect.top -
-      Math.max(18, (formElement.clientHeight - fieldRect.height) * 0.36);
+    const visibleMargin = 18;
+    const visibleTop = formRect.top + visibleMargin;
+    const visibleBottom = formRect.bottom - visibleMargin;
+    let targetTop = formElement.scrollTop;
 
-    formElement.scrollTo({ top: Math.max(0, targetTop), behavior });
+    if (fieldRect.top < visibleTop) {
+      targetTop += fieldRect.top - visibleTop;
+    } else if (fieldRect.bottom > visibleBottom) {
+      targetTop += fieldRect.bottom - visibleBottom;
+    } else {
+      return;
+    }
+
+    const maxScrollTop = Math.max(0, formElement.scrollHeight - formElement.clientHeight);
+    formElement.scrollTo({
+      top: Math.min(Math.max(0, targetTop), maxScrollTop),
+      behavior,
+    });
   }
 
   function revealFocusedField(event: FocusEvent<HTMLFormElement>) {
@@ -2122,6 +2147,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
     const formElement = event.currentTarget;
     const fieldElement = event.target as HTMLElement;
     window.requestAnimationFrame(() => positionFieldInForm(formElement, fieldElement, "smooth"));
+    window.setTimeout(() => positionFieldInForm(formElement, fieldElement, "smooth"), 260);
   }
 
   function lockFormPosition(formElement: HTMLFormElement, inputElement: EventTarget | null) {
