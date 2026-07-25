@@ -1103,6 +1103,7 @@ const ModalHeader = styled.div`
     margin: 0;
     color: var(--muted);
     font-size: 13px;
+    font-weight: 650;
   }
 
   @media (max-width: 1100px) {
