@@ -1219,6 +1219,14 @@ const Field = styled.div`
   }
 `;
 
+const FormStatusField = styled(Field)`
+  margin-bottom: 62px;
+
+  @media (max-width: 1100px) {
+    margin-bottom: 0;
+  }
+`;
+
 const FieldLabel = styled.span`
   display: inline-flex;
   align-items: center;
@@ -2282,6 +2290,19 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             </FormSection>
 
             <FormSection>
+              <FormStatusField>
+                <FieldLabel><ClipboardCheck size={14} />Trạng Thái</FieldLabel>
+                <StatusSelectWrap $status={form.status}>
+                  {(() => {
+                    const StatusIcon = statusIcon(form.status);
+                    return <StatusIcon size={15} />;
+                  })()}
+                  <select aria-label="Trạng Thái" value={form.status} onChange={(event) => updateField("status", event.target.value)}>
+                    {PROFILE_STATUSES.map((status) => <option key={status} value={status} style={{ color: statusColor(status) }}>{capitalizeWords(status)}</option>)}
+                  </select>
+                </StatusSelectWrap>
+              </FormStatusField>
+
               <Field as="div">
                 <FieldLabel><ListChecks size={14} />Giấy Tờ Bổ Sung</FieldLabel>
                 <CheckGroup>
@@ -2305,9 +2326,9 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                <FieldLabel><BadgeCheck size={14} />Biển số mới</FieldLabel>
+                <FieldLabel><BadgeCheck size={14} />Biển Số Mới</FieldLabel>
                 <input
-                  aria-label="Biển số mới"
+                  aria-label="Biển Số Mới"
                   type="text"
                   autoComplete="off"
                   autoCorrect="off"
@@ -2321,19 +2342,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <MoneyField icon={<HandCoins size={14} />} label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
-
-              <Field>
-                <FieldLabel><ClipboardCheck size={14} />Trạng thái</FieldLabel>
-                <StatusSelectWrap $status={form.status}>
-                  {(() => {
-                    const StatusIcon = statusIcon(form.status);
-                    return <StatusIcon size={15} />;
-                  })()}
-                  <select aria-label="Trạng thái" value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-                    {PROFILE_STATUSES.map((status) => <option key={status} value={status} style={{ color: statusColor(status) }}>{capitalizeWords(status)}</option>)}
-                  </select>
-                </StatusSelectWrap>
-              </Field>
 
               <CostSummary>
                 <span><TrendingUp size={13} />Lợi Nhuận Thu Về</span>
