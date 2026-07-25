@@ -1391,6 +1391,16 @@ const InputIconButton = styled.button`
 
 `;
 
+const ClearInputButton = styled(InputIconButton)`
+  background: transparent;
+  color: #667085;
+
+  &:hover {
+    background: transparent;
+    color: var(--primary);
+  }
+`;
+
 const InputNativeSelectAction = styled.div`
   position: absolute;
   top: 50%;
@@ -2209,7 +2219,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
             <FormSection>
               <Field>
                 <FieldLabel><UserRound size={14} />Tên khách hàng</FieldLabel>
-                <InputActionWrap $hasAction={showCustomerHistoryButton}>
+                <InputActionWrap $hasAction={showCustomerHistoryButton || Boolean(form.customerName)}>
                   <input
                     aria-label="Tên khách hàng"
                     type="text"
@@ -2243,12 +2253,22 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                       </select>
                     </InputNativeSelectAction>
                   )}
+                  {form.customerName && (
+                    <ClearInputButton
+                      type="button"
+                      aria-label="Xoá tên khách hàng"
+                      title="Xoá tên khách hàng"
+                      onClick={() => updateField("customerName", "")}
+                    >
+                      <CircleX size={17} />
+                    </ClearInputButton>
+                  )}
                 </InputActionWrap>
               </Field>
 
               <Field as="div">
                 <FieldLabel><UserShield size={14} />Tên chủ phương tiện</FieldLabel>
-                <InputActionWrap $hasAction={showOwnerCopyButton}>
+                <InputActionWrap $hasAction={showOwnerCopyButton || Boolean(form.vehicleOwnerName)}>
                   <input
                     aria-label="Tên chủ phương tiện"
                     type="text"
@@ -2274,23 +2294,45 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                       <CornerDownLeft size={15} />
                     </InputIconButton>
                   )}
+                  {form.vehicleOwnerName && (
+                    <ClearInputButton
+                      type="button"
+                      aria-label="Xoá tên chủ phương tiện"
+                      title="Xoá tên chủ phương tiện"
+                      onClick={() => updateField("vehicleOwnerName", "")}
+                    >
+                      <CircleX size={17} />
+                    </ClearInputButton>
+                  )}
                 </InputActionWrap>
               </Field>
 
               <Field>
                 <FieldLabel><IdCard size={14} />Biển Số Cũ</FieldLabel>
-                <input
-                  aria-label="Biển Số Cũ"
-                  type="text"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="characters"
-                  spellCheck={false}
-                  maxLength={30}
-                  value={form.vehiclePlate}
-                  onChange={(event) => updateField("vehiclePlate", event.target.value)}
-                  placeholder="60X-123.45"
-                />
+                <InputActionWrap $hasAction={Boolean(form.vehiclePlate)}>
+                  <input
+                    aria-label="Biển Số Cũ"
+                    type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    maxLength={30}
+                    value={form.vehiclePlate}
+                    onChange={(event) => updateField("vehiclePlate", event.target.value)}
+                    placeholder="60X-123.45"
+                  />
+                  {form.vehiclePlate && (
+                    <ClearInputButton
+                      type="button"
+                      aria-label="Xoá Biển Số Cũ"
+                      title="Xoá Biển Số Cũ"
+                      onClick={() => updateField("vehiclePlate", "")}
+                    >
+                      <CircleX size={17} />
+                    </ClearInputButton>
+                  )}
+                </InputActionWrap>
               </Field>
 
               <Field>
@@ -2359,18 +2401,30 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
 
               <Field>
                 <FieldLabel><BadgeCheck size={14} />Biển Số Mới</FieldLabel>
-                <input
-                  aria-label="Biển Số Mới"
-                  type="text"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="characters"
-                  spellCheck={false}
-                  maxLength={30}
-                  value={form.newVehiclePlate}
-                  onChange={(event) => updateField("newVehiclePlate", event.target.value)}
-                  placeholder="60X-123.45"
-                />
+                <InputActionWrap $hasAction={Boolean(form.newVehiclePlate)}>
+                  <input
+                    aria-label="Biển Số Mới"
+                    type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    maxLength={30}
+                    value={form.newVehiclePlate}
+                    onChange={(event) => updateField("newVehiclePlate", event.target.value)}
+                    placeholder="60X-123.45"
+                  />
+                  {form.newVehiclePlate && (
+                    <ClearInputButton
+                      type="button"
+                      aria-label="Xoá Biển Số Mới"
+                      title="Xoá Biển Số Mới"
+                      onClick={() => updateField("newVehiclePlate", "")}
+                    >
+                      <CircleX size={17} />
+                    </ClearInputButton>
+                  )}
+                </InputActionWrap>
               </Field>
 
               <MoneyField icon={<HandCoins size={14} />} label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
