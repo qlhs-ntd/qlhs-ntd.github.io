@@ -2070,22 +2070,17 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
   }, [requestClose]);
 
   useEffect(() => {
-    const visualViewport = window.visualViewport;
-
     const syncViewportSize = () => {
       const overlayElement = overlayRef.current;
       if (!overlayElement) return;
 
-      const viewportHeight = visualViewport?.height ?? window.innerHeight;
-      overlayElement.style.setProperty("--modal-viewport-height", `${viewportHeight}px`);
+      overlayElement.style.setProperty("--modal-viewport-height", `${window.innerHeight}px`);
     };
 
     syncViewportSize();
-    visualViewport?.addEventListener("resize", syncViewportSize);
     window.addEventListener("resize", syncViewportSize);
 
     return () => {
-      visualViewport?.removeEventListener("resize", syncViewportSize);
       window.removeEventListener("resize", syncViewportSize);
     };
   }, []);
@@ -2121,9 +2116,13 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
   ) {
     const formRect = formElement.getBoundingClientRect();
     const fieldRect = fieldElement.getBoundingClientRect();
+    const visualViewport = window.visualViewport;
     const visibleMargin = 18;
     const visibleTop = formRect.top + visibleMargin;
-    const visibleBottom = formRect.bottom - visibleMargin;
+    const viewportBottom = visualViewport
+      ? visualViewport.offsetTop + visualViewport.height
+      : window.innerHeight;
+    const visibleBottom = Math.min(formRect.bottom, viewportBottom) - visibleMargin;
     let targetTop = formElement.scrollTop;
 
     if (fieldRect.top < visibleTop) {
