@@ -1649,7 +1649,7 @@ const CostSummary = styled.div`
 
 const ProfitCostSummary = styled(CostSummary)`
   @media (max-width: 1100px) {
-    margin-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+    margin-bottom: calc(200px + env(safe-area-inset-bottom, 0px));
   }
 `;
 
