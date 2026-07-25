@@ -1386,11 +1386,11 @@ const MoneyInputWrap = styled.div`
   }
 `;
 
-const InputActionWrap = styled.div`
+const InputActionWrap = styled.div<{ $hasAction: boolean }>`
   position: relative;
 
   input {
-    padding-right: 54px;
+    padding-right: ${({ $hasAction }) => ($hasAction ? "54px" : "14px")};
   }
 `;
 
@@ -1994,6 +1994,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
   const [ownerSuggestionsOpen, setOwnerSuggestionsOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const { totalCost, profit } = calculateProfileCosts(form);
+  const showCustomerHistoryButton = !form.customerName.trim();
 
   const requestClose = useCallback(() => {
     if (saving || closing) return;
@@ -2191,7 +2192,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             <FormSection>
               <Field>
                 <FieldLabel><UserRound size={14} />Tên khách hàng</FieldLabel>
-                <InputActionWrap>
+                <InputActionWrap $hasAction={showCustomerHistoryButton}>
                   <input
                     aria-label="Tên khách hàng"
                     type="text"
@@ -2205,9 +2206,11 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                     onChange={(event) => updateField("customerName", event.target.value)}
                     placeholder="Nhập tên khách hàng"
                   />
-                  <InputIconButton type="button" aria-label="Mở lịch sử hồ sơ khách hàng" title="Mở lịch sử hồ sơ khách hàng">
-                    <FileClock size={15} />
-                  </InputIconButton>
+                  {showCustomerHistoryButton && (
+                    <InputIconButton type="button" aria-label="Mở lịch sử hồ sơ khách hàng" title="Mở lịch sử hồ sơ khách hàng">
+                      <FileClock size={15} />
+                    </InputIconButton>
+                  )}
                 </InputActionWrap>
               </Field>
 
