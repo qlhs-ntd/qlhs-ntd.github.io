@@ -2302,19 +2302,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             </FormSection>
 
             <FormSection>
-              <Field>
-                <FieldLabel><ClipboardCheck size={14} />Trạng Thái</FieldLabel>
-                <StatusSelectWrap $status={form.status}>
-                  {(() => {
-                    const StatusIcon = statusIcon(form.status);
-                    return <StatusIcon size={15} />;
-                  })()}
-                  <select aria-label="Trạng Thái" value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-                    {PROFILE_STATUSES.map((status) => <option key={status} value={status} style={{ color: statusColor(status) }}>{capitalizeWords(status)}</option>)}
-                  </select>
-                </StatusSelectWrap>
-              </Field>
-
               <Field as="div">
                 <FieldLabel><ListChecks size={14} />Giấy Tờ Bổ Sung</FieldLabel>
                 <CheckGroup>
@@ -2359,6 +2346,19 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 <span><TrendingUp size={13} />Lợi Nhuận Thu Về</span>
                 <strong>{formatCurrencyShort(profit)}</strong>
               </CostSummary>
+
+              <Field>
+                <FieldLabel><ClipboardCheck size={14} />Trạng Thái</FieldLabel>
+                <StatusSelectWrap $status={form.status}>
+                  {(() => {
+                    const StatusIcon = statusIcon(form.status);
+                    return <StatusIcon size={15} />;
+                  })()}
+                  <select aria-label="Trạng Thái" value={form.status} onChange={(event) => updateField("status", event.target.value)}>
+                    {PROFILE_STATUSES.map((status) => <option key={status} value={status} style={{ color: statusColor(status) }}>{capitalizeWords(status)}</option>)}
+                  </select>
+                </StatusSelectWrap>
+              </Field>
             </FormSection>
           </FormSections>
 
