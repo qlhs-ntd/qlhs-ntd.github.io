@@ -26,6 +26,7 @@ import {
   ListChecks,
   Loader,
   LoaderCircle,
+  MoreHorizontal,
   PencilLine,
   ReceiptText,
   Search,
@@ -55,6 +56,16 @@ const UserShield = createLucideIcon("user-shield", [
   ["path", { d: "M22 17.5c0 2.499-1.75 3.749-3.83 4.474a.5.5 0 0 1-.335-.005c-2.085-.72-3.835-1.97-3.835-4.47V14a.5.5 0 0 1 .5-.499c1 0 2.25-.6 3.12-1.36a.6.6 0 0 1 .76-.001c.875.765 2.12 1.36 3.12 1.36a.5.5 0 0 1 .5.5z", key: "16j3tf" }],
   ["circle", { cx: "9", cy: "7", r: "4", key: "nufk8" }],
 ]);
+
+type StatusTabKey = "all" | "processing" | "waiting" | "paid" | "completed";
+
+const STATUS_TABS: Array<{ key: StatusTabKey; label: string; matches: (profile: ProfileRecord) => boolean }> = [
+  { key: "all", label: "Tất Cả", matches: () => true },
+  { key: "processing", label: "Đang Xử Lí", matches: (profile) => (profile.status || "Đang xử lí") === "Đang xử lí" },
+  { key: "waiting", label: "Chờ Thanh Toán", matches: (profile) => profile.status === "Đang chờ thanh toán" },
+  { key: "paid", label: "Đã Thanh Toán", matches: (profile) => profile.status === "Đã thanh toán" },
+  { key: "completed", label: "Hoàn Tất", matches: (profile) => profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất" },
+];
 
 const Header = styled.header`
   display: flex;
@@ -185,7 +196,6 @@ const Toolbar = styled.div<{ $mobileSearchOpen: boolean }>`
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  border-bottom: 1px solid var(--line);
   padding: 17px 20px;
 
   h2 {
@@ -208,6 +218,60 @@ const Toolbar = styled.div<{ $mobileSearchOpen: boolean }>`
       padding: 0 14px;
     }
   }
+`;
+
+const StatusTabs = styled.div`
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  padding: 0 20px 16px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 560px) {
+    padding: 0 14px 14px;
+    scroll-padding-inline: 14px;
+  }
+`;
+
+const StatusTab = styled.button<{ $active: boolean }>`
+  display: inline-flex;
+  min-width: max-content;
+  height: 36px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid ${({ $active }) => ($active ? "rgba(56, 89, 217, 0.4)" : "var(--line)")};
+  border-radius: 999px;
+  background: ${({ $active }) => ($active ? "#edf0ff" : "white")};
+  padding: 0 12px;
+  color: ${({ $active }) => ($active ? "var(--primary)" : "#626b7e")};
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 140ms ease;
+
+  &:hover {
+    border-color: rgba(56, 89, 217, 0.4);
+    color: var(--primary);
+  }
+`;
+
+const StatusBadge = styled.span<{ $active: boolean }>`
+  display: inline-grid;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  background: ${({ $active }) => ($active ? "var(--primary)" : "#eef0f5")};
+  padding: 0 7px;
+  color: ${({ $active }) => ($active ? "white" : "#687086")};
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
 `;
 
 const SearchBox = styled.label`
@@ -650,32 +714,31 @@ const StatusPill = styled.span<{ $status: string }>`
 `;
 
 const ActionGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 7px;
+  position: relative;
+  display: inline-flex;
+  justify-content: flex-end;
 
   @media (max-width: 1100px) {
-    flex-direction: row;
-    gap: 6px;
+    display: flex;
   }
 `;
 
-const IconButton = styled.button<{ $danger?: boolean }>`
+const ActionMenuButton = styled.button<{ $active: boolean }>`
   display: inline-grid;
   width: 36px;
   height: 36px;
-  order: ${({ $danger }) => ($danger ? -1 : 0)};
   place-items: center;
-  border: 1px solid ${({ $danger }) => ($danger ? "#f4d9de" : "var(--line)")};
+  border: 1px solid ${({ $active }) => ($active ? "rgba(56, 89, 217, 0.38)" : "var(--line)")};
   border-radius: 10px;
-  background: ${({ $danger }) => ($danger ? "#fff8f9" : "white")};
-  color: ${({ $danger }) => ($danger ? "var(--danger)" : "#657087")};
+  background: ${({ $active }) => ($active ? "#edf0ff" : "white")};
+  color: ${({ $active }) => ($active ? "var(--primary)" : "#657087")};
   cursor: pointer;
   transition: 140ms ease;
 
   &:hover:not(:disabled) {
-    border-color: ${({ $danger }) => ($danger ? "#e9aab6" : "#cfd4e3")};
+    border-color: rgba(56, 89, 217, 0.38);
+    background: #edf0ff;
+    color: var(--primary);
     transform: translateY(-1px);
   }
 
@@ -687,15 +750,60 @@ const IconButton = styled.button<{ $danger?: boolean }>`
   @media (max-width: 1100px) {
     width: 32px;
     height: 32px;
-    order: ${({ $danger }) => ($danger ? 1 : 2)};
-    border-color: ${({ $danger }) => ($danger ? "#efd2d8" : "#dfe2e8")};
     border-radius: 9px;
-    background: ${({ $danger }) => ($danger ? "#fff8f9" : "#f1f2f5")};
+    background: ${({ $active }) => ($active ? "#edf0ff" : "#f1f2f5")};
 
     svg {
       width: 15px;
       height: 15px;
     }
+  }
+`;
+
+const ActionMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: 35;
+  width: 132px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 14px 34px rgba(32, 39, 55, 0.14);
+`;
+
+const ActionMenuItem = styled.button<{ $danger?: boolean }>`
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  border-bottom: 1px solid #eff0f4;
+  background: white;
+  padding: 0 12px;
+  color: ${({ $danger }) => ($danger ? "var(--danger)" : "var(--ink)")};
+  font-size: 14px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &:hover:not(:disabled) {
+    background: ${({ $danger }) => ($danger ? "#fff8f9" : "#f7f8fc")};
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.55;
+  }
+
+  svg {
+    flex: 0 0 auto;
   }
 `;
 
@@ -2138,7 +2246,9 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 export function ProfileManager() {
   const monthTabs = useMemo(() => getYearEndMonths(), []);
   const copyResetTimerRef = useRef<number | null>(null);
+  const statusTabsRef = useRef<HTMLDivElement>(null);
   const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
+  const [activeStatusTab, setActiveStatusTab] = useState<StatusTabKey>("all");
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [query, setQuery] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -2147,6 +2257,7 @@ export function ProfileManager() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<ProfileRecord | null>(null);
   const [editor, setEditor] = useState<EditorState | null>(null);
+  const [openActionId, setOpenActionId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; error: boolean } | null>(null);
   const [toastClosing, setToastClosing] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -2192,13 +2303,30 @@ export function ProfileManager() {
     if (copyResetTimerRef.current !== null) window.clearTimeout(copyResetTimerRef.current);
   }, []);
 
+  useEffect(() => {
+    const activeTab = statusTabsRef.current?.querySelector<HTMLButtonElement>('[aria-selected="true"]');
+    activeTab?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }, [activeStatusTab]);
 
+  const monthlyProfiles = useMemo(() => profiles.filter((profile) => {
+    const createdAt = new Date(profile.createdAt);
+    return !Number.isNaN(createdAt.getTime()) && monthKey(createdAt) === selectedMonth;
+  }), [profiles, selectedMonth]);
+
+  const activeStatus = STATUS_TABS.find((tab) => tab.key === activeStatusTab) ?? STATUS_TABS[0];
+
+  const statusTabCounts = useMemo(() => {
+    const counts = new Map<StatusTabKey, number>();
+    for (const tab of STATUS_TABS) {
+      counts.set(tab.key, monthlyProfiles.filter(tab.matches).length);
+    }
+    return counts;
+  }, [monthlyProfiles]);
 
   const visibleProfiles = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
-    return profiles.filter((profile) => {
-      const createdAt = new Date(profile.createdAt);
-      if (Number.isNaN(createdAt.getTime()) || monthKey(createdAt) !== selectedMonth) return false;
+    return monthlyProfiles.filter((profile) => {
+      if (!activeStatus.matches(profile)) return false;
       if (!normalizedQuery) return true;
       return normalize([
         profile.customerName,
@@ -2209,7 +2337,7 @@ export function ProfileManager() {
         profile.serviceType,
       ].join(" ")).includes(normalizedQuery);
     });
-  }, [profiles, query, selectedMonth]);
+  }, [activeStatus, monthlyProfiles, query]);
 
   async function copyProfileValue(value: string, label: string, key: string) {
     const copyValue = value.trim();
@@ -2360,12 +2488,30 @@ export function ProfileManager() {
             Thêm hồ sơ
           </PrimaryButton>
         </Toolbar>
+        <StatusTabs ref={statusTabsRef} role="tablist" aria-label="Lọc hồ sơ theo trạng thái">
+          {STATUS_TABS.map((tab) => {
+            const active = activeStatusTab === tab.key;
+            return (
+              <StatusTab
+                key={tab.key}
+                type="button"
+                role="tab"
+                $active={active}
+                aria-selected={active}
+                onClick={() => setActiveStatusTab(tab.key)}
+              >
+                {tab.label}
+                <StatusBadge $active={active}>{statusTabCounts.get(tab.key) ?? 0}</StatusBadge>
+              </StatusTab>
+            );
+          })}
+        </StatusTabs>
 
         {loading ? (
           <StateBox><div><LoaderCircle className="spin" size={30} /><h3>Đang tải hồ sơ</h3></div></StateBox>
         ) : visibleProfiles.length === 0 ? (
           <StateBox>
-            <div><Inbox size={34} /><h3>{query ? "Không tìm thấy kết quả" : "Chưa có hồ sơ trong tháng này"}</h3></div>
+            <div><Inbox size={34} /><h3>{query ? "Không tìm thấy kết quả" : activeStatusTab === "all" ? "Chưa có hồ sơ trong tháng này" : "Chưa có hồ sơ trong trạng thái này"}</h3></div>
           </StateBox>
         ) : (
           <ProfileList aria-label="Danh sách hồ sơ">
@@ -2503,12 +2649,44 @@ export function ProfileManager() {
 
                 <ProfileGroup aria-label="Thao tác hồ sơ">
                   <ActionGroup>
-                    <IconButton type="button" onClick={() => setEditor({ mode: "edit", profile })} aria-label={`Sửa hồ sơ ${profile.customerName}`} title="Sửa hồ sơ">
-                      <PencilLine size={16} />
-                    </IconButton>
-                    <IconButton $danger type="button" disabled={deletingId === profile.id} onClick={() => setDeleteConfirmation(profile)} aria-label={`Xoá hồ sơ ${profile.customerName}`} title="Xoá hồ sơ">
-                      {deletingId === profile.id ? <LoaderCircle className="spin" size={16} /> : <Trash2 size={16} />}
-                    </IconButton>
+                    <ActionMenuButton
+                      type="button"
+                      $active={openActionId === profile.id}
+                      aria-label={`Mở thao tác hồ sơ ${profile.customerName}`}
+                      aria-expanded={openActionId === profile.id}
+                      aria-haspopup="menu"
+                      onClick={() => setOpenActionId((current) => (current === profile.id ? null : profile.id))}
+                    >
+                      <MoreHorizontal size={17} />
+                    </ActionMenuButton>
+                    {openActionId === profile.id && (
+                      <ActionMenu role="menu" aria-label={`Thao tác hồ sơ ${profile.customerName}`}>
+                        <ActionMenuItem
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setOpenActionId(null);
+                            setEditor({ mode: "edit", profile });
+                          }}
+                        >
+                          <PencilLine size={15} />
+                          Sửa
+                        </ActionMenuItem>
+                        <ActionMenuItem
+                          $danger
+                          type="button"
+                          role="menuitem"
+                          disabled={deletingId === profile.id}
+                          onClick={() => {
+                            setOpenActionId(null);
+                            setDeleteConfirmation(profile);
+                          }}
+                        >
+                          {deletingId === profile.id ? <LoaderCircle className="spin" size={15} /> : <Trash2 size={15} />}
+                          Xoá
+                        </ActionMenuItem>
+                      </ActionMenu>
+                    )}
                   </ActionGroup>
                 </ProfileGroup>
               </ProfileRow>
