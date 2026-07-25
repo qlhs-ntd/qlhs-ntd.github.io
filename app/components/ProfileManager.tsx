@@ -58,13 +58,29 @@ const UserShield = createLucideIcon("user-shield", [
 ]);
 
 type StatusTabKey = "all" | "processing" | "waiting" | "paid" | "completed";
+type StatusTabTone = "neutral" | "processing" | "waiting" | "paid" | "completed";
 
-const STATUS_TABS: Array<{ key: StatusTabKey; label: string; matches: (profile: ProfileRecord) => boolean }> = [
-  { key: "all", label: "Tất Cả", matches: () => true },
-  { key: "processing", label: "Đang Xử Lí", matches: (profile) => (profile.status || "Đang xử lí") === "Đang xử lí" },
-  { key: "waiting", label: "Chờ Thanh Toán", matches: (profile) => profile.status === "Đang chờ thanh toán" },
-  { key: "paid", label: "Đã Thanh Toán", matches: (profile) => profile.status === "Đã thanh toán" },
-  { key: "completed", label: "Hoàn Tất", matches: (profile) => profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất" },
+function statusTabColor(tone: StatusTabTone) {
+  switch (tone) {
+    case "processing":
+      return "#c99300";
+    case "waiting":
+      return "#7656c9";
+    case "paid":
+      return "var(--primary)";
+    case "completed":
+      return "#217448";
+    default:
+      return "#202736";
+  }
+}
+
+const STATUS_TABS: Array<{ key: StatusTabKey; label: string; tone: StatusTabTone; matches: (profile: ProfileRecord) => boolean }> = [
+  { key: "all", label: "Tất Cả", tone: "neutral", matches: () => true },
+  { key: "processing", label: "Đang Xử Lí", tone: "processing", matches: (profile) => (profile.status || "Đang xử lí") === "Đang xử lí" },
+  { key: "waiting", label: "Chờ Thanh Toán", tone: "waiting", matches: (profile) => profile.status === "Đang chờ thanh toán" },
+  { key: "paid", label: "Đã Thanh Toán", tone: "paid", matches: (profile) => profile.status === "Đã thanh toán" },
+  { key: "completed", label: "Hoàn Tất", tone: "completed", matches: (profile) => profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất" },
 ];
 
 const Header = styled.header`
@@ -238,37 +254,37 @@ const StatusTabs = styled.div`
   }
 `;
 
-const StatusTab = styled.button<{ $active: boolean }>`
+const StatusTab = styled.button<{ $active: boolean; $tone: StatusTabTone }>`
   display: inline-flex;
   min-width: max-content;
   height: 36px;
   align-items: center;
   gap: 8px;
-  border: 1px solid ${({ $active }) => ($active ? "rgba(56, 89, 217, 0.4)" : "var(--line)")};
+  border: 1px solid ${({ $active, $tone }) => ($active ? statusTabColor($tone) : "var(--line)")};
   border-radius: 999px;
-  background: ${({ $active }) => ($active ? "#edf0ff" : "white")};
+  background: ${({ $active, $tone }) => ($active ? ($tone === "neutral" ? "#202736" : `${statusTabColor($tone)}14`) : "white")};
   padding: 0 12px;
-  color: ${({ $active }) => ($active ? "var(--primary)" : "#626b7e")};
+  color: ${({ $active, $tone }) => ($active ? ($tone === "neutral" ? "white" : statusTabColor($tone)) : "#626b7e")};
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: 140ms ease;
 
   &:hover {
-    border-color: rgba(56, 89, 217, 0.4);
-    color: var(--primary);
+    border-color: ${({ $tone }) => statusTabColor($tone)};
+    color: ${({ $tone }) => statusTabColor($tone)};
   }
 `;
 
-const StatusBadge = styled.span<{ $active: boolean }>`
+const StatusBadge = styled.span<{ $active: boolean; $tone: StatusTabTone }>`
   display: inline-grid;
   min-width: 22px;
   height: 22px;
   place-items: center;
   border-radius: 999px;
-  background: ${({ $active }) => ($active ? "var(--primary)" : "#eef0f5")};
+  background: ${({ $active, $tone }) => ($active || $tone !== "neutral" ? statusTabColor($tone) : "#eef0f5")};
   padding: 0 7px;
-  color: ${({ $active }) => ($active ? "white" : "#687086")};
+  color: ${({ $active, $tone }) => ($active || $tone !== "neutral" ? "white" : "#202736")};
   font-size: 12px;
   font-weight: 800;
   line-height: 1;
@@ -2512,11 +2528,12 @@ export function ProfileManager() {
                 type="button"
                 role="tab"
                 $active={active}
+                $tone={tab.tone}
                 aria-selected={active}
                 onClick={() => setActiveStatusTab(tab.key)}
               >
                 {tab.label}
-                <StatusBadge $active={active}>{statusTabCounts.get(tab.key) ?? 0}</StatusBadge>
+                <StatusBadge $active={active} $tone={tab.tone}>{statusTabCounts.get(tab.key) ?? 0}</StatusBadge>
               </StatusTab>
             );
           })}
