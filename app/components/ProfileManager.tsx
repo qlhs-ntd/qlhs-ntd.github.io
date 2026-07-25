@@ -7,6 +7,7 @@ import {
   BriefcaseBusiness,
   Building2,
   Calculator,
+  Calendar,
   CarFront,
   Check,
   CheckCircle2,
@@ -34,7 +35,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { type FocusEvent, FormEvent, type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type FocusEvent, FormEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { AppShell } from "./AppShell";
 import {
@@ -114,73 +115,53 @@ const PrimaryButton = styled.button`
   }
 `;
 
-const MonthTabs = styled.div`
+const MonthSelectWrap = styled.div`
   position: relative;
-  display: flex;
-  width: min(386px, 100%);
-  max-width: 100%;
-  justify-content: flex-start;
-  gap: 4px;
-  overflow-x: auto;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.88);
-  padding: 4px;
-  box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  width: 150px;
 
   @media (max-width: 640px) {
     width: 100%;
-    align-self: center;
+    margin-top: 8px;
   }
 `;
 
-const ActiveMonthPill = styled.span<{ $left: number; $width: number; $visible: boolean }>`
-  position: absolute;
-  top: 4px;
-  left: 0;
-  width: ${({ $width }) => `${$width}px`};
-  height: 36px;
-  border-radius: 999px;
-  background: var(--primary);
-  box-shadow: 0 7px 18px rgba(56, 89, 217, 0.24);
-  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
-  pointer-events: none;
-  transform: translateX(${({ $left }) => `${$left}px`});
-  transition:
-    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-    width 320ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 120ms ease;
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
-`;
-
-const MonthTab = styled.button<{ $active: boolean }>`
-  position: relative;
-  z-index: 1;
-  width: 80px;
-  min-height: 36px;
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  padding: 0;
-  color: ${({ $active }) => ($active ? "white" : "#687086")};
-  font-size: 13px;
-  font-weight: 700;
+const MonthSelect = styled.select`
+  width: 100%;
+  height: 42px;
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 0 36px 0 14px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: color 180ms ease, background 180ms ease;
+  box-shadow: 0 4px 12px rgba(36, 48, 87, 0.04);
+  transition: all 150ms ease;
 
   &:hover {
-    background: transparent;
-    color: ${({ $active }) => ($active ? "white" : "var(--ink)")};
+    border-color: var(--primary);
+    background: white;
   }
+
+  &:focus {
+    border-color: var(--primary);
+    background: white;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(56, 89, 217, 0.15);
+  }
+`;
+
+const DropdownIcon = styled.span`
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  color: var(--primary);
 `;
 
 const Panel = styled.section`
@@ -2148,10 +2129,8 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
 export function ProfileManager() {
   const monthTabs = useMemo(() => getYearEndMonths(), []);
-  const monthTabsRef = useRef<HTMLDivElement>(null);
   const copyResetTimerRef = useRef<number | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
-  const [activePill, setActivePill] = useState({ left: 0, width: 0, visible: false });
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [query, setQuery] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -2205,28 +2184,7 @@ export function ProfileManager() {
     if (copyResetTimerRef.current !== null) window.clearTimeout(copyResetTimerRef.current);
   }, []);
 
-  useLayoutEffect(() => {
-    const container = monthTabsRef.current;
-    if (!container) return;
 
-    const updatePill = () => {
-      const activeTab = container.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]');
-      if (!activeTab) return;
-      setActivePill({ left: activeTab.offsetLeft, width: activeTab.offsetWidth, visible: true });
-    };
-
-    updatePill();
-    const activeTab = container.querySelector<HTMLButtonElement>('[role="tab"][aria-selected="true"]');
-    if (!activeTab) return;
-    const centeredLeft = activeTab.offsetLeft - (container.clientWidth - activeTab.offsetWidth) / 2;
-    container.scrollTo({
-      left: Math.max(0, centeredLeft),
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-    });
-    const observer = new ResizeObserver(updatePill);
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [selectedMonth]);
 
   const visibleProfiles = useMemo(() => {
     const normalizedQuery = normalize(query.trim());
@@ -2318,27 +2276,22 @@ export function ProfileManager() {
         <TitleBlock>
           <h1>Danh sách hồ sơ xe 2026</h1>
         </TitleBlock>
-        <MonthTabs ref={monthTabsRef} role="tablist" aria-label="Lọc hồ sơ theo tháng">
-          <ActiveMonthPill
-            aria-hidden="true"
-            $left={activePill.left}
-            $width={activePill.width}
-            $visible={activePill.visible}
-          />
-          {monthTabs.map((month) => (
-            <MonthTab
-              key={month.key}
-              type="button"
-              role="tab"
-              $active={selectedMonth === month.key}
-              aria-selected={selectedMonth === month.key}
-              aria-label={`${month.label} năm ${month.year}`}
-              onClick={() => setSelectedMonth(month.key)}
-            >
-              {month.label}
-            </MonthTab>
-          ))}
-        </MonthTabs>
+        <MonthSelectWrap>
+          <MonthSelect
+            aria-label="Lọc hồ sơ theo tháng"
+            value={selectedMonth}
+            onChange={(event) => setSelectedMonth(event.target.value)}
+          >
+            {monthTabs.map((month) => (
+              <option key={month.key} value={month.key}>
+                {month.label}
+              </option>
+            ))}
+          </MonthSelect>
+          <DropdownIcon>
+            <ChevronDown size={18} />
+          </DropdownIcon>
+        </MonthSelectWrap>
       </Header>
 
       <Panel>
