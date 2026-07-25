@@ -514,6 +514,10 @@ const ProfileRow = styled.article`
     > ${ProfileGroup}:last-child {
       border-bottom: 0;
     }
+
+    > ${ProfileGroup}[data-customer-expanded="true"] {
+      border-bottom: 0;
+    }
   }
 
   @media (max-width: 1100px) {
@@ -646,12 +650,22 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     background: ${({ $expanded }) => ($expanded ? "#f7f8fa" : "transparent")};
     padding: ${({ $expanded }) => ($expanded ? "10px 11px" : "0")};
 
-    div,
-    span,
-    strong,
-    button {
-      font-size: 11.5px;
-      font-weight: 600;
+    > div,
+    > div > span,
+    > div strong,
+    > div button {
+      font-size: 11.5px !important;
+      font-weight: 600 !important;
+    }
+
+    > div {
+      border-bottom: 1px solid #eef0f4;
+      padding-bottom: 8px;
+    }
+
+    > div:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
     }
 
     ${ProfileIcon} {
@@ -841,6 +855,10 @@ const CustomerToggleMobileLabel = styled.span`
 const CustomerNameActions = styled(CostValueActions)`
   @media (max-width: 1100px) {
     display: flex;
+
+    strong {
+      color: var(--primary);
+    }
   }
 `;
 
@@ -2890,7 +2908,7 @@ export function ProfileManager() {
           <ProfileList aria-label="Danh sách hồ sơ">
             {visibleProfiles.map((profile) => (
               <ProfileRow key={profile.id} aria-label={`Hồ sơ ${profile.customerName}`}>
-                <ProfileGroup>
+                <ProfileGroup data-customer-expanded={expandedCustomerIds.has(profile.id) ? "true" : "false"}>
                   <CostLine aria-label="Trạng thái" $mobileStack>
                     <span>
                       <StatusPill $status={profile.status}>
@@ -2907,7 +2925,7 @@ export function ProfileManager() {
                     <DesktopTimeValue>{formatCreatedAt(profile.createdAt)}</DesktopTimeValue>
                   </CostLine>
                   <MobileTimeLine aria-label="Thời gian">
-                    <span><ProfileIcon><Clock size={14} /></ProfileIcon>Thời gian</span>
+                    <span><ProfileIcon><Clock size={14} /></ProfileIcon>Thời Gian Tạo</span>
                     <strong>{formatCreatedAt(profile.createdAt)}</strong>
                   </MobileTimeLine>
                   <CostLine aria-label="Cơ quan nhận">
