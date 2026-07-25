@@ -496,7 +496,7 @@ const ProfileRow = styled.article`
   @media (max-width: 1100px) {
     grid-template-columns: minmax(0, 1fr);
     padding: 8px 14px;
-    font-size: 15px;
+    font-size: 13px;
 
     > ${ProfileGroup},
     > ${ProfileGroup}:first-child,
@@ -556,7 +556,7 @@ const ProfileValue = styled.span<{ $primary?: boolean }>`
   line-height: 1.4;
 
   @media (max-width: 1100px) {
-    font-size: 14px;
+    font-size: 13px;
   }
 `;
 
@@ -640,7 +640,7 @@ const CostLine = styled.div<{
   line-height: 1.4;
 
   @media (max-width: 1100px) {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   > span {
@@ -663,7 +663,7 @@ const CostLine = styled.div<{
     }
 
     @media (max-width: 1100px) {
-      font-size: 15px;
+      font-size: 13px;
     }
   }
 
@@ -773,7 +773,7 @@ const StatusPill = styled.span<{ $status: string }>`
   white-space: nowrap;
 
   @media (max-width: 1100px) {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   svg {
