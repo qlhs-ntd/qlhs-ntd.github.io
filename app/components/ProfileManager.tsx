@@ -693,39 +693,6 @@ const DesktopPaperworkLine = styled(CostLine)`
   }
 `;
 
-const MobileStatusField = styled(ProfileField)`
-  @media (min-width: 1101px) {
-    display: none;
-  }
-`;
-
-const DesktopStatusLine = styled(CostLine)`
-  @media (max-width: 1100px) {
-    display: none;
-  }
-`;
-
-const DesktopSummarySpacer = styled.div`
-  height: 38px;
-
-  @media (max-width: 1100px) {
-    display: none;
-  }
-`;
-
-const DesktopSectionLabel = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink);
-  font-size: 15px;
-  font-weight: 750;
-
-  @media (max-width: 1100px) {
-    display: none;
-  }
-`;
-
 const GroupDivider = styled.div`
   height: 1px;
   background: #e4e7ee;
@@ -2667,7 +2634,7 @@ export function ProfileManager() {
             {visibleProfiles.map((profile) => (
               <ProfileRow key={profile.id} aria-label={`Hồ sơ ${profile.customerName}`}>
                 <ProfileGroup>
-                  <MobileStatusField aria-label="Trạng thái">
+                  <ProfileField aria-label="Trạng thái">
                     <div>
                       <StatusPill $status={profile.status}>
                         {profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất"
@@ -2680,7 +2647,7 @@ export function ProfileManager() {
                         {formatStatus(profile.status)}
                       </StatusPill>
                     </div>
-                  </MobileStatusField>
+                  </ProfileField>
                   <ProfileField aria-label="Ngày giờ tạo hồ sơ">
                     <ProfileValueRow>
                       <ProfileIcon><Clock size={14} /></ProfileIcon>
@@ -2788,20 +2755,6 @@ export function ProfileManager() {
                 </ProfileGroup>
 
                 <ProfileGroup aria-label="Tổng kết chi phí">
-                  <DesktopStatusLine $amountTone="primary">
-                    <span>
-                      <ProfileIcon>
-                        {(() => {
-                          const StatusIcon = statusIcon(profile.status);
-                          return <StatusIcon size={14} />;
-                        })()}
-                      </ProfileIcon>
-                      Trạng Thái
-                    </span>
-                    <strong style={{ color: statusColor(profile.status) }}>{formatStatus(profile.status)}</strong>
-                  </DesktopStatusLine>
-                  <DesktopSummarySpacer />
-                  <DesktopSectionLabel><ListChecks size={14} />Giấy Tờ Bổ Sung</DesktopSectionLabel>
                   <DesktopPaperworkLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><ListChecks size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span><strong>{profile.newVehiclePlate || "Chờ Cấp"}</strong></DesktopPaperworkLine>
