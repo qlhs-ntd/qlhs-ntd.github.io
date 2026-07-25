@@ -534,7 +534,7 @@ const ProfileRow = styled.article`
     > ${ProfileGroup}[aria-label="Tổng kết chi phí"] {
       border-bottom: 0;
       padding-top: 10px;
-      padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: 8px;
     }
 
     > ${ProfileGroup}[aria-label="Thao tác hồ sơ"],
@@ -702,14 +702,6 @@ const CostLine = styled.div<{
     white-space: nowrap;
   }
 
-  @media (max-width: 1100px) {
-    ${({ $profit }) =>
-      $profit
-        ? `
-          padding-bottom: 10px;
-        `
-        : ""}
-  }
 `;
 
 const MobilePaperwork = styled.div`
@@ -1255,7 +1247,9 @@ const FormSection = styled.section`
 
 const FinalFormSection = styled(FormSection)`
   @media (max-width: 1100px) {
-    padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+    &:last-child {
+      padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+    }
   }
 `;
 
