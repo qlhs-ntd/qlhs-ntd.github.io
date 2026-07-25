@@ -1835,7 +1835,7 @@ function formatCurrentTime(value: Date) {
 }
 
 function formatCurrency(value: number) {
-  return `${new Intl.NumberFormat("vi-VN").format(value || 0)} VNĐ`;
+  return `${new Intl.NumberFormat("vi-VN").format(value || 0)} đ`;
 }
 
 function formatCurrencyShort(value: number) {
@@ -2634,8 +2634,9 @@ export function ProfileManager() {
             {visibleProfiles.map((profile) => (
               <ProfileRow key={profile.id} aria-label={`Hồ sơ ${profile.customerName}`}>
                 <ProfileGroup>
-                  <ProfileField aria-label="Trạng thái">
-                    <div>
+                  <CostLine aria-label="Trạng thái">
+                    <span><ProfileIcon><ClipboardCheck size={14} /></ProfileIcon>Trạng Thái</span>
+                    <strong>
                       <StatusPill $status={profile.status}>
                         {profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất"
                           ? <CheckCircle2 size={12} />
@@ -2646,66 +2647,58 @@ export function ProfileManager() {
                             : <Loader size={12} />}
                         {formatStatus(profile.status)}
                       </StatusPill>
-                    </div>
-                  </ProfileField>
-                  <ProfileField aria-label="Ngày giờ tạo hồ sơ">
-                    <ProfileValueRow>
-                      <ProfileIcon><Clock size={14} /></ProfileIcon>
-                      <ProfileValue>{formatCreatedAt(profile.createdAt)}</ProfileValue>
-                    </ProfileValueRow>
-                  </ProfileField>
-                  <ProfileField aria-label="Cơ quan nhận">
-                    <ProfileValueRow>
-                      <ProfileIcon><Building2 size={14} /></ProfileIcon>
-                      <ProfileValue>{profile.receivingAgency ? capitalizeWords(profile.receivingAgency) : "—"}</ProfileValue>
-                    </ProfileValueRow>
-                  </ProfileField>
-                  <ProfileField aria-label="Loại dịch vụ">
-                    <ProfileValueRow>
-                      <ProfileIcon><BriefcaseBusiness size={14} /></ProfileIcon>
-                      <ProfileValue>{profile.serviceType ? capitalizeWords(profile.serviceType) : "—"}</ProfileValue>
-                    </ProfileValueRow>
-                  </ProfileField>
+                    </strong>
+                  </CostLine>
+                  <CostLine aria-label="Ngày giờ tạo hồ sơ">
+                    <span><ProfileIcon><Clock size={14} /></ProfileIcon>Thời Gian</span>
+                    <strong>{formatCreatedAt(profile.createdAt)}</strong>
+                  </CostLine>
+                  <CostLine aria-label="Cơ quan nhận">
+                    <span><ProfileIcon><Building2 size={14} /></ProfileIcon>Cơ quan nhận</span>
+                    <strong>{profile.receivingAgency ? capitalizeWords(profile.receivingAgency) : "—"}</strong>
+                  </CostLine>
+                  <CostLine aria-label="Loại dịch vụ">
+                    <span><ProfileIcon><BriefcaseBusiness size={14} /></ProfileIcon>Loại dịch vụ</span>
+                    <strong>{profile.serviceType ? capitalizeWords(profile.serviceType) : "—"}</strong>
+                  </CostLine>
                   <GroupDivider />
-                    <ProfileField aria-label="Tên khách">
-                      <ProfileValueRow>
-                        <ProfileIcon><UserRound size={14} /></ProfileIcon>
-                        <ProfileValue $primary>{profile.customerName || "—"}</ProfileValue>
+                    <CostLine aria-label="Tên khách hàng">
+                      <span><ProfileIcon><UserRound size={14} /></ProfileIcon>Tên khách hàng</span>
+                      <CostValueActions>
+                        <strong>{profile.customerName || "—"}</strong>
                         {profile.customerName && (
                           <MobileCopyButton $copied={copiedKey === `${profile.id}:customer`} type="button" aria-label="Sao chép tên khách hàng" title="Sao chép tên khách hàng" onClick={() => void copyProfileValue(profile.customerName, "tên khách hàng", `${profile.id}:customer`)}>
                             {copiedKey === `${profile.id}:customer` ? <Check size={12} /> : <Copy size={12} />}
                           </MobileCopyButton>
                         )}
-                      </ProfileValueRow>
-                    </ProfileField>
-                    <ProfileField aria-label="Tên chủ phương tiện">
-                      <ProfileValueRow>
-                        <ProfileIcon><UserShield size={14} /></ProfileIcon>
-                        <ProfileValue>{profile.vehicleOwnerName || "—"}</ProfileValue>
+                      </CostValueActions>
+                    </CostLine>
+                    <CostLine aria-label="Tên chủ phương tiện">
+                      <span><ProfileIcon><UserShield size={14} /></ProfileIcon>Tên chủ phương tiện</span>
+                      <CostValueActions>
+                        <strong>{profile.vehicleOwnerName || "—"}</strong>
                         {profile.vehicleOwnerName && (
                           <MobileCopyButton $copied={copiedKey === `${profile.id}:owner`} type="button" aria-label="Sao chép tên người đại diện" title="Sao chép tên người đại diện" onClick={() => void copyProfileValue(profile.vehicleOwnerName, "tên người đại diện", `${profile.id}:owner`)}>
                             {copiedKey === `${profile.id}:owner` ? <Check size={12} /> : <Copy size={12} />}
                           </MobileCopyButton>
                         )}
-                      </ProfileValueRow>
-                    </ProfileField>
-                    <ProfileField aria-label="Loại xe">
-                      <ProfileValueRow>
-                        <ProfileIcon><CarFront size={14} /></ProfileIcon>
-                        <ProfileValue>{profile.vehicleType ? capitalizeWords(profile.vehicleType) : "—"}</ProfileValue>
-                      </ProfileValueRow>
-                    </ProfileField>
-                    <ProfileField aria-label="Biển Số Cũ">
-                      <ProfileValueRow>
-                        <ProfileIcon><IdCard size={14} /></ProfileIcon>
-                        <ProfileValue>{profile.vehiclePlate || "—"}</ProfileValue>
+                      </CostValueActions>
+                    </CostLine>
+                    <CostLine aria-label="Loại xe">
+                      <span><ProfileIcon><CarFront size={14} /></ProfileIcon>Loại xe</span>
+                      <strong>{profile.vehicleType ? capitalizeWords(profile.vehicleType) : "—"}</strong>
+                    </CostLine>
+                    <CostLine aria-label="Biển Số Cũ">
+                      <span><ProfileIcon><IdCard size={14} /></ProfileIcon>Biển Số Cũ</span>
+                      <CostValueActions>
+                        <strong>{profile.vehiclePlate || "—"}</strong>
                         {profile.vehiclePlate && (
                           <MobileCopyButton $copied={copiedKey === `${profile.id}:old-plate`} type="button" aria-label="Sao chép Biển Số Cũ" title="Sao chép Biển Số Cũ" onClick={() => void copyProfileValue(profile.vehiclePlate, "Biển Số Cũ", `${profile.id}:old-plate`)}>
                             {copiedKey === `${profile.id}:old-plate` ? <Check size={12} /> : <Copy size={12} />}
                           </MobileCopyButton>
                         )}
-                      </ProfileValueRow>
-                    </ProfileField>
+                      </CostValueActions>
+                    </CostLine>
                     <MobilePaperwork aria-label="Giấy Tờ Bổ Sung và biển số mới">
                       <CostLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></CostLine>
                       <CostLine><span><ProfileIcon><ListChecks size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></CostLine>
