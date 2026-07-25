@@ -2270,7 +2270,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
             <FormSection>
               <MoneyField icon={<Wallet size={14} />} label="Chi Phí Dịch vụ" value={form.cost} onChange={(value) => updateField("cost", value)} />
-              <MoneyField icon={<ReceiptText size={14} />} label="Chi phí LPTB" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
+              <MoneyField icon={<ReceiptText size={14} />} label="Lệ Phí Trước Bạ" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
               <MoneyField icon={<Coins size={14} />} label="Chi phí khác" value={form.otherCost} onChange={(value) => updateField("otherCost", value)} />
               <MoneyField icon={<Box size={14} />} label="Hộp đen, Phù hiệu" value={form.blackBoxBadgeCost} onChange={(value) => updateField("blackBoxBadgeCost", value)} />
               <MoneyField icon={<BadgePlus size={14} />} label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
@@ -2735,7 +2735,7 @@ export function ProfileManager() {
                 >
                   <CostList id={`cost-details-${profile.id}`} $expanded={expandedCostIds.has(profile.id)}>
                     <CostLine><span><ProfileIcon><Wallet size={13} /></ProfileIcon>Chi Phí Dịch vụ</span><strong>{formatCurrency(profile.cost)}</strong></CostLine>
-                    <CostLine><span><ProfileIcon><ReceiptText size={13} /></ProfileIcon>Chi phí LPTB</span><strong>{formatCurrency(profile.registrationFeeCost)}</strong></CostLine>
+                    <CostLine><span><ProfileIcon><ReceiptText size={13} /></ProfileIcon>Lệ Phí Trước Bạ</span><strong>{formatCurrency(profile.registrationFeeCost)}</strong></CostLine>
                     <CostLine><span><ProfileIcon><Coins size={13} /></ProfileIcon>Chi phí khác</span><strong>{formatCurrency(profile.otherCost)}</strong></CostLine>
                     <CostLine><span><ProfileIcon><Box size={13} /></ProfileIcon>Hộp đen, Phù hiệu</span><strong>{formatCurrency(profile.blackBoxBadgeCost)}</strong></CostLine>
                     <CostLine><span><ProfileIcon><BadgePlus size={13} /></ProfileIcon>Phát sinh khác</span><strong>{formatCurrency(profile.otherIncidentalCost)}</strong></CostLine>
