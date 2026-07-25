@@ -20,6 +20,7 @@ import {
   Copy,
   CornerLeftDown,
   createLucideIcon,
+  FileClock,
   FileText,
   FilePlus2,
   HandCoins,
@@ -1385,6 +1386,40 @@ const MoneyInputWrap = styled.div`
   }
 `;
 
+const InputActionWrap = styled.div`
+  position: relative;
+
+  input {
+    padding-right: 54px;
+  }
+`;
+
+const InputIconButton = styled.button`
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  display: grid;
+  width: 34px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: #edf0ff;
+  padding: 0;
+  color: var(--primary);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background 140ms ease, transform 120ms ease;
+
+  &:hover {
+    background: #e1e6ff;
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.96);
+  }
+`;
+
 const SelectWrap = styled.div`
   position: relative;
 
@@ -2156,19 +2191,24 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             <FormSection>
               <Field>
                 <FieldLabel><UserRound size={14} />Tên khách hàng</FieldLabel>
-                <input
-                  aria-label="Tên khách hàng"
-                  type="text"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="words"
-                  spellCheck={false}
-                  required
-                  maxLength={120}
-                  value={form.customerName}
-                  onChange={(event) => updateField("customerName", event.target.value)}
-                  placeholder="Nhập tên khách hàng"
-                />
+                <InputActionWrap>
+                  <input
+                    aria-label="Tên khách hàng"
+                    type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="words"
+                    spellCheck={false}
+                    required
+                    maxLength={120}
+                    value={form.customerName}
+                    onChange={(event) => updateField("customerName", event.target.value)}
+                    placeholder="Nhập tên khách hàng"
+                  />
+                  <InputIconButton type="button" aria-label="Mở lịch sử hồ sơ khách hàng" title="Mở lịch sử hồ sơ khách hàng">
+                    <FileClock size={15} />
+                  </InputIconButton>
+                </InputActionWrap>
               </Field>
 
               <Field as="div">
