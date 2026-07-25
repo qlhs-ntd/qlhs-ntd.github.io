@@ -2282,7 +2282,7 @@ export function ProfileManager() {
     <AppShell>
       <Header>
         <TitleBlock>
-          <h1>DS Hồ Sơ</h1>
+          <h1>Danh Sách Hồ Sơ</h1>
         </TitleBlock>
         <MonthSelectWrap>
           <CalendarIcon>
