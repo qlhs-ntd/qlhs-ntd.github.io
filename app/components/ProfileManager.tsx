@@ -474,7 +474,7 @@ const ProfileRow = styled.article`
     minmax(200px, 1.1fr)
     56px;
   border-top: 1px solid #eff0f4;
-  padding: 36px 20px;
+  padding: 26px 20px;
   color: #4c5569;
   font-size: 15px;
   transition: background 120ms ease;
