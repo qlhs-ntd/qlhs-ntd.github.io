@@ -625,10 +625,13 @@ const CostList = styled.div<{ $expanded?: boolean }>`
   }
 `;
 
+const CustomerDetailsList = styled(CostList)``;
+
 const CostLine = styled.div<{
   $total?: boolean;
   $profit?: boolean;
   $amountTone?: "primary" | "danger" | "success";
+  $mobileStack?: boolean;
 }>`
   display: flex;
   align-items: center;
@@ -641,6 +644,18 @@ const CostLine = styled.div<{
 
   @media (max-width: 1100px) {
     font-size: 13px;
+    ${({ $mobileStack }) =>
+      $mobileStack
+        ? `
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 6px;
+
+          strong {
+            margin-left: 0;
+          }
+        `
+        : ""}
   }
 
   > span {
@@ -688,8 +703,6 @@ const MobilePaperwork = styled.div`
   @media (max-width: 1100px) {
     display: grid;
     gap: 10px;
-    border-top: 1px solid #e4e7ee;
-    padding-top: 12px;
   }
 `;
 
@@ -2269,7 +2282,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                           if (event.target.value) selectCustomerName(event.target.value);
                         }}
                       >
-                        <option value="">Chọn khách hàng</option>
+                        <option value="">Khách Hàng Gần Đây</option>
                         {customerHistoryOptions.map((option) => (
                           <option key={option.name} value={option.name}>
                             {option.name}
@@ -2501,6 +2514,7 @@ export function ProfileManager() {
   const [toastClosing, setToastClosing] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [expandedCostIds, setExpandedCostIds] = useState<Set<string>>(() => new Set());
+  const [expandedCustomerIds, setExpandedCustomerIds] = useState<Set<string>>(() => new Set());
   const isCurrentMonthSelected = selectedMonth === monthKey(new Date());
 
   useEffect(() => {
@@ -2779,7 +2793,7 @@ export function ProfileManager() {
             {visibleProfiles.map((profile) => (
               <ProfileRow key={profile.id} aria-label={`Hồ sơ ${profile.customerName}`}>
                 <ProfileGroup>
-                  <CostLine aria-label="Trạng thái">
+                  <CostLine aria-label="Trạng thái" $mobileStack>
                     <span>
                       <StatusPill $status={profile.status}>
                         {profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất"
@@ -2803,8 +2817,23 @@ export function ProfileManager() {
                     <strong>{profile.serviceType ? capitalizeWords(profile.serviceType) : "—"}</strong>
                   </CostLine>
                   <GroupDivider />
-                    <CostLine aria-label="Khách Hàng">
-                      <span><ProfileIcon><UserRound size={14} /></ProfileIcon>Khách Hàng</span>
+                    <CostLine aria-label="Khách Hàng" $total $amountTone="primary">
+                      <CostToggleButton
+                        type="button"
+                        $expanded={expandedCustomerIds.has(profile.id)}
+                        aria-expanded={expandedCustomerIds.has(profile.id)}
+                        aria-controls={`customer-details-${profile.id}`}
+                        onClick={() => setExpandedCustomerIds((current) => {
+                          const next = new Set(current);
+                          if (next.has(profile.id)) next.delete(profile.id);
+                          else next.add(profile.id);
+                          return next;
+                        })}
+                      >
+                        <ProfileIcon><UserRound size={14} /></ProfileIcon>
+                        Khách Hàng
+                        <ChevronDown className="cost-toggle-chevron" size={14} />
+                      </CostToggleButton>
                       <CostValueActions>
                         <strong>{profile.customerName || "—"}</strong>
                         {profile.customerName && (
@@ -2814,6 +2843,7 @@ export function ProfileManager() {
                         )}
                       </CostValueActions>
                     </CostLine>
+                  <CustomerDetailsList id={`customer-details-${profile.id}`} $expanded={expandedCustomerIds.has(profile.id)}>
                     <CostLine aria-label="Chủ Phương Tiện">
                       <span><ProfileIcon><UserShield size={14} /></ProfileIcon>Chủ Phương Tiện</span>
                       <CostValueActions>
@@ -2846,7 +2876,7 @@ export function ProfileManager() {
                       <CostLine>
                         <span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span>
                         <CostValueActions>
-                          <strong>{profile.newVehiclePlate || "Chờ Cấp"}</strong>
+                          <strong>{profile.newVehiclePlate || "--"}</strong>
                           {hasCopyableVehiclePlate(profile.newVehiclePlate) && (
                             <MobileCopyButton $copied={copiedKey === `${profile.id}:new-plate`} type="button" aria-label="Sao chép biển số mới" title="Sao chép biển số mới" onClick={() => void copyProfileValue(profile.newVehiclePlate, "biển số mới", `${profile.id}:new-plate`)}>
                               {copiedKey === `${profile.id}:new-plate` ? <Check size={12} /> : <Copy size={12} />}
@@ -2855,6 +2885,7 @@ export function ProfileManager() {
                         </CostValueActions>
                       </CostLine>
                     </MobilePaperwork>
+                  </CustomerDetailsList>
                 </ProfileGroup>
 
                 <ProfileGroup
@@ -2893,7 +2924,7 @@ export function ProfileManager() {
                 <ProfileGroup aria-label="Tổng kết chi phí">
                   <DesktopPaperworkLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><FileText size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></DesktopPaperworkLine>
-                  <DesktopPaperworkLine><span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span><strong>{profile.newVehiclePlate || "Chờ Cấp"}</strong></DesktopPaperworkLine>
+                  <DesktopPaperworkLine><span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span><strong>{profile.newVehiclePlate || "--"}</strong></DesktopPaperworkLine>
                   <SummaryDivider />
                   <CostLine $total $amountTone="danger"><span><ProfileIcon $tone="danger"><HandCoins size={14} /></ProfileIcon>Chi phí ban đầu</span><strong>{formatCurrency(profile.initialCost)}</strong></CostLine>
                   <CostLine $total $profit $amountTone="success"><span><ProfileIcon $tone="success"><TrendingUp size={14} /></ProfileIcon>Lợi Nhuận Thu Về</span><strong>{formatCurrency(profile.profit)}</strong></CostLine>
