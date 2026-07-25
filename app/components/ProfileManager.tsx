@@ -468,10 +468,10 @@ const ProfileRow = styled.article`
   position: relative;
   display: grid;
   grid-template-columns:
-    minmax(230px, 1fr)
-    minmax(225px, 1.35fr)
-    minmax(220px, 1.2fr)
-    72px;
+    minmax(270px, 1.55fr)
+    minmax(205px, 1.1fr)
+    minmax(200px, 1fr)
+    56px;
   border-top: 1px solid #eff0f4;
   padding: 36px 20px;
   color: #4c5569;
@@ -2662,8 +2662,8 @@ export function ProfileManager() {
                     <strong>{profile.serviceType ? capitalizeWords(profile.serviceType) : "—"}</strong>
                   </CostLine>
                   <GroupDivider />
-                    <CostLine aria-label="Tên khách hàng">
-                      <span><ProfileIcon><UserRound size={14} /></ProfileIcon>Tên khách hàng</span>
+                    <CostLine aria-label="Khách Hàng">
+                      <span><ProfileIcon><UserRound size={14} /></ProfileIcon>Khách Hàng</span>
                       <CostValueActions>
                         <strong>{profile.customerName || "—"}</strong>
                         {profile.customerName && (
@@ -2673,8 +2673,8 @@ export function ProfileManager() {
                         )}
                       </CostValueActions>
                     </CostLine>
-                    <CostLine aria-label="Tên chủ phương tiện">
-                      <span><ProfileIcon><UserShield size={14} /></ProfileIcon>Tên chủ phương tiện</span>
+                    <CostLine aria-label="Chủ Phương Tiện">
+                      <span><ProfileIcon><UserShield size={14} /></ProfileIcon>Chủ Phương Tiện</span>
                       <CostValueActions>
                         <strong>{profile.vehicleOwnerName || "—"}</strong>
                         {profile.vehicleOwnerName && (
