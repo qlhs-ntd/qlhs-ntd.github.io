@@ -1245,14 +1245,6 @@ const FormSection = styled.section`
   }
 `;
 
-const FinalFormSection = styled(FormSection)`
-  @media (max-width: 1100px) {
-    &:last-child {
-      padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
-    }
-  }
-`;
-
 const Field = styled.div`
   position: relative;
   display: grid;
@@ -1326,9 +1318,9 @@ const MoneyInputWrap = styled.div<{ $hasValue?: boolean }>`
 
   input {
     position: absolute;
-    inset: 0 ${({ $hasValue }) => ($hasValue ? "82px" : "48px")} 0 0;
+    inset: 0 48px 0 0;
     z-index: 2;
-    width: calc(100% - ${({ $hasValue }) => ($hasValue ? "82px" : "48px")});
+    width: calc(100% - 48px);
     height: 100%;
     border: 0;
     border-radius: 12px 0 0 12px;
@@ -1414,7 +1406,7 @@ const MoneyInputWrap = styled.div<{ $hasValue?: boolean }>`
     opacity: 1;
   }
 
-  > span {
+  .money-currency {
     display: grid;
     min-width: 34px;
     height: 32px;
@@ -1426,10 +1418,7 @@ const MoneyInputWrap = styled.div<{ $hasValue?: boolean }>`
     font-weight: 750;
     pointer-events: none;
     text-transform: none;
-  }
-
-  .money-currency {
-    margin-left: ${({ $hasValue }) => ($hasValue ? "0" : "auto")};
+    margin-left: auto;
     padding: 0 8px;
   }
 
@@ -1489,17 +1478,6 @@ const ClearInputButton = styled(InputIconButton)`
 
   &:active {
     color: #667085;
-  }
-`;
-
-const MoneyClearButton = styled(ClearInputButton)`
-  position: static;
-  flex: 0 0 auto;
-  margin-left: auto;
-  transform: none;
-
-  &:active {
-    transform: scale(0.96);
   }
 `;
 
@@ -1668,6 +1646,12 @@ const CostSummary = styled.div`
     font-size: 18px;
   }
 
+`;
+
+const ProfitCostSummary = styled(CostSummary)`
+  @media (max-width: 1100px) {
+    margin-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
+  }
 `;
 
 const HeaderActions = styled.div`
@@ -2050,24 +2034,16 @@ function MoneyField({ icon, label, value, onChange }: {
   value: number;
   onChange: (value: number) => void;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const displayedValue = value
     ? new Intl.NumberFormat("vi-VN").format(Math.round(value / 1000))
     : "";
   const numericInputValue = value ? Math.round(value / 1000) : "";
-
-  function clearValue(event: ReactPointerEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    onChange(0);
-    window.requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
-  }
 
   return (
     <Field as="div">
       <FieldLabel>{icon}{label}</FieldLabel>
       <MoneyInputWrap $hasValue={Boolean(value)}>
         <input
-          ref={inputRef}
           aria-label={label}
           type="number"
           inputMode="numeric"
@@ -2091,16 +2067,6 @@ function MoneyField({ icon, label, value, onChange }: {
           <span className="money-caret" />
           <span className={`money-minor${displayedValue ? "" : " is-placeholder"}`}>.000</span>
         </div>
-        {Boolean(value) && (
-          <MoneyClearButton
-            type="button"
-            aria-label={`Xoá ${label}`}
-            title={`Xoá ${label}`}
-            onPointerDown={clearValue}
-          >
-            <CircleX size={17} />
-          </MoneyClearButton>
-        )}
         <span className="money-currency" aria-hidden="true">đ</span>
       </MoneyInputWrap>
     </Field>
@@ -2518,7 +2484,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
               </CostSummary>
             </FormSection>
 
-            <FinalFormSection>
+            <FormSection>
               <Field as="div">
                 <FieldLabel><ListChecks size={14} />Giấy Tờ Bổ Sung</FieldLabel>
                 <CheckGroup>
@@ -2584,11 +2550,11 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                 </StatusSelectWrap>
               </Field>
 
-              <CostSummary>
+              <ProfitCostSummary>
                 <span><TrendingUp size={13} />Lợi Nhuận Thu Về</span>
                 <strong>{formatCurrencyShort(profit)}</strong>
-              </CostSummary>
-            </FinalFormSection>
+              </ProfitCostSummary>
+            </FormSection>
           </FormSections>
 
         </Form>
