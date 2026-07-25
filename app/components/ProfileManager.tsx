@@ -76,6 +76,36 @@ function statusTabColor(tone: StatusTabTone) {
   }
 }
 
+function normalizedStatus(value: string) {
+  return value === "Hoàn tất" || value === "Đã hoàn tất" ? "Hoàn tất" : value || "Đang xử lí";
+}
+
+function statusColor(status: string) {
+  switch (normalizedStatus(status)) {
+    case "Hoàn tất":
+      return "#217448";
+    case "Đã thanh toán":
+      return "var(--primary)";
+    case "Đang chờ thanh toán":
+      return "#7656c9";
+    default:
+      return "#c99300";
+  }
+}
+
+function statusIcon(status: string): LucideIcon {
+  switch (normalizedStatus(status)) {
+    case "Hoàn tất":
+      return CheckCircle2;
+    case "Đã thanh toán":
+      return BadgeCheck;
+    case "Đang chờ thanh toán":
+      return Clock;
+    default:
+      return Loader;
+  }
+}
+
 const STATUS_TABS: Array<{ key: StatusTabKey; label: string; tone: StatusTabTone; icon: LucideIcon; matches: (profile: ProfileRecord) => boolean }> = [
   { key: "all", label: "Tất Cả", tone: "neutral", icon: ListChecks, matches: () => true },
   { key: "processing", label: "Đang Xử Lí", tone: "processing", icon: Loader, matches: (profile) => (profile.status || "Đang xử lí") === "Đang xử lí" },
@@ -643,6 +673,39 @@ const MobilePaperwork = styled.div`
 `;
 
 const DesktopPaperworkLine = styled(CostLine)`
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
+const MobileStatusField = styled(ProfileField)`
+  @media (min-width: 1101px) {
+    display: none;
+  }
+`;
+
+const DesktopStatusLine = styled(CostLine)`
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
+const DesktopSummarySpacer = styled.div`
+  height: 38px;
+
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
+const DesktopSectionLabel = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 750;
+
   @media (max-width: 1100px) {
     display: none;
   }
@@ -1367,6 +1430,28 @@ const SelectWrap = styled.div`
     pointer-events: none;
     content: "";
     transform: translateY(-65%) rotate(45deg);
+  }
+`;
+
+const StatusSelectWrap = styled(SelectWrap)<{ $status: string }>`
+  > svg {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    z-index: 1;
+    color: ${({ $status }) => statusColor($status)};
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
+  select {
+    padding-left: 40px;
+    color: ${({ $status }) => statusColor($status)};
+    font-weight: 750;
+  }
+
+  option {
+    color: #202736;
   }
 `;
 
@@ -2198,7 +2283,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
             <FormSection>
               <Field as="div">
-                <FieldLabel><ListChecks size={14} />Theo dõi giấy tờ</FieldLabel>
+                <FieldLabel><ListChecks size={14} />Giấy Tờ Bổ Sung</FieldLabel>
                 <CheckGroup>
                   <label>
                     <input
@@ -2239,15 +2324,19 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
               <Field>
                 <FieldLabel><ClipboardCheck size={14} />Trạng thái</FieldLabel>
-                <SelectWrap>
+                <StatusSelectWrap $status={form.status}>
+                  {(() => {
+                    const StatusIcon = statusIcon(form.status);
+                    return <StatusIcon size={15} />;
+                  })()}
                   <select aria-label="Trạng thái" value={form.status} onChange={(event) => updateField("status", event.target.value)}>
-                    {PROFILE_STATUSES.map((status) => <option key={status} value={status}>{capitalizeWords(status)}</option>)}
+                    {PROFILE_STATUSES.map((status) => <option key={status} value={status} style={{ color: statusColor(status) }}>{capitalizeWords(status)}</option>)}
                   </select>
-                </SelectWrap>
+                </StatusSelectWrap>
               </Field>
 
               <CostSummary>
-                <span><TrendingUp size={13} />Lợi Nhuận</span>
+                <span><TrendingUp size={13} />Lợi Nhuận Thu Về</span>
                 <strong>{formatCurrency(profit)}</strong>
               </CostSummary>
             </FormSection>
@@ -2553,7 +2642,7 @@ export function ProfileManager() {
             {visibleProfiles.map((profile) => (
               <ProfileRow key={profile.id} aria-label={`Hồ sơ ${profile.customerName}`}>
                 <ProfileGroup>
-                  <ProfileField aria-label="Trạng thái">
+                  <MobileStatusField aria-label="Trạng thái">
                     <div>
                       <StatusPill $status={profile.status}>
                         {profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất"
@@ -2566,7 +2655,7 @@ export function ProfileManager() {
                         {formatStatus(profile.status)}
                       </StatusPill>
                     </div>
-                  </ProfileField>
+                  </MobileStatusField>
                   <ProfileField aria-label="Ngày giờ tạo hồ sơ">
                     <ProfileValueRow>
                       <ProfileIcon><Clock size={14} /></ProfileIcon>
@@ -2623,7 +2712,7 @@ export function ProfileManager() {
                         )}
                       </ProfileValueRow>
                     </ProfileField>
-                    <MobilePaperwork aria-label="Theo dõi giấy tờ và biển số mới">
+                    <MobilePaperwork aria-label="Giấy Tờ Bổ Sung và biển số mới">
                       <CostLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></CostLine>
                       <CostLine><span><ProfileIcon><ListChecks size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></CostLine>
                       <CostLine>
@@ -2674,12 +2763,26 @@ export function ProfileManager() {
                 </ProfileGroup>
 
                 <ProfileGroup aria-label="Tổng kết chi phí">
+                  <DesktopStatusLine $amountTone="primary">
+                    <span>
+                      <ProfileIcon>
+                        {(() => {
+                          const StatusIcon = statusIcon(profile.status);
+                          return <StatusIcon size={14} />;
+                        })()}
+                      </ProfileIcon>
+                      Trạng Thái
+                    </span>
+                    <strong style={{ color: statusColor(profile.status) }}>{formatStatus(profile.status)}</strong>
+                  </DesktopStatusLine>
+                  <DesktopSummarySpacer />
+                  <DesktopSectionLabel><ListChecks size={14} />Giấy Tờ Bổ Sung</DesktopSectionLabel>
                   <DesktopPaperworkLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><ListChecks size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span><strong>{profile.newVehiclePlate || "Chờ Cấp"}</strong></DesktopPaperworkLine>
                   <SummaryDivider />
                   <CostLine $total $amountTone="danger"><span><ProfileIcon $tone="danger"><HandCoins size={14} /></ProfileIcon>Chi phí ban đầu</span><strong>{formatCurrency(profile.initialCost)}</strong></CostLine>
-                  <CostLine $total $profit $amountTone="success"><span><ProfileIcon $tone="success"><TrendingUp size={14} /></ProfileIcon>Lợi nhuận</span><strong>{formatCurrency(profile.profit)}</strong></CostLine>
+                  <CostLine $total $profit $amountTone="success"><span><ProfileIcon $tone="success"><TrendingUp size={14} /></ProfileIcon>Lợi Nhuận Thu Về</span><strong>{formatCurrency(profile.profit)}</strong></CostLine>
                 </ProfileGroup>
 
                 <ProfileGroup aria-label="Thao tác hồ sơ">
