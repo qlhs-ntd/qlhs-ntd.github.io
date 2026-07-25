@@ -1422,9 +1422,14 @@ const ClearInputButton = styled(InputIconButton)`
   background: transparent;
   color: #667085;
 
+  &:focus-visible,
   &:hover {
     background: transparent;
-    color: var(--primary);
+    color: #667085;
+  }
+
+  &:active {
+    color: #667085;
   }
 `;
 
