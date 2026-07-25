@@ -328,9 +328,9 @@ const StatusBadge = styled.span<{ $active: boolean; $tone: StatusTabTone }>`
   height: 18px;
   place-items: center;
   border-radius: 999px;
-  background: ${({ $active, $tone }) => ($active || $tone !== "neutral" ? statusTabColor($tone) : "#eef0f5")};
+  background: ${({ $tone }) => ($tone === "neutral" ? "#202736" : statusTabColor($tone))};
   padding: 0 5px;
-  color: ${({ $active, $tone }) => ($active || $tone !== "neutral" ? "white" : "#202736")};
+  color: white;
   font-size: 10px;
   font-weight: 800;
   line-height: 1;
