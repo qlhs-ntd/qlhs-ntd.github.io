@@ -661,6 +661,10 @@ const CostLine = styled.div<{
     svg {
       flex: 0 0 auto;
     }
+
+    @media (max-width: 1100px) {
+      font-size: 15px;
+    }
   }
 
   strong {
@@ -1212,6 +1216,10 @@ const FieldLabel = styled.span`
   svg {
     flex: 0 0 auto;
     color: var(--primary);
+  }
+
+  @media (max-width: 1100px) {
+    font-size: 15px;
   }
 `;
 
