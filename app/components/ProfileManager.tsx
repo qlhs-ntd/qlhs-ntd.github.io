@@ -2606,7 +2606,7 @@ export function ProfileManager() {
             onClick={() => setEditor({ mode: "create" })}
           >
             <FilePlus2 size={18} />
-            Thêm hồ sơ
+            Thêm Mới
           </PrimaryButton>
         </Toolbar>
         <StatusTabs ref={statusTabsRef} role="tablist" aria-label="Lọc hồ sơ theo trạng thái">
