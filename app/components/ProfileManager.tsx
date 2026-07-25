@@ -1879,6 +1879,10 @@ function formatCurrency(value: number) {
   return `${new Intl.NumberFormat("vi-VN").format(value || 0)} VNĐ`;
 }
 
+function formatCurrencyShort(value: number) {
+  return `${new Intl.NumberFormat("vi-VN").format(value || 0)} đ`;
+}
+
 function capitalizeWords(value: string) {
   return value.replace(/(^|[\s/-])(\p{L})/gu, (_, separator: string, letter: string) =>
     `${separator}${letter.toLocaleUpperCase("vi-VN")}`,
@@ -1973,7 +1977,7 @@ function MoneyField({ icon, label, value, onChange }: {
           <span className="money-caret" />
           <span className={`money-minor${displayedValue ? "" : " is-placeholder"}`}>.000</span>
         </div>
-        <span className="money-currency" aria-hidden="true">VNĐ</span>
+        <span className="money-currency" aria-hidden="true">đ</span>
       </MoneyInputWrap>
     </Field>
   );
@@ -2301,7 +2305,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
               <CostSummary>
                 <span><Calculator size={13} />Chi Phí Khách Trả</span>
-                <strong>{formatCurrency(totalCost)}</strong>
+                <strong>{formatCurrencyShort(totalCost)}</strong>
               </CostSummary>
             </FormSection>
 
@@ -2361,7 +2365,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
               <CostSummary>
                 <span><TrendingUp size={13} />Lợi Nhuận Thu Về</span>
-                <strong>{formatCurrency(profit)}</strong>
+                <strong>{formatCurrencyShort(profit)}</strong>
               </CostSummary>
             </FormSection>
           </FormSections>
