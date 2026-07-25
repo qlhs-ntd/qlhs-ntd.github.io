@@ -2444,6 +2444,11 @@ export function ProfileManager() {
   }), [profiles, selectedMonth]);
 
   const activeStatus = STATUS_TABS.find((tab) => tab.key === activeStatusTab) ?? STATUS_TABS[0];
+  const emptyStateTitle = query
+    ? "Không tìm thấy kết quả"
+    : activeStatusTab === "all"
+      ? "Chưa có hồ sơ"
+      : `Chưa có hồ sơ ${activeStatus.label}`;
 
   const statusTabCounts = useMemo(() => {
     const counts = new Map<StatusTabKey, number>();
@@ -2644,7 +2649,7 @@ export function ProfileManager() {
           <StateBox><div><LoaderCircle className="spin" size={30} /><h3>Đang tải hồ sơ</h3></div></StateBox>
         ) : visibleProfiles.length === 0 ? (
           <StateBox>
-            <div><Inbox size={34} /><h3>{query ? "Không tìm thấy kết quả" : activeStatusTab === "all" ? "Chưa có hồ sơ trong tháng này" : "Chưa có hồ sơ trong trạng thái này"}</h3></div>
+            <div><Inbox size={34} /><h3>{emptyStateTitle}</h3></div>
           </StateBox>
         ) : (
           <ProfileList aria-label="Danh sách hồ sơ">
