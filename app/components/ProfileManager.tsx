@@ -19,7 +19,7 @@ import {
   Clock,
   Coins,
   Copy,
-  CornerLeftDown,
+  CornerDownLeft,
   createLucideIcon,
   FileClock,
   FileText,
@@ -2388,7 +2388,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                       }}
                       title="Điền tên khách hàng"
                     >
-                      <CornerLeftDown size={15} />
+                      <CornerDownLeft size={15} />
                     </InputIconButton>
                   )}
                 </InputActionWrap>
