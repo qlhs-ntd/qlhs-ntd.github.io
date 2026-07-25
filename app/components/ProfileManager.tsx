@@ -1235,14 +1235,6 @@ const Field = styled.div`
   }
 `;
 
-const FormStatusField = styled(Field)`
-  margin-bottom: 62px;
-
-  @media (max-width: 1100px) {
-    margin-bottom: 0;
-  }
-`;
-
 const FieldLabel = styled.span`
   display: inline-flex;
   align-items: center;
@@ -2310,7 +2302,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             </FormSection>
 
             <FormSection>
-              <FormStatusField>
+              <Field>
                 <FieldLabel><ClipboardCheck size={14} />Trạng Thái</FieldLabel>
                 <StatusSelectWrap $status={form.status}>
                   {(() => {
@@ -2321,7 +2313,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                     {PROFILE_STATUSES.map((status) => <option key={status} value={status} style={{ color: statusColor(status) }}>{capitalizeWords(status)}</option>)}
                   </select>
                 </StatusSelectWrap>
-              </FormStatusField>
+              </Field>
 
               <Field as="div">
                 <FieldLabel><ListChecks size={14} />Giấy Tờ Bổ Sung</FieldLabel>
