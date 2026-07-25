@@ -1380,6 +1380,45 @@ const InputIconButton = styled.button`
   &:active {
     transform: translateY(-50%) scale(0.96);
   }
+
+`;
+
+const CustomerHistoryDesktopButton = styled(InputIconButton)`
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
+const InputNativeSelectAction = styled.div`
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  display: none;
+  width: 34px;
+  height: 32px;
+  place-items: center;
+  border-radius: 8px;
+  background: #edf0ff;
+  color: var(--primary);
+  transform: translateY(-50%);
+
+  svg {
+    pointer-events: none;
+  }
+
+  select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  @media (max-width: 1100px) {
+    display: grid;
+  }
 `;
 
 const CustomerHistoryPopover = styled.div`
@@ -1430,6 +1469,10 @@ const CustomerHistoryPopover = styled.div`
     color: #7a8294;
     font-size: 11px;
     font-weight: 750;
+  }
+
+  @media (max-width: 1100px) {
+    display: none;
   }
 `;
 
@@ -2261,7 +2304,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                     placeholder="Nhập tên khách hàng"
                   />
                   {showCustomerHistoryButton && (
-                    <InputIconButton
+                    <CustomerHistoryDesktopButton
                       type="button"
                       aria-label="Mở danh sách khách hàng"
                       title="Mở danh sách khách hàng"
@@ -2269,7 +2312,27 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                       onClick={() => setCustomerHistoryOpen((current) => !current)}
                     >
                       <FileClock size={15} />
-                    </InputIconButton>
+                    </CustomerHistoryDesktopButton>
+                  )}
+                  {showCustomerHistoryButton && (
+                    <InputNativeSelectAction>
+                      <FileClock size={15} />
+                      <select
+                        aria-label="Chọn khách hàng"
+                        value=""
+                        disabled={customerHistoryOptions.length === 0}
+                        onChange={(event) => {
+                          if (event.target.value) selectCustomerName(event.target.value);
+                        }}
+                      >
+                        <option value="">Chọn khách hàng</option>
+                        {customerHistoryOptions.map((option) => (
+                          <option key={option.name} value={option.name}>
+                            {option.name} ({option.count})
+                          </option>
+                        ))}
+                      </select>
+                    </InputNativeSelectAction>
                   )}
                   {showCustomerHistoryButton && customerHistoryOpen && (
                     <CustomerHistoryPopover aria-label="Danh sách khách hàng">
