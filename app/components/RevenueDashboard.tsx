@@ -279,6 +279,47 @@ const CurrencyValue = styled.div<{ $tone: "danger" | "success" }>`
   }
 `;
 
+const LoadingValue = styled.div`
+  grid-column: 1 / -1;
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  color: #687086;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.2;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    animation: revenue-value-spin 850ms linear infinite;
+  }
+
+  @keyframes revenue-value-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 560px) {
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 12px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+`;
+
+const CurrencyLoadingValue = styled(LoadingValue)`
+  margin-top: 0;
+`;
+
 const ErrorMessage = styled.p`
   margin: -4px 0 18px;
   border: 1px solid #f1c8cf;
@@ -381,7 +422,22 @@ export function RevenueDashboard() {
     );
   }, [profiles, selectedMonth]);
 
-  const displayNumber = (value: number) => loading ? "—" : formatNumber(value);
+  const displayNumber = (value: number) => formatNumber(value);
+  const loadingValue = <><Loader aria-hidden="true" size={16} />Đang tải</>;
+  const metricValue = (value: number) =>
+    loading ? <LoadingValue>{loadingValue}</LoadingValue> : <strong>{displayNumber(value)}</strong>;
+  const currencyValue = (value: number, tone: "danger" | "success") => (
+    <CurrencyValue $tone={tone}>
+      {loading ? (
+        <CurrencyLoadingValue>{loadingValue}</CurrencyLoadingValue>
+      ) : (
+        <>
+          <strong>{displayNumber(value)}</strong>
+          <span>đ</span>
+        </>
+      )}
+    </CurrencyValue>
+  );
 
   return (
     <AppShell>
@@ -411,13 +467,13 @@ export function RevenueDashboard() {
       {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
 
       <MetricsGrid aria-label="Số liệu hồ sơ và doanh thu trong tháng">
-        <MetricCard $tone="danger" $desktopSpan={4} $mobileSpan={2} $mobileOrder={1}><span><Calculator size={18} /></span><small><DesktopMetricLabel>Chi Phí Khách Trả</DesktopMetricLabel><MobileMetricLabel>Chi Phí</MobileMetricLabel></small><CurrencyValue $tone="danger"><strong>{displayNumber(summary.totalCost)}</strong>{!loading && <span>đ</span>}</CurrencyValue></MetricCard>
-        <MetricCard $tone="success" $desktopSpan={4} $mobileSpan={2} $mobileOrder={2}><span><TrendingUp size={18} /></span><small><DesktopMetricLabel>Lợi Nhuận Thu Về</DesktopMetricLabel><MobileMetricLabel>Lợi Nhuận</MobileMetricLabel></small><CurrencyValue $tone="success"><strong>{displayNumber(summary.totalProfit)}</strong>{!loading && <span>đ</span>}</CurrencyValue></MetricCard>
-        <MetricCard $tone="primary" $desktopSpan={4} $mobileSpan={2} $mobileOrder={3}><span><FolderOpen size={18} /></span><small><DesktopMetricLabel>Tổng hồ sơ</DesktopMetricLabel><MobileMetricLabel>Hồ Sơ</MobileMetricLabel></small><strong>{displayNumber(summary.totalProfiles)}</strong></MetricCard>
-        <MetricCard $tone="warning" $desktopSpan={3} $mobileSpan={1} $mobileOrder={4}><span><Loader size={18} /></span><small>Đang xử lí</small><strong>{displayNumber(summary.processing)}</strong></MetricCard>
-        <MetricCard $tone="violet" $desktopSpan={3} $mobileSpan={1} $mobileOrder={5}><span><Clock size={18} /></span><small>Chờ thanh toán</small><strong>{displayNumber(summary.waitingForPayment)}</strong></MetricCard>
-        <MetricCard $tone="primary" $desktopSpan={3} $mobileSpan={1} $mobileOrder={6}><span><BadgeCheck size={18} /></span><small>Đã thanh toán</small><strong>{displayNumber(summary.paid)}</strong></MetricCard>
-        <MetricCard $tone="success" $desktopSpan={3} $mobileSpan={1} $mobileOrder={7}><span><CheckCircle2 size={18} /></span><small>Đã hoàn tất</small><strong>{displayNumber(summary.completed)}</strong></MetricCard>
+        <MetricCard $tone="danger" $desktopSpan={4} $mobileSpan={2} $mobileOrder={1}><span><Calculator size={18} /></span><small><DesktopMetricLabel>Chi Phí Khách Trả</DesktopMetricLabel><MobileMetricLabel>Chi Phí</MobileMetricLabel></small>{currencyValue(summary.totalCost, "danger")}</MetricCard>
+        <MetricCard $tone="success" $desktopSpan={4} $mobileSpan={2} $mobileOrder={2}><span><TrendingUp size={18} /></span><small><DesktopMetricLabel>Lợi Nhuận Thu Về</DesktopMetricLabel><MobileMetricLabel>Lợi Nhuận</MobileMetricLabel></small>{currencyValue(summary.totalProfit, "success")}</MetricCard>
+        <MetricCard $tone="primary" $desktopSpan={4} $mobileSpan={2} $mobileOrder={3}><span><FolderOpen size={18} /></span><small><DesktopMetricLabel>Tổng hồ sơ</DesktopMetricLabel><MobileMetricLabel>Hồ Sơ</MobileMetricLabel></small>{metricValue(summary.totalProfiles)}</MetricCard>
+        <MetricCard $tone="warning" $desktopSpan={3} $mobileSpan={1} $mobileOrder={4}><span><Loader size={18} /></span><small>Đang xử lí</small>{metricValue(summary.processing)}</MetricCard>
+        <MetricCard $tone="violet" $desktopSpan={3} $mobileSpan={1} $mobileOrder={5}><span><Clock size={18} /></span><small>Chờ thanh toán</small>{metricValue(summary.waitingForPayment)}</MetricCard>
+        <MetricCard $tone="primary" $desktopSpan={3} $mobileSpan={1} $mobileOrder={6}><span><BadgeCheck size={18} /></span><small>Đã thanh toán</small>{metricValue(summary.paid)}</MetricCard>
+        <MetricCard $tone="success" $desktopSpan={3} $mobileSpan={1} $mobileOrder={7}><span><CheckCircle2 size={18} /></span><small>Đã hoàn tất</small>{metricValue(summary.completed)}</MetricCard>
       </MetricsGrid>
     </AppShell>
   );
