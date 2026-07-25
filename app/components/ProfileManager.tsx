@@ -470,8 +470,8 @@ const ProfileRow = styled.article`
   display: grid;
   grid-template-columns:
     minmax(230px, 1.2fr)
-    minmax(205px, 1.1fr)
-    minmax(200px, 1fr)
+    minmax(205px, 1.2fr)
+    minmax(200px, 1.1fr)
     56px;
   border-top: 1px solid #eff0f4;
   padding: 36px 20px;
