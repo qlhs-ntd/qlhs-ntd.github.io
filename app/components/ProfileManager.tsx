@@ -309,14 +309,14 @@ const StatusTab = styled.button<{ $active: boolean; $tone: StatusTabTone }>`
 
 const StatusBadge = styled.span<{ $active: boolean; $tone: StatusTabTone }>`
   display: inline-grid;
-  min-width: 22px;
-  height: 22px;
+  min-width: 18px;
+  height: 18px;
   place-items: center;
   border-radius: 999px;
   background: ${({ $active, $tone }) => ($active || $tone !== "neutral" ? statusTabColor($tone) : "#eef0f5")};
-  padding: 0 7px;
+  padding: 0 5px;
   color: ${({ $active, $tone }) => ($active || $tone !== "neutral" ? "white" : "#202736")};
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
 `;
