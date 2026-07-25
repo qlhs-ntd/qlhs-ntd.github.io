@@ -280,6 +280,7 @@ const Toolbar = styled.div<{ $mobileSearchOpen: boolean }>`
       min-height: 42px;
       margin-left: auto;
       padding: 0 14px;
+      box-shadow: none;
     }
   }
 `;
