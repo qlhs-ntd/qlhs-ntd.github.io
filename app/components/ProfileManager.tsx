@@ -530,6 +530,7 @@ const ProfileRow = styled.article`
     > ${ProfileGroup}[aria-label="Tổng kết chi phí"] {
       border-bottom: 0;
       padding-top: 10px;
+      padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
     }
 
     > ${ProfileGroup}[aria-label="Thao tác hồ sơ"],
@@ -707,6 +708,25 @@ const MobilePaperwork = styled.div`
   }
 `;
 
+const MobileTimeValue = styled.strong`
+  &::before {
+    display: none;
+    content: "Thời gian";
+  }
+
+  @media (max-width: 1100px) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    &::before {
+      display: inline;
+      color: #6b7280;
+      font-weight: 650;
+    }
+  }
+`;
+
 const DesktopPaperworkLine = styled(CostLine)`
   @media (max-width: 1100px) {
     display: none;
@@ -780,7 +800,7 @@ const StatusPill = styled.span<{ $status: string }>`
         : $status === "Đang chờ thanh toán"
           ? "#7656c9"
         : "#c99300"};
-  padding: 0 10px;
+  padding: 0 12px;
   color: white;
   font-size: 15px;
   font-weight: 650;
@@ -1619,7 +1639,7 @@ const HeaderActions = styled.div`
       flex: 0 0 auto;
       padding: 0 12px;
       border-radius: 10px;
-      font-size: 13px;
+      font-size: 14px;
       pointer-events: auto;
     }
 
@@ -2812,7 +2832,7 @@ export function ProfileManager() {
                         {formatStatus(profile.status)}
                       </StatusPill>
                     </span>
-                    <strong>{formatCreatedAt(profile.createdAt)}</strong>
+                    <MobileTimeValue>{formatCreatedAt(profile.createdAt)}</MobileTimeValue>
                   </CostLine>
                   <CostLine aria-label="Cơ quan nhận">
                     <span><ProfileIcon><Building2 size={14} /></ProfileIcon>Cơ quan nhận</span>
