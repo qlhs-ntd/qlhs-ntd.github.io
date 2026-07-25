@@ -764,7 +764,7 @@ const CostTotalLine = styled(CostLine)`
   }
 `;
 
-const CostToggleButton = styled.button<{ $expanded: boolean }>`
+const CostToggleButton = styled.button<{ $expanded: boolean; $neutral?: boolean }>`
   display: inline-flex;
   min-width: 0;
   align-items: center;
@@ -772,7 +772,7 @@ const CostToggleButton = styled.button<{ $expanded: boolean }>`
   border: 0;
   background: transparent;
   padding: 0;
-  color: var(--primary);
+  color: ${({ $neutral }) => ($neutral ? "#4c5569" : "var(--primary)")};
   font: inherit;
   text-align: left;
   text-transform: capitalize;
@@ -791,6 +791,29 @@ const CostToggleButton = styled.button<{ $expanded: boolean }>`
       display: block;
       transform: rotate(${({ $expanded }) => ($expanded ? "180deg" : "0deg")});
     }
+  }
+`;
+
+const CustomerToggleDesktopLabel = styled.span`
+  display: inline;
+
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
+const CustomerToggleMobileLabel = styled.span`
+  display: none;
+
+  @media (max-width: 1100px) {
+    display: inline;
+    overflow-wrap: anywhere;
+  }
+`;
+
+const CustomerNameActions = styled(CostValueActions)`
+  @media (max-width: 1100px) {
+    display: none;
   }
 `;
 
@@ -2895,10 +2918,11 @@ export function ProfileManager() {
                     <strong>{profile.serviceType ? capitalizeWords(profile.serviceType) : "—"}</strong>
                   </CostLine>
                   <GroupDivider />
-                    <CostLine aria-label="Khách Hàng" $total $amountTone="primary">
+                    <CostLine aria-label="Khách Hàng" $total>
                       <CostToggleButton
                         type="button"
                         $expanded={expandedCustomerIds.has(profile.id)}
+                        $neutral
                         aria-expanded={expandedCustomerIds.has(profile.id)}
                         aria-controls={`customer-details-${profile.id}`}
                         onClick={() => setExpandedCustomerIds((current) => {
@@ -2909,28 +2933,19 @@ export function ProfileManager() {
                         })}
                       >
                         <ProfileIcon><UserRound size={14} /></ProfileIcon>
-                        Khách Hàng
+                        <CustomerToggleDesktopLabel>Khách Hàng</CustomerToggleDesktopLabel>
+                        <CustomerToggleMobileLabel>{profile.customerName || "—"}</CustomerToggleMobileLabel>
                         <ChevronDown className="cost-toggle-chevron" size={14} />
                       </CostToggleButton>
-                      <CostValueActions>
+                      <CustomerNameActions>
                         <strong>{profile.customerName || "—"}</strong>
-                        {profile.customerName && (
-                          <MobileCopyButton $copied={copiedKey === `${profile.id}:customer`} type="button" aria-label="Sao chép tên khách hàng" title="Sao chép tên khách hàng" onClick={() => void copyProfileValue(profile.customerName, "tên khách hàng", `${profile.id}:customer`)}>
-                            {copiedKey === `${profile.id}:customer` ? <Check size={12} /> : <Copy size={12} />}
-                          </MobileCopyButton>
-                        )}
-                      </CostValueActions>
+                      </CustomerNameActions>
                     </CostLine>
                   <CustomerDetailsList id={`customer-details-${profile.id}`} $expanded={expandedCustomerIds.has(profile.id)}>
                     <CostLine aria-label="Chủ Phương Tiện">
                       <span><ProfileIcon><UserShield size={14} /></ProfileIcon>Chủ Phương Tiện</span>
                       <CostValueActions>
                         <strong>{profile.vehicleOwnerName || "—"}</strong>
-                        {profile.vehicleOwnerName && (
-                          <MobileCopyButton $copied={copiedKey === `${profile.id}:owner`} type="button" aria-label="Sao chép tên người đại diện" title="Sao chép tên người đại diện" onClick={() => void copyProfileValue(profile.vehicleOwnerName, "tên người đại diện", `${profile.id}:owner`)}>
-                            {copiedKey === `${profile.id}:owner` ? <Check size={12} /> : <Copy size={12} />}
-                          </MobileCopyButton>
-                        )}
                       </CostValueActions>
                     </CostLine>
                     <CostLine aria-label="Loại xe">
