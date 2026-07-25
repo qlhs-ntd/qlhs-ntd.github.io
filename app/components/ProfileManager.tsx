@@ -806,13 +806,12 @@ const CustomerToggleMobileLabel = styled.span`
 
   @media (max-width: 1100px) {
     display: inline;
-    overflow-wrap: anywhere;
   }
 `;
 
 const CustomerNameActions = styled(CostValueActions)`
   @media (max-width: 1100px) {
-    display: none;
+    display: flex;
   }
 `;
 
@@ -2907,7 +2906,7 @@ export function ProfileManager() {
                       >
                         <ProfileIcon><UserRound size={14} /></ProfileIcon>
                         <CustomerToggleDesktopLabel>Khách Hàng</CustomerToggleDesktopLabel>
-                        <CustomerToggleMobileLabel>{profile.customerName || "—"}</CustomerToggleMobileLabel>
+                        <CustomerToggleMobileLabel>Khách Hàng</CustomerToggleMobileLabel>
                         <ChevronDown className="cost-toggle-chevron" size={14} />
                       </CostToggleButton>
                       <CustomerNameActions>
