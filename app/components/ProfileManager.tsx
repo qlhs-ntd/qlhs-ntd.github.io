@@ -1215,44 +1215,6 @@ const FieldLabel = styled.span`
   }
 `;
 
-const SuggestionList = styled.div<{ $alignDesktopRight?: boolean; $floating?: boolean }>`
-  position: ${({ $floating }) => ($floating ? "absolute" : "static")};
-  top: auto;
-  right: ${({ $floating }) => ($floating ? "0" : "auto")};
-  bottom: ${({ $floating }) => ($floating ? "40px" : "auto")};
-  z-index: ${({ $floating }) => ($floating ? "20" : "auto")};
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: ${({ $floating }) => ($floating ? "0" : "-2px")};
-  justify-content: ${({ $alignDesktopRight }) => ($alignDesktopRight ? "flex-end" : "flex-start")};
-
-  button {
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    min-height: 24px;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    border: 0;
-    border-radius: 999px;
-    background: #edf0ff;
-    padding: 0 10px;
-    color: var(--primary);
-    font-size: ${({ $floating }) => ($floating ? "9px" : "12px")};
-    font-weight: 700;
-    line-height: 1;
-    text-transform: none;
-    cursor: pointer;
-  }
-
-  @media (max-width: 1100px) {
-    display: flex;
-    justify-content: flex-start;
-  }
-`;
-
 const MoneyInputWrap = styled.div`
   position: relative;
   display: flex;
@@ -2051,11 +2013,11 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
     state.profile ? profileToInput(state.profile) : createEmptyProfileInput(),
   );
   const [currentTime, setCurrentTime] = useState(() => new Date());
-  const [ownerSuggestionsOpen, setOwnerSuggestionsOpen] = useState(false);
   const [customerHistoryOpen, setCustomerHistoryOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const { totalCost, profit } = calculateProfileCosts(form);
   const showCustomerHistoryButton = !form.customerName.trim();
+  const showOwnerCopyButton = Boolean(form.customerName.trim()) && !form.vehicleOwnerName.trim();
   const customerHistoryOptions = useMemo(() => {
     const counts = new Map<string, number>();
 
@@ -2332,41 +2294,33 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
 
               <Field as="div">
                 <FieldLabel><UserShield size={14} />Tên chủ phương tiện</FieldLabel>
-                <input
-                  aria-label="Tên chủ phương tiện"
-                  type="text"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="words"
-                  spellCheck={false}
-                  required
-                  maxLength={120}
-                  value={form.vehicleOwnerName}
-                  onFocus={() => setOwnerSuggestionsOpen(true)}
-                  onBlur={() => setOwnerSuggestionsOpen(false)}
-                  onChange={(event) => updateField("vehicleOwnerName", event.target.value)}
-                  placeholder="Nhập tên chủ phương tiện"
-                />
-                {ownerSuggestionsOpen && form.customerName.trim() && (
-                  <SuggestionList $alignDesktopRight $floating aria-label="Gợi ý tên chủ phương tiện">
-                    <button
+                <InputActionWrap $hasAction={showOwnerCopyButton}>
+                  <input
+                    aria-label="Tên chủ phương tiện"
+                    type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="words"
+                    spellCheck={false}
+                    required
+                    maxLength={120}
+                    value={form.vehicleOwnerName}
+                    onChange={(event) => updateField("vehicleOwnerName", event.target.value)}
+                    placeholder="Nhập tên chủ phương tiện"
+                  />
+                  {showOwnerCopyButton && (
+                    <InputIconButton
                       type="button"
                       aria-label="Điền tên khách hàng vào tên chủ phương tiện"
-                      onPointerDown={(event) => {
-                        event.preventDefault();
-                        updateField("vehicleOwnerName", form.customerName.trim());
-                        setOwnerSuggestionsOpen(false);
-                      }}
                       onClick={() => {
                         updateField("vehicleOwnerName", form.customerName.trim());
-                        setOwnerSuggestionsOpen(false);
                       }}
+                      title="Điền tên khách hàng"
                     >
-                      <CornerLeftDown size={10} aria-hidden="true" />
-                      Tên Khách Hàng
-                    </button>
-                  </SuggestionList>
-                )}
+                      <CornerLeftDown size={15} />
+                    </InputIconButton>
+                  )}
+                </InputActionWrap>
               </Field>
 
               <Field>
