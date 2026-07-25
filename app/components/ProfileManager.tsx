@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   ChevronDown,
   CircleAlert,
+  CircleX,
   ClipboardCheck,
   Clock,
   Coins,
@@ -37,7 +38,6 @@ import {
   TrendingUp,
   UserRound,
   Wallet,
-  X,
 } from "lucide-react";
 import { type FocusEvent, FormEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
@@ -436,7 +436,7 @@ const MobileSearchField = styled.div`
     place-items: center;
     border: 0;
     border-radius: 999px;
-    background: #eef1f6;
+    background: transparent;
     padding: 0;
     color: #667085;
     cursor: pointer;
@@ -2761,7 +2761,7 @@ export function ProfileManager() {
                     setMobileSearchOpen(false);
                   }}
                 >
-                  <X size={17} />
+                  <CircleX size={17} />
                 </button>
               </MobileSearchField>
             ) : (
