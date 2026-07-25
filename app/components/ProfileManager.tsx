@@ -2309,11 +2309,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
               <MoneyField icon={<HandCoins size={14} />} label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
 
-              <CostSummary>
-                <span><TrendingUp size={13} />Lợi Nhuận Thu Về</span>
-                <strong>{formatCurrencyShort(profit)}</strong>
-              </CostSummary>
-
               <Field>
                 <FieldLabel><ClipboardCheck size={14} />Trạng Thái</FieldLabel>
                 <StatusSelectWrap $status={form.status}>
@@ -2326,6 +2321,11 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   </select>
                 </StatusSelectWrap>
               </Field>
+
+              <CostSummary>
+                <span><TrendingUp size={13} />Lợi Nhuận Thu Về</span>
+                <strong>{formatCurrencyShort(profit)}</strong>
+              </CostSummary>
             </FormSection>
           </FormSections>
 
