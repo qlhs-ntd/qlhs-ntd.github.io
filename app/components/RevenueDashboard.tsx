@@ -354,7 +354,7 @@ export function RevenueDashboard() {
 
       <MetricsGrid aria-label="Số liệu hồ sơ và doanh thu trong tháng">
         <MetricCard $tone="primary" $desktopSpan={4} $mobileSpan={1} $mobileOrder={3}><span><FolderOpen size={20} /></span><small>Tổng hồ sơ</small><strong>{displayNumber(summary.totalProfiles)}</strong></MetricCard>
-        <MetricCard $tone="danger" $desktopSpan={4} $mobileSpan={2} $mobileOrder={1}><span><Calculator size={20} /></span><small>Tổng Chi Phí Khách Trả</small><CurrencyValue $tone="danger"><strong>{displayNumber(summary.totalCost)}</strong>{!loading && <span>VNĐ</span>}</CurrencyValue></MetricCard>
+        <MetricCard $tone="danger" $desktopSpan={4} $mobileSpan={2} $mobileOrder={1}><span><Calculator size={20} /></span><small>Chi Phí Khách Trả</small><CurrencyValue $tone="danger"><strong>{displayNumber(summary.totalCost)}</strong>{!loading && <span>VNĐ</span>}</CurrencyValue></MetricCard>
         <MetricCard $tone="success" $desktopSpan={4} $mobileSpan={2} $mobileOrder={2}><span><TrendingUp size={20} /></span><small>Tổng lợi nhuận</small><CurrencyValue $tone="success"><strong>{displayNumber(summary.totalProfit)}</strong>{!loading && <span>VNĐ</span>}</CurrencyValue></MetricCard>
         <MetricCard $tone="warning" $desktopSpan={3} $mobileSpan={1} $mobileOrder={4}><span><Loader size={20} /></span><small>Đang xử lí</small><strong>{displayNumber(summary.processing)}</strong></MetricCard>
         <MetricCard $tone="violet" $desktopSpan={3} $mobileSpan={1} $mobileOrder={5}><span><Clock size={20} /></span><small>Chờ thanh toán</small><strong>{displayNumber(summary.waitingForPayment)}</strong></MetricCard>

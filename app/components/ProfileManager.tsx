@@ -2174,7 +2174,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               <MoneyField icon={<BadgePlus size={14} />} label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
 
               <CostSummary>
-                <span><Calculator size={13} />Tổng Chi Phí Khách Trả</span>
+                <span><Calculator size={13} />Chi Phí Khách Trả</span>
                 <strong>{formatCurrency(totalCost)}</strong>
               </CostSummary>
             </FormSection>
@@ -2247,6 +2247,7 @@ export function ProfileManager() {
   const monthTabs = useMemo(() => getYearEndMonths(), []);
   const copyResetTimerRef = useRef<number | null>(null);
   const statusTabsRef = useRef<HTMLDivElement>(null);
+  const actionMenuRootRef = useRef<HTMLDivElement>(null);
   const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
   const [activeStatusTab, setActiveStatusTab] = useState<StatusTabKey>("all");
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
@@ -2307,6 +2308,20 @@ export function ProfileManager() {
     const activeTab = statusTabsRef.current?.querySelector<HTMLButtonElement>('[aria-selected="true"]');
     activeTab?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   }, [activeStatusTab]);
+
+  useEffect(() => {
+    if (!openActionId) return;
+
+    const closeOnOutsidePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (actionMenuRootRef.current?.contains(target)) return;
+      setOpenActionId(null);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointerDown);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointerDown);
+  }, [openActionId]);
 
   const monthlyProfiles = useMemo(() => profiles.filter((profile) => {
     const createdAt = new Date(profile.createdAt);
@@ -2631,7 +2646,7 @@ export function ProfileManager() {
                       })}
                     >
                       <ProfileIcon><Calculator size={14} /></ProfileIcon>
-                      Tổng Chi Phí Khách Trả
+                      Chi Phí Khách Trả
                       <ChevronDown className="cost-toggle-chevron" size={14} />
                     </CostToggleButton>
                     <strong>{formatCurrency(profile.totalCost)}</strong>
@@ -2648,7 +2663,7 @@ export function ProfileManager() {
                 </ProfileGroup>
 
                 <ProfileGroup aria-label="Thao tác hồ sơ">
-                  <ActionGroup>
+                  <ActionGroup ref={openActionId === profile.id ? actionMenuRootRef : undefined}>
                     <ActionMenuButton
                       type="button"
                       $active={openActionId === profile.id}
