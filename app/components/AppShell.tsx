@@ -38,7 +38,7 @@ const Sidebar = styled.aside`
     inset: auto auto max(14px, env(safe-area-inset-bottom)) 50%;
     width: min(230px, calc(100vw - 28px));
     height: auto;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.55);
     backdrop-filter: blur(20px);
