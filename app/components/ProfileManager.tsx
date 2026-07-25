@@ -63,7 +63,7 @@ const Header = styled.header`
   gap: 16px;
   margin-bottom: 18px;
 
-  @media (max-width: 640px) {
+  @media (max-width: 860px) {
     gap: 12px;
   }
 `;
@@ -77,7 +77,7 @@ const TitleBlock = styled.div`
     line-height: 1.05;
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 860px) {
     h1 {
       font-size: 18px;
     }
@@ -117,7 +117,7 @@ const MonthSelectWrap = styled.div`
   width: 160px;
   flex-shrink: 0;
 
-  @media (max-width: 640px) {
+  @media (max-width: 860px) {
     width: 135px;
   }
 `;

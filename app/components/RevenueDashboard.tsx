@@ -33,7 +33,7 @@ const Header = styled.header`
     line-height: 1.05;
   }
 
-  @media (max-width: 640px) {
+  @media (max-width: 860px) {
     gap: 12px;
 
     h1 {
@@ -47,7 +47,7 @@ const MonthSelectWrap = styled.div`
   width: 160px;
   flex-shrink: 0;
 
-  @media (max-width: 640px) {
+  @media (max-width: 860px) {
     width: 135px;
   }
 `;

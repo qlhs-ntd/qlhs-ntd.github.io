@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChartNoAxesCombined, FolderOpen } from "lucide-react";
+import { FolderOpen, TrendingUp } from "lucide-react";
 import type { ReactNode } from "react";
 import styled from "styled-components";
 
@@ -23,18 +23,6 @@ const Sidebar = styled.aside`
   backdrop-filter: blur(18px);
 
   @media (max-width: 860px) {
-    inset: 0 0 auto;
-    width: auto;
-    height: 76px;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
-    padding: 13px 18px;
-  }
-
-  @media (max-width: 640px) {
     inset: auto auto max(14px, env(safe-area-inset-bottom)) 50%;
     width: min(230px, calc(100vw - 28px));
     height: auto;
@@ -61,11 +49,6 @@ const Navigation = styled.nav`
 
   @media (max-width: 860px) {
     display: flex;
-    width: auto;
-    justify-content: center;
-  }
-
-  @media (max-width: 640px) {
     width: 100%;
     gap: 3px;
   }
@@ -124,15 +107,6 @@ const NavItem = styled(Link)<{ $active: boolean }>`
   }
 
   @media (max-width: 860px) {
-    min-height: 44px;
-    width: 48px;
-
-    &::after {
-      display: none;
-    }
-  }
-
-  @media (max-width: 640px) {
     width: auto;
     min-height: 46px;
     flex: 1 1 0;
@@ -142,6 +116,10 @@ const NavItem = styled(Link)<{ $active: boolean }>`
     background: ${({ $active }) => ($active ? "#edf0ff" : "transparent")};
     font-size: 10px;
     line-height: 1;
+
+    &::after {
+      display: none;
+    }
 
     span {
       display: block;
@@ -161,10 +139,6 @@ const Main = styled.main`
 
   @media (max-width: 860px) {
     margin-left: 0;
-    padding: 94px 20px 56px;
-  }
-
-  @media (max-width: 640px) {
     padding: 22px 14px calc(92px + env(safe-area-inset-bottom));
   }
 `;
@@ -178,28 +152,31 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const normalizedPathname = pathname === "/" ? pathname : pathname.replace(/\/+$/, "");
 
+  const hosoBActive = normalizedPathname === "/";
+  const doanhThuActive = normalizedPathname === "/doanh-thu";
+
   return (
     <Shell>
       <Sidebar>
         <Navigation aria-label="Điều hướng chính">
           <NavItem
             href="/"
-            $active={normalizedPathname === "/"}
-            aria-current={normalizedPathname === "/" ? "page" : undefined}
+            $active={hosoBActive}
+            aria-current={hosoBActive ? "page" : undefined}
             aria-label="Hồ sơ"
             title="Hồ sơ"
           >
-            <FolderOpen size={19} />
+            <FolderOpen size={19} fill={hosoBActive ? "currentColor" : "none"} />
             <span>Hồ sơ</span>
           </NavItem>
           <NavItem
             href="/doanh-thu"
-            $active={normalizedPathname === "/doanh-thu"}
-            aria-current={normalizedPathname === "/doanh-thu" ? "page" : undefined}
+            $active={doanhThuActive}
+            aria-current={doanhThuActive ? "page" : undefined}
             aria-label="Doanh thu"
             title="Doanh thu"
           >
-            <ChartNoAxesCombined size={19} />
+            <TrendingUp size={19} fill={doanhThuActive ? "currentColor" : "none"} />
             <span>Doanh thu</span>
           </NavItem>
         </Navigation>

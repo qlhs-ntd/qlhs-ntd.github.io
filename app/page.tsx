@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ProfileManager } from "./components/ProfileManager";
 
 export const metadata: Metadata = {
-  title: "Danh sách hồ sơ xe 2026",
+  title: "QLHS - Dũng Nguyễn",
 };
 
 export default function HomePage() {
