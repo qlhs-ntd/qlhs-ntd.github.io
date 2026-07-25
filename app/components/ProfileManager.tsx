@@ -746,6 +746,12 @@ const GroupDivider = styled.div`
   background: #e4e7ee;
 `;
 
+const MobileHiddenGroupDivider = styled(GroupDivider)`
+  @media (max-width: 1100px) {
+    display: none;
+  }
+`;
+
 const SummaryDivider = styled(GroupDivider)`
   @media (max-width: 1100px) {
     display: none;
@@ -785,6 +791,7 @@ const CostToggleButton = styled.button<{ $expanded: boolean; $neutral?: boolean 
   }
 
   @media (max-width: 1100px) {
+    color: var(--primary);
     cursor: pointer;
 
     .cost-toggle-chevron {
@@ -1243,6 +1250,12 @@ const FormSection = styled.section`
       border-bottom: 0;
       padding-bottom: 0;
     }
+  }
+`;
+
+const FinalFormSection = styled(FormSection)`
+  @media (max-width: 1100px) {
+    padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px));
   }
 `;
 
@@ -2511,7 +2524,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
               </CostSummary>
             </FormSection>
 
-            <FormSection>
+            <FinalFormSection>
               <Field as="div">
                 <FieldLabel><ListChecks size={14} />Giấy Tờ Bổ Sung</FieldLabel>
                 <CheckGroup>
@@ -2581,7 +2594,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                 <span><TrendingUp size={13} />Lợi Nhuận Thu Về</span>
                 <strong>{formatCurrencyShort(profit)}</strong>
               </CostSummary>
-            </FormSection>
+            </FinalFormSection>
           </FormSections>
 
         </Form>
@@ -2917,7 +2930,7 @@ export function ProfileManager() {
                     <span><ProfileIcon><BriefcaseBusiness size={14} /></ProfileIcon>Loại dịch vụ</span>
                     <strong>{profile.serviceType ? capitalizeWords(profile.serviceType) : "—"}</strong>
                   </CostLine>
-                  <GroupDivider />
+                  <MobileHiddenGroupDivider />
                     <CostLine aria-label="Khách Hàng" $total>
                       <CostToggleButton
                         type="button"

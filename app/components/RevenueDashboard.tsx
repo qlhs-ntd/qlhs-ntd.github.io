@@ -105,8 +105,8 @@ const DropdownIcon = styled.span`
 const MetricsGrid = styled.section`
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 14px;
-  row-gap: 18px;
+  column-gap: 10px;
+  row-gap: 12px;
   margin-bottom: 18px;
 
   @media (max-width: 980px) {
@@ -125,21 +125,25 @@ const MetricCard = styled.article<{
   $mobileSpan: number;
   $mobileOrder: number;
 }>`
+  display: grid;
   grid-column: span ${({ $desktopSpan }) => $desktopSpan};
-  min-height: 154px;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-content: start;
+  align-items: center;
+  column-gap: 9px;
+  min-height: 128px;
   border: 1px solid var(--line);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.92);
-  padding: 20px;
+  padding: 16px;
   box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
 
   > span {
     display: grid;
-    width: 42px;
-    height: 42px;
-    margin-bottom: 18px;
+    width: 36px;
+    height: 36px;
     place-items: center;
-    border-radius: 13px;
+    border-radius: 11px;
     background: ${({ $tone }) =>
       $tone === "danger"
         ? "#fff1f3"
@@ -164,15 +168,16 @@ const MetricCard = styled.article<{
 
   small {
     display: block;
-    margin-bottom: 5px;
     color: #687086;
     font-size: 13px;
     font-weight: 650;
     line-height: 1.4;
-    text-transform: uppercase;
+    text-transform: capitalize;
   }
 
   strong {
+    grid-column: 1 / -1;
+    margin-top: 14px;
     color: var(--ink);
     font-size: 23px;
     font-weight: 700;
@@ -187,18 +192,43 @@ const MetricCard = styled.article<{
   @media (max-width: 560px) {
     grid-column: span ${({ $mobileSpan }) => $mobileSpan};
     order: ${({ $mobileOrder }) => $mobileOrder};
-    padding: 12.5px;
-    min-height: 139px;
+    padding: 11px;
+    min-height: 112px;
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 8px;
+
+    > span {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+
+      svg {
+        width: 15px;
+        height: 15px;
+      }
+    }
+
+    small {
+      font-size: 11px;
+      line-height: 1.25;
+    }
+
+    strong {
+      margin-top: 10px;
+    }
   }
 `;
 
 const CurrencyValue = styled.div<{ $tone: "danger" | "success" }>`
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  margin-top: 14px;
 
   strong {
+    margin-top: 0;
     color: var(--ink);
     font-size: 23px;
     font-weight: 700;
@@ -207,18 +237,16 @@ const CurrencyValue = styled.div<{ $tone: "danger" | "success" }>`
   }
 
   span {
-    display: inline-grid;
-    min-width: 38px;
-    height: 25px;
-    place-items: center;
-    border-radius: 8px;
-    background: ${({ $tone }) => ($tone === "danger" ? "#fff1f3" : "#e9f8ef")};
-    padding: 0 7px;
-    color: ${({ $tone }) => ($tone === "danger" ? "var(--danger)" : "#217448")};
-    font-size: 11px;
-    font-weight: 750;
+    display: inline;
+    color: var(--ink);
+    font-size: 23px;
+    font-weight: 400;
     letter-spacing: 0;
-    line-height: 1;
+    line-height: 1.2;
+  }
+
+  @media (max-width: 560px) {
+    margin-top: 10px;
   }
 `;
 
@@ -354,13 +382,13 @@ export function RevenueDashboard() {
       {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
 
       <MetricsGrid aria-label="Số liệu hồ sơ và doanh thu trong tháng">
-        <MetricCard $tone="primary" $desktopSpan={4} $mobileSpan={2} $mobileOrder={3}><span><FolderOpen size={20} /></span><small>Tổng hồ sơ</small><strong>{displayNumber(summary.totalProfiles)}</strong></MetricCard>
-        <MetricCard $tone="danger" $desktopSpan={4} $mobileSpan={2} $mobileOrder={1}><span><Calculator size={20} /></span><small>Chi Phí Khách Trả</small><CurrencyValue $tone="danger"><strong>{displayNumber(summary.totalCost)}</strong>{!loading && <span>đ</span>}</CurrencyValue></MetricCard>
-        <MetricCard $tone="success" $desktopSpan={4} $mobileSpan={2} $mobileOrder={2}><span><TrendingUp size={20} /></span><small>Lợi Nhuận Thu Về</small><CurrencyValue $tone="success"><strong>{displayNumber(summary.totalProfit)}</strong>{!loading && <span>đ</span>}</CurrencyValue></MetricCard>
-        <MetricCard $tone="warning" $desktopSpan={3} $mobileSpan={1} $mobileOrder={4}><span><Loader size={20} /></span><small>Đang xử lí</small><strong>{displayNumber(summary.processing)}</strong></MetricCard>
-        <MetricCard $tone="violet" $desktopSpan={3} $mobileSpan={1} $mobileOrder={5}><span><Clock size={20} /></span><small>Chờ thanh toán</small><strong>{displayNumber(summary.waitingForPayment)}</strong></MetricCard>
-        <MetricCard $tone="primary" $desktopSpan={3} $mobileSpan={1} $mobileOrder={6}><span><BadgeCheck size={20} /></span><small>Đã thanh toán</small><strong>{displayNumber(summary.paid)}</strong></MetricCard>
-        <MetricCard $tone="success" $desktopSpan={3} $mobileSpan={1} $mobileOrder={7}><span><CheckCircle2 size={20} /></span><small>Đã hoàn tất</small><strong>{displayNumber(summary.completed)}</strong></MetricCard>
+        <MetricCard $tone="danger" $desktopSpan={4} $mobileSpan={2} $mobileOrder={1}><span><Calculator size={18} /></span><small>Chi Phí Khách Trả</small><CurrencyValue $tone="danger"><strong>{displayNumber(summary.totalCost)}</strong>{!loading && <span>đ</span>}</CurrencyValue></MetricCard>
+        <MetricCard $tone="success" $desktopSpan={4} $mobileSpan={2} $mobileOrder={2}><span><TrendingUp size={18} /></span><small>Lợi Nhuận Thu Về</small><CurrencyValue $tone="success"><strong>{displayNumber(summary.totalProfit)}</strong>{!loading && <span>đ</span>}</CurrencyValue></MetricCard>
+        <MetricCard $tone="primary" $desktopSpan={4} $mobileSpan={2} $mobileOrder={3}><span><FolderOpen size={18} /></span><small>Tổng hồ sơ</small><strong>{displayNumber(summary.totalProfiles)}</strong></MetricCard>
+        <MetricCard $tone="warning" $desktopSpan={3} $mobileSpan={1} $mobileOrder={4}><span><Loader size={18} /></span><small>Đang xử lí</small><strong>{displayNumber(summary.processing)}</strong></MetricCard>
+        <MetricCard $tone="violet" $desktopSpan={3} $mobileSpan={1} $mobileOrder={5}><span><Clock size={18} /></span><small>Chờ thanh toán</small><strong>{displayNumber(summary.waitingForPayment)}</strong></MetricCard>
+        <MetricCard $tone="primary" $desktopSpan={3} $mobileSpan={1} $mobileOrder={6}><span><BadgeCheck size={18} /></span><small>Đã thanh toán</small><strong>{displayNumber(summary.paid)}</strong></MetricCard>
+        <MetricCard $tone="success" $desktopSpan={3} $mobileSpan={1} $mobileOrder={7}><span><CheckCircle2 size={18} /></span><small>Đã hoàn tất</small><strong>{displayNumber(summary.completed)}</strong></MetricCard>
       </MetricsGrid>
     </AppShell>
   );
