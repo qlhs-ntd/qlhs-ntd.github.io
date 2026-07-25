@@ -1420,6 +1420,64 @@ const InputIconButton = styled.button`
   }
 `;
 
+const CustomerHistoryPopover = styled.div`
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: 35;
+  display: grid;
+  width: min(320px, 100%);
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  padding: 6px;
+  box-shadow: 0 18px 44px rgba(22, 30, 55, 0.16);
+
+  button {
+    display: flex;
+    min-height: 38px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    padding: 0 10px;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: #f5f7ff;
+      color: var(--primary);
+    }
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  small {
+    flex: 0 0 auto;
+    color: #7a8294;
+    font-size: 11px;
+    font-weight: 750;
+  }
+`;
+
+const CustomerHistoryEmpty = styled.div`
+  padding: 10px;
+  color: #7a8294;
+  font-size: 12px;
+  font-weight: 650;
+`;
+
 const SelectWrap = styled.div`
   position: relative;
 
@@ -1978,13 +2036,15 @@ function MoneyField({ icon, label, value, onChange }: {
   );
 }
 
-function ProfileModal({ state, saving, onClose, onSave }: {
+function ProfileModal({ state, profiles, saving, onClose, onSave }: {
   state: EditorState;
+  profiles: ProfileRecord[];
   saving: boolean;
   onClose: () => void;
   onSave: (input: ProfileInput) => Promise<boolean>;
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
+  const customerHistoryRef = useRef<HTMLDivElement>(null);
   const formScrollTopBeforeInputRef = useRef<number | null>(null);
   const formScrollLockFrameRef = useRef<number | null>(null);
   const [form, setForm] = useState<ProfileInput>(() =>
@@ -1992,9 +2052,23 @@ function ProfileModal({ state, saving, onClose, onSave }: {
   );
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [ownerSuggestionsOpen, setOwnerSuggestionsOpen] = useState(false);
+  const [customerHistoryOpen, setCustomerHistoryOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const { totalCost, profit } = calculateProfileCosts(form);
   const showCustomerHistoryButton = !form.customerName.trim();
+  const customerHistoryOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    for (const profile of profiles) {
+      const name = profile.customerName.trim();
+      if (!name) continue;
+      counts.set(name, (counts.get(name) ?? 0) + 1);
+    }
+
+    return Array.from(counts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name, "vi"));
+  }, [profiles]);
 
   const requestClose = useCallback(() => {
     if (saving || closing) return;
@@ -2007,6 +2081,11 @@ function ProfileModal({ state, saving, onClose, onSave }: {
 
   function updateField<Key extends keyof ProfileInput>(key: Key, value: ProfileInput[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function selectCustomerName(name: string) {
+    updateField("customerName", name);
+    setCustomerHistoryOpen(false);
   }
 
   useEffect(() => {
@@ -2027,6 +2106,19 @@ function ProfileModal({ state, saving, onClose, onSave }: {
       document.body.style.overflow = "";
     };
   }, [requestClose]);
+
+  useEffect(() => {
+    if (!customerHistoryOpen) return;
+
+    const closeOnOutsidePointerDown = (event: PointerEvent) => {
+      const root = customerHistoryRef.current;
+      if (!root || root.contains(event.target as Node)) return;
+      setCustomerHistoryOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointerDown);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointerDown);
+  }, [customerHistoryOpen]);
 
   useEffect(() => {
     const visualViewport = window.visualViewport;
@@ -2192,7 +2284,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             <FormSection>
               <Field>
                 <FieldLabel><UserRound size={14} />Tên khách hàng</FieldLabel>
-                <InputActionWrap $hasAction={showCustomerHistoryButton}>
+                <InputActionWrap ref={customerHistoryRef} $hasAction={showCustomerHistoryButton}>
                   <input
                     aria-label="Tên khách hàng"
                     type="text"
@@ -2207,9 +2299,33 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                     placeholder="Nhập tên khách hàng"
                   />
                   {showCustomerHistoryButton && (
-                    <InputIconButton type="button" aria-label="Mở lịch sử hồ sơ khách hàng" title="Mở lịch sử hồ sơ khách hàng">
+                    <InputIconButton
+                      type="button"
+                      aria-label="Mở danh sách khách hàng"
+                      title="Mở danh sách khách hàng"
+                      aria-expanded={customerHistoryOpen}
+                      onClick={() => setCustomerHistoryOpen((current) => !current)}
+                    >
                       <FileClock size={15} />
                     </InputIconButton>
+                  )}
+                  {showCustomerHistoryButton && customerHistoryOpen && (
+                    <CustomerHistoryPopover aria-label="Danh sách khách hàng">
+                      {customerHistoryOptions.length > 0 ? (
+                        customerHistoryOptions.map((option) => (
+                          <button
+                            key={option.name}
+                            type="button"
+                            onClick={() => selectCustomerName(option.name)}
+                          >
+                            <span>{option.name}</span>
+                            <small>{option.count}</small>
+                          </button>
+                        ))
+                      ) : (
+                        <CustomerHistoryEmpty>Chưa có khách hàng</CustomerHistoryEmpty>
+                      )}
+                    </CustomerHistoryPopover>
                   )}
                 </InputActionWrap>
               </Field>
@@ -2844,7 +2960,7 @@ export function ProfileManager() {
         )}
       </Panel>
 
-      {editor && <ProfileModal state={editor} saving={saving} onClose={() => setEditor(null)} onSave={saveProfile} />}
+      {editor && <ProfileModal state={editor} profiles={profiles} saving={saving} onClose={() => setEditor(null)} onSave={saveProfile} />}
       {deleteConfirmation && (
         <DeleteConfirmModal
           profile={deleteConfirmation}
