@@ -39,7 +39,7 @@ import {
   UserRound,
   Wallet,
 } from "lucide-react";
-import { type FocusEvent, FormEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type FocusEvent, FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import { AppShell } from "./AppShell";
 import {
@@ -461,6 +461,8 @@ const ProfileList = styled.div`
 const ProfileGroup = styled.div`
   display: flex;
   min-width: 0;
+  height: max-content;
+  align-self: start;
   flex-direction: column;
   gap: 10px;
   padding: 0 18px;
@@ -495,6 +497,8 @@ const ProfileRow = styled.article`
   }
 
   @media (max-width: 1100px) {
+    align-items: start;
+    grid-auto-rows: max-content;
     grid-template-columns: minmax(0, 1fr);
     padding: 8px 14px;
     font-size: 13px;
@@ -530,7 +534,7 @@ const ProfileRow = styled.article`
     > ${ProfileGroup}[aria-label="Tổng kết chi phí"] {
       border-bottom: 0;
       padding-top: 10px;
-      padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
     }
 
     > ${ProfileGroup}[aria-label="Thao tác hồ sơ"],
@@ -697,6 +701,15 @@ const CostLine = styled.div<{
     font-weight: inherit;
     white-space: nowrap;
   }
+
+  @media (max-width: 1100px) {
+    ${({ $profit }) =>
+      $profit
+        ? `
+          padding-bottom: 10px;
+        `
+        : ""}
+  }
 `;
 
 const MobilePaperwork = styled.div`
@@ -708,22 +721,17 @@ const MobilePaperwork = styled.div`
   }
 `;
 
-const MobileTimeValue = styled.strong`
-  &::before {
+const DesktopTimeValue = styled.strong`
+  @media (max-width: 1100px) {
     display: none;
-    content: "Thời gian";
   }
+`;
+
+const MobileTimeLine = styled(CostLine)`
+  display: none;
 
   @media (max-width: 1100px) {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-
-    &::before {
-      display: inline;
-      color: #6b7280;
-      font-weight: 650;
-    }
+    display: flex;
   }
 `;
 
@@ -1266,7 +1274,7 @@ const FieldLabel = styled.span`
   }
 `;
 
-const MoneyInputWrap = styled.div`
+const MoneyInputWrap = styled.div<{ $hasValue?: boolean }>`
   position: relative;
   display: flex;
   width: 100%;
@@ -1288,9 +1296,9 @@ const MoneyInputWrap = styled.div`
 
   input {
     position: absolute;
-    inset: 0 48px 0 0;
+    inset: 0 ${({ $hasValue }) => ($hasValue ? "82px" : "48px")} 0 0;
     z-index: 2;
-    width: calc(100% - 48px);
+    width: calc(100% - ${({ $hasValue }) => ($hasValue ? "82px" : "48px")});
     height: 100%;
     border: 0;
     border-radius: 12px 0 0 12px;
@@ -1391,7 +1399,7 @@ const MoneyInputWrap = styled.div`
   }
 
   .money-currency {
-    margin-left: auto;
+    margin-left: ${({ $hasValue }) => ($hasValue ? "0" : "auto")};
     padding: 0 8px;
   }
 
@@ -1451,6 +1459,17 @@ const ClearInputButton = styled(InputIconButton)`
 
   &:active {
     color: #667085;
+  }
+`;
+
+const MoneyClearButton = styled(ClearInputButton)`
+  position: static;
+  flex: 0 0 auto;
+  margin-left: auto;
+  transform: none;
+
+  &:active {
+    transform: scale(0.96);
   }
 `;
 
@@ -2001,16 +2020,24 @@ function MoneyField({ icon, label, value, onChange }: {
   value: number;
   onChange: (value: number) => void;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const displayedValue = value
     ? new Intl.NumberFormat("vi-VN").format(Math.round(value / 1000))
     : "";
   const numericInputValue = value ? Math.round(value / 1000) : "";
 
+  function clearValue(event: ReactPointerEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    onChange(0);
+    window.requestAnimationFrame(() => inputRef.current?.focus({ preventScroll: true }));
+  }
+
   return (
     <Field as="div">
       <FieldLabel>{icon}{label}</FieldLabel>
-      <MoneyInputWrap>
+      <MoneyInputWrap $hasValue={Boolean(value)}>
         <input
+          ref={inputRef}
           aria-label={label}
           type="number"
           inputMode="numeric"
@@ -2034,6 +2061,16 @@ function MoneyField({ icon, label, value, onChange }: {
           <span className="money-caret" />
           <span className={`money-minor${displayedValue ? "" : " is-placeholder"}`}>.000</span>
         </div>
+        {Boolean(value) && (
+          <MoneyClearButton
+            type="button"
+            aria-label={`Xoá ${label}`}
+            title={`Xoá ${label}`}
+            onPointerDown={clearValue}
+          >
+            <CircleX size={17} />
+          </MoneyClearButton>
+        )}
         <span className="money-currency" aria-hidden="true">đ</span>
       </MoneyInputWrap>
     </Field>
@@ -2083,6 +2120,17 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
 
   function updateField<Key extends keyof ProfileInput>(key: Key, value: ProfileInput[Key]) {
     setForm((current) => ({ ...current, [key]: value }));
+  }
+
+  function clearTextField<Key extends keyof ProfileInput>(
+    event: ReactPointerEvent<HTMLButtonElement>,
+    key: Key,
+    value: ProfileInput[Key],
+  ) {
+    event.preventDefault();
+    const inputElement = event.currentTarget.parentElement?.querySelector("input");
+    updateField(key, value);
+    window.requestAnimationFrame(() => inputElement?.focus({ preventScroll: true }));
   }
 
   function selectCustomerName(name: string) {
@@ -2322,7 +2370,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                       type="button"
                       aria-label="Xoá tên khách hàng"
                       title="Xoá tên khách hàng"
-                      onClick={() => updateField("customerName", "")}
+                      onPointerDown={(event) => clearTextField(event, "customerName", "")}
                     >
                       <CircleX size={17} />
                     </ClearInputButton>
@@ -2363,7 +2411,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                       type="button"
                       aria-label="Xoá tên chủ phương tiện"
                       title="Xoá tên chủ phương tiện"
-                      onClick={() => updateField("vehicleOwnerName", "")}
+                      onPointerDown={(event) => clearTextField(event, "vehicleOwnerName", "")}
                     >
                       <CircleX size={17} />
                     </ClearInputButton>
@@ -2391,7 +2439,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                       type="button"
                       aria-label="Xoá Biển Số Cũ"
                       title="Xoá Biển Số Cũ"
-                      onClick={() => updateField("vehiclePlate", "")}
+                      onPointerDown={(event) => clearTextField(event, "vehiclePlate", "")}
                     >
                       <CircleX size={17} />
                     </ClearInputButton>
@@ -2483,7 +2531,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                       type="button"
                       aria-label="Xoá Biển Số Mới"
                       title="Xoá Biển Số Mới"
-                      onClick={() => updateField("newVehiclePlate", "")}
+                      onPointerDown={(event) => clearTextField(event, "newVehiclePlate", "")}
                     >
                       <CircleX size={17} />
                     </ClearInputButton>
@@ -2832,8 +2880,12 @@ export function ProfileManager() {
                         {formatStatus(profile.status)}
                       </StatusPill>
                     </span>
-                    <MobileTimeValue>{formatCreatedAt(profile.createdAt)}</MobileTimeValue>
+                    <DesktopTimeValue>{formatCreatedAt(profile.createdAt)}</DesktopTimeValue>
                   </CostLine>
+                  <MobileTimeLine aria-label="Thời gian">
+                    <span><ProfileIcon><Clock size={14} /></ProfileIcon>Thời gian</span>
+                    <strong>{formatCreatedAt(profile.createdAt)}</strong>
+                  </MobileTimeLine>
                   <CostLine aria-label="Cơ quan nhận">
                     <span><ProfileIcon><Building2 size={14} /></ProfileIcon>Cơ quan nhận</span>
                     <strong>{profile.receivingAgency ? capitalizeWords(profile.receivingAgency) : "—"}</strong>
