@@ -526,6 +526,11 @@ const ProfileRow = styled.article`
       padding-bottom: 8px;
     }
 
+    > ${ProfileGroup}[aria-label="Chi Phí Dịch vụ hồ sơ"][data-customer-expanded="true"] {
+      border-bottom: 0;
+      padding-top: 2px;
+    }
+
     > ${ProfileGroup}[aria-label="Chi Phí Dịch vụ hồ sơ"][data-cost-expanded="false"] {
       border-bottom: 0;
       padding-bottom: 0;
@@ -638,7 +643,8 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     span,
     strong,
     button {
-      font-size: 12px;
+      font-size: 11.5px;
+      font-weight: 600;
     }
 
     ${ProfileIcon} {
@@ -1665,7 +1671,7 @@ const CostSummary = styled.div`
 
 const ProfitCostSummary = styled(CostSummary)`
   @media (max-width: 1100px) {
-    margin-bottom: calc(200px + env(safe-area-inset-bottom, 0px));
+    margin-bottom: calc(300px + env(safe-area-inset-bottom, 0px));
   }
 `;
 
@@ -2971,6 +2977,7 @@ export function ProfileManager() {
 
                 <ProfileGroup
                   aria-label="Chi Phí Dịch vụ hồ sơ"
+                  data-customer-expanded={expandedCustomerIds.has(profile.id) ? "true" : "false"}
                   data-cost-expanded={expandedCostIds.has(profile.id) ? "true" : "false"}
                 >
                   <CostList id={`cost-details-${profile.id}`} $expanded={expandedCostIds.has(profile.id)}>
@@ -3006,7 +3013,6 @@ export function ProfileManager() {
                   <DesktopPaperworkLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><FileText size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span><strong>{profile.newVehiclePlate || "--"}</strong></DesktopPaperworkLine>
-                  <SummaryDivider />
                   <CostLine $total $amountTone="danger"><span><ProfileIcon $tone="danger"><HandCoins size={14} /></ProfileIcon>Chi phí ban đầu</span><strong>{formatCurrency(profile.initialCost)}</strong></CostLine>
                   <CostLine $total $profit $amountTone="success"><span><ProfileIcon $tone="success"><TrendingUp size={14} /></ProfileIcon>Lợi Nhuận Thu Về</span><strong>{formatCurrency(profile.profit)}</strong></CostLine>
                 </ProfileGroup>
