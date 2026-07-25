@@ -76,6 +76,21 @@ function statusTabColor(tone: StatusTabTone) {
   }
 }
 
+function statusTabBackground(tone: StatusTabTone) {
+  switch (tone) {
+    case "processing":
+      return "rgba(201, 147, 0, 0.08)";
+    case "waiting":
+      return "rgba(118, 86, 201, 0.08)";
+    case "paid":
+      return "rgba(56, 89, 217, 0.08)";
+    case "completed":
+      return "rgba(33, 116, 72, 0.08)";
+    default:
+      return "white";
+  }
+}
+
 function normalizedStatus(value: string) {
   return value === "Hoàn tất" || value === "Đã hoàn tất" ? "Hoàn tất" : value || "Đang xử lí";
 }
@@ -293,7 +308,7 @@ const StatusTab = styled.button<{ $active: boolean; $tone: StatusTabTone }>`
   gap: 8px;
   border: 1px solid ${({ $active, $tone }) => ($active ? statusTabColor($tone) : "var(--line)")};
   border-radius: 999px;
-  background: ${({ $active, $tone }) => ($active && $tone !== "neutral" ? `${statusTabColor($tone)}14` : "white")};
+  background: ${({ $active, $tone }) => ($active ? statusTabBackground($tone) : "white")};
   padding: 0 12px;
   color: ${({ $active, $tone }) => ($active ? statusTabColor($tone) : "#626b7e")};
   font-size: 13px;
