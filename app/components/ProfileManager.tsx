@@ -2152,7 +2152,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             <p>{formatCurrentTime(currentTime)}</p>
           </div>
           <HeaderActions>
-            <SecondaryButton type="button" onClick={requestClose} disabled={saving || closing}>Huỷ</SecondaryButton>
+            <SecondaryButton type="button" onClick={requestClose} disabled={saving || closing}>Đóng</SecondaryButton>
             <PrimaryButton
               type="submit"
               form="profile-form"
