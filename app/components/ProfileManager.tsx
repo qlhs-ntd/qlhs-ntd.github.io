@@ -651,16 +651,31 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     padding: ${({ $expanded }) => ($expanded ? "10px 11px" : "0")};
 
     > div,
+    > div > div,
     > div > span,
+    > div > div > span,
     > div strong,
     > div button {
       font-size: 11.5px !important;
       font-weight: 600 !important;
     }
 
-    > div {
+    > div,
+    > div > div {
       border-bottom: 1px solid #eef0f4;
       padding-bottom: 8px;
+    }
+
+    > div > div {
+      padding-top: 8px;
+    }
+
+    > div:has(+ div) > div:last-child {
+      border-bottom: 1px solid #eef0f4;
+    }
+
+    > div > div:first-child {
+      padding-top: 0;
     }
 
     > div:last-child {
