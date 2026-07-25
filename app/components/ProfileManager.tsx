@@ -2247,7 +2247,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                         <option value="">Chọn khách hàng</option>
                         {customerHistoryOptions.map((option) => (
                           <option key={option.name} value={option.name}>
-                            {option.name} ({option.count})
+                            {option.name}
                           </option>
                         ))}
                       </select>
