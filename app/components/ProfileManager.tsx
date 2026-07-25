@@ -427,16 +427,16 @@ const MobileSearchField = styled.div`
   button {
     position: absolute;
     top: 50%;
-    right: 5px;
+    right: 4px;
     display: grid;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     place-items: center;
     border: 0;
-    border-radius: 9px;
-    background: transparent;
+    border-radius: 999px;
+    background: #eef1f6;
     padding: 0;
-    color: #697185;
+    color: #667085;
     cursor: pointer;
     transform: translateY(-50%);
   }
