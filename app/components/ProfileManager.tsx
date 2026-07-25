@@ -2654,15 +2654,16 @@ export function ProfileManager() {
                       <ProfileValue>{formatCreatedAt(profile.createdAt)}</ProfileValue>
                     </ProfileValueRow>
                   </ProfileField>
-                  <ProfileField aria-label="Cơ quan nhận và loại dịch vụ">
+                  <ProfileField aria-label="Cơ quan nhận">
                     <ProfileValueRow>
                       <ProfileIcon><Building2 size={14} /></ProfileIcon>
-                      <ProfileValue>
-                        {[
-                          profile.receivingAgency ? capitalizeWords(profile.receivingAgency) : "",
-                          profile.serviceType ? capitalizeWords(profile.serviceType) : "",
-                        ].filter(Boolean).join(" - ") || "—"}
-                      </ProfileValue>
+                      <ProfileValue>{profile.receivingAgency ? capitalizeWords(profile.receivingAgency) : "—"}</ProfileValue>
+                    </ProfileValueRow>
+                  </ProfileField>
+                  <ProfileField aria-label="Loại dịch vụ">
+                    <ProfileValueRow>
+                      <ProfileIcon><BriefcaseBusiness size={14} /></ProfileIcon>
+                      <ProfileValue>{profile.serviceType ? capitalizeWords(profile.serviceType) : "—"}</ProfileValue>
                     </ProfileValueRow>
                   </ProfileField>
                   <GroupDivider />
@@ -2688,15 +2689,16 @@ export function ProfileManager() {
                         )}
                       </ProfileValueRow>
                     </ProfileField>
-                    <ProfileField aria-label="Loại xe và Biển Số Cũ">
+                    <ProfileField aria-label="Loại xe">
                       <ProfileValueRow>
                         <ProfileIcon><CarFront size={14} /></ProfileIcon>
-                        <ProfileValue>
-                          {[
-                            profile.vehicleType ? capitalizeWords(profile.vehicleType) : "",
-                            profile.vehiclePlate,
-                          ].filter(Boolean).join(" - ") || "—"}
-                        </ProfileValue>
+                        <ProfileValue>{profile.vehicleType ? capitalizeWords(profile.vehicleType) : "—"}</ProfileValue>
+                      </ProfileValueRow>
+                    </ProfileField>
+                    <ProfileField aria-label="Biển Số Cũ">
+                      <ProfileValueRow>
+                        <ProfileIcon><IdCard size={14} /></ProfileIcon>
+                        <ProfileValue>{profile.vehiclePlate || "—"}</ProfileValue>
                         {profile.vehiclePlate && (
                           <MobileCopyButton $copied={copiedKey === `${profile.id}:old-plate`} type="button" aria-label="Sao chép Biển Số Cũ" title="Sao chép Biển Số Cũ" onClick={() => void copyProfileValue(profile.vehiclePlate, "Biển Số Cũ", `${profile.id}:old-plate`)}>
                             {copiedKey === `${profile.id}:old-plate` ? <Check size={12} /> : <Copy size={12} />}
