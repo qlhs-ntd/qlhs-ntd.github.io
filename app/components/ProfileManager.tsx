@@ -628,6 +628,22 @@ const CostList = styled.div<{ $expanded?: boolean }>`
 
   @media (max-width: 1100px) {
     display: ${({ $expanded }) => ($expanded ? "grid" : "none")};
+    gap: 8px;
+    border: ${({ $expanded }) => ($expanded ? "1px solid #eef0f4" : "0")};
+    border-radius: 10px;
+    background: ${({ $expanded }) => ($expanded ? "#f7f8fa" : "transparent")};
+    padding: ${({ $expanded }) => ($expanded ? "10px 11px" : "0")};
+
+    div,
+    span,
+    strong,
+    button {
+      font-size: 12px;
+    }
+
+    ${ProfileIcon} {
+      display: none;
+    }
   }
 `;
 
