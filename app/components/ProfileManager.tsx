@@ -388,12 +388,12 @@ const ProfileRow = styled.article`
       padding-right: 82px;
     }
 
-    > ${ProfileGroup}[aria-label="Chi phí hồ sơ"] {
+    > ${ProfileGroup}[aria-label="Chi Phí Dịch vụ hồ sơ"] {
       padding-top: 10px;
       padding-bottom: 8px;
     }
 
-    > ${ProfileGroup}[aria-label="Chi phí hồ sơ"][data-cost-expanded="false"] {
+    > ${ProfileGroup}[aria-label="Chi Phí Dịch vụ hồ sơ"][data-cost-expanded="false"] {
       border-bottom: 0;
       padding-bottom: 0;
     }
@@ -2014,9 +2014,9 @@ function ProfileModal({ state, saving, onClose, onSave }: {
               </Field>
 
               <Field>
-                <FieldLabel><IdCard size={14} />Biển số xe</FieldLabel>
+                <FieldLabel><IdCard size={14} />Biển Số Cũ</FieldLabel>
                 <input
-                  aria-label="Biển số xe"
+                  aria-label="Biển Số Cũ"
                   type="text"
                   autoComplete="off"
                   autoCorrect="off"
@@ -2059,14 +2059,14 @@ function ProfileModal({ state, saving, onClose, onSave }: {
             </FormSection>
 
             <FormSection>
-              <MoneyField icon={<Wallet size={14} />} label="Chi phí" value={form.cost} onChange={(value) => updateField("cost", value)} />
+              <MoneyField icon={<Wallet size={14} />} label="Chi Phí Dịch vụ" value={form.cost} onChange={(value) => updateField("cost", value)} />
               <MoneyField icon={<ReceiptText size={14} />} label="Chi phí LPTB" value={form.registrationFeeCost} onChange={(value) => updateField("registrationFeeCost", value)} />
               <MoneyField icon={<Coins size={14} />} label="Chi phí khác" value={form.otherCost} onChange={(value) => updateField("otherCost", value)} />
               <MoneyField icon={<Box size={14} />} label="Hộp đen, Phù hiệu" value={form.blackBoxBadgeCost} onChange={(value) => updateField("blackBoxBadgeCost", value)} />
               <MoneyField icon={<BadgePlus size={14} />} label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
 
               <CostSummary>
-                <span><Calculator size={13} />Tổng Chi Phí</span>
+                <span><Calculator size={13} />Tổng Chi Phí Khách Trả</span>
                 <strong>{formatCurrency(totalCost)}</strong>
               </CostSummary>
             </FormSection>
@@ -2426,7 +2426,7 @@ export function ProfileManager() {
                         )}
                       </ProfileValueRow>
                     </ProfileField>
-                    <ProfileField aria-label="Loại xe và biển số xe">
+                    <ProfileField aria-label="Loại xe và Biển Số Cũ">
                       <ProfileValueRow>
                         <ProfileIcon><CarFront size={14} /></ProfileIcon>
                         <ProfileValue>
@@ -2436,7 +2436,7 @@ export function ProfileManager() {
                           ].filter(Boolean).join(" - ") || "—"}
                         </ProfileValue>
                         {profile.vehiclePlate && (
-                          <MobileCopyButton $copied={copiedKey === `${profile.id}:old-plate`} type="button" aria-label="Sao chép biển số hiện tại" title="Sao chép biển số hiện tại" onClick={() => void copyProfileValue(profile.vehiclePlate, "biển số hiện tại", `${profile.id}:old-plate`)}>
+                          <MobileCopyButton $copied={copiedKey === `${profile.id}:old-plate`} type="button" aria-label="Sao chép Biển Số Cũ" title="Sao chép Biển Số Cũ" onClick={() => void copyProfileValue(profile.vehiclePlate, "Biển Số Cũ", `${profile.id}:old-plate`)}>
                             {copiedKey === `${profile.id}:old-plate` ? <Check size={12} /> : <Copy size={12} />}
                           </MobileCopyButton>
                         )}
@@ -2460,11 +2460,11 @@ export function ProfileManager() {
                 </ProfileGroup>
 
                 <ProfileGroup
-                  aria-label="Chi phí hồ sơ"
+                  aria-label="Chi Phí Dịch vụ hồ sơ"
                   data-cost-expanded={expandedCostIds.has(profile.id) ? "true" : "false"}
                 >
                   <CostList id={`cost-details-${profile.id}`} $expanded={expandedCostIds.has(profile.id)}>
-                    <CostLine><span><ProfileIcon><Wallet size={13} /></ProfileIcon>Chi phí</span><strong>{formatCurrency(profile.cost)}</strong></CostLine>
+                    <CostLine><span><ProfileIcon><Wallet size={13} /></ProfileIcon>Chi Phí Dịch vụ</span><strong>{formatCurrency(profile.cost)}</strong></CostLine>
                     <CostLine><span><ProfileIcon><ReceiptText size={13} /></ProfileIcon>Chi phí LPTB</span><strong>{formatCurrency(profile.registrationFeeCost)}</strong></CostLine>
                     <CostLine><span><ProfileIcon><Coins size={13} /></ProfileIcon>Chi phí khác</span><strong>{formatCurrency(profile.otherCost)}</strong></CostLine>
                     <CostLine><span><ProfileIcon><Box size={13} /></ProfileIcon>Hộp đen, Phù hiệu</span><strong>{formatCurrency(profile.blackBoxBadgeCost)}</strong></CostLine>
@@ -2485,7 +2485,7 @@ export function ProfileManager() {
                       })}
                     >
                       <ProfileIcon><Calculator size={14} /></ProfileIcon>
-                      Tổng chi phí
+                      Tổng Chi Phí Khách Trả
                       <ChevronDown className="cost-toggle-chevron" size={14} />
                     </CostToggleButton>
                     <strong>{formatCurrency(profile.totalCost)}</strong>
