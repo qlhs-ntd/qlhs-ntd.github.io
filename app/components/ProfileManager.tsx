@@ -1391,17 +1391,11 @@ const InputIconButton = styled.button`
 
 `;
 
-const CustomerHistoryDesktopButton = styled(InputIconButton)`
-  @media (max-width: 1100px) {
-    display: none;
-  }
-`;
-
 const InputNativeSelectAction = styled.div`
   position: absolute;
   top: 50%;
   right: 7px;
-  display: none;
+  display: grid;
   width: 34px;
   height: 32px;
   place-items: center;
@@ -1423,72 +1417,6 @@ const InputNativeSelectAction = styled.div`
     opacity: 0;
     cursor: pointer;
   }
-
-  @media (max-width: 1100px) {
-    display: grid;
-  }
-`;
-
-const CustomerHistoryPopover = styled.div`
-  position: absolute;
-  top: calc(100% + 7px);
-  right: 0;
-  z-index: 35;
-  display: grid;
-  width: min(320px, 100%);
-  max-height: 260px;
-  overflow-y: auto;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: white;
-  padding: 6px;
-  box-shadow: 0 18px 44px rgba(22, 30, 55, 0.16);
-
-  button {
-    display: flex;
-    min-height: 38px;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    border: 0;
-    border-radius: 9px;
-    background: transparent;
-    padding: 0 10px;
-    color: var(--ink);
-    font-size: 13px;
-    font-weight: 700;
-    text-align: left;
-    cursor: pointer;
-
-    &:hover {
-      background: #f5f7ff;
-      color: var(--primary);
-    }
-  }
-
-  span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  small {
-    flex: 0 0 auto;
-    color: #7a8294;
-    font-size: 11px;
-    font-weight: 750;
-  }
-
-  @media (max-width: 1100px) {
-    display: none;
-  }
-`;
-
-const CustomerHistoryEmpty = styled.div`
-  padding: 10px;
-  color: #7a8294;
-  font-size: 12px;
-  font-weight: 650;
 `;
 
 const SelectWrap = styled.div`
@@ -2057,14 +1985,12 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
   onSave: (input: ProfileInput) => Promise<boolean>;
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const customerHistoryRef = useRef<HTMLDivElement>(null);
   const formScrollTopBeforeInputRef = useRef<number | null>(null);
   const formScrollLockFrameRef = useRef<number | null>(null);
   const [form, setForm] = useState<ProfileInput>(() =>
     state.profile ? profileToInput(state.profile) : createEmptyProfileInput(),
   );
   const [currentTime, setCurrentTime] = useState(() => new Date());
-  const [customerHistoryOpen, setCustomerHistoryOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const { totalCost, profit } = calculateProfileCosts(form);
   const showCustomerHistoryButton = !form.customerName.trim();
@@ -2098,7 +2024,6 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
 
   function selectCustomerName(name: string) {
     updateField("customerName", name);
-    setCustomerHistoryOpen(false);
   }
 
   useEffect(() => {
@@ -2119,19 +2044,6 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
       document.body.style.overflow = "";
     };
   }, [requestClose]);
-
-  useEffect(() => {
-    if (!customerHistoryOpen) return;
-
-    const closeOnOutsidePointerDown = (event: PointerEvent) => {
-      const root = customerHistoryRef.current;
-      if (!root || root.contains(event.target as Node)) return;
-      setCustomerHistoryOpen(false);
-    };
-
-    document.addEventListener("pointerdown", closeOnOutsidePointerDown);
-    return () => document.removeEventListener("pointerdown", closeOnOutsidePointerDown);
-  }, [customerHistoryOpen]);
 
   useEffect(() => {
     const visualViewport = window.visualViewport;
@@ -2297,7 +2209,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
             <FormSection>
               <Field>
                 <FieldLabel><UserRound size={14} />Tên khách hàng</FieldLabel>
-                <InputActionWrap ref={customerHistoryRef} $hasAction={showCustomerHistoryButton}>
+                <InputActionWrap $hasAction={showCustomerHistoryButton}>
                   <input
                     aria-label="Tên khách hàng"
                     type="text"
@@ -2311,17 +2223,6 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                     onChange={(event) => updateField("customerName", event.target.value)}
                     placeholder="Nhập tên khách hàng"
                   />
-                  {showCustomerHistoryButton && (
-                    <CustomerHistoryDesktopButton
-                      type="button"
-                      aria-label="Mở danh sách khách hàng"
-                      title="Mở danh sách khách hàng"
-                      aria-expanded={customerHistoryOpen}
-                      onClick={() => setCustomerHistoryOpen((current) => !current)}
-                    >
-                      <FileClock size={15} />
-                    </CustomerHistoryDesktopButton>
-                  )}
                   {showCustomerHistoryButton && (
                     <InputNativeSelectAction>
                       <FileClock size={15} />
@@ -2341,24 +2242,6 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                         ))}
                       </select>
                     </InputNativeSelectAction>
-                  )}
-                  {showCustomerHistoryButton && customerHistoryOpen && (
-                    <CustomerHistoryPopover aria-label="Danh sách khách hàng">
-                      {customerHistoryOptions.length > 0 ? (
-                        customerHistoryOptions.map((option) => (
-                          <button
-                            key={option.name}
-                            type="button"
-                            onClick={() => selectCustomerName(option.name)}
-                          >
-                            <span>{option.name}</span>
-                            <small>{option.count}</small>
-                          </button>
-                        ))
-                      ) : (
-                        <CustomerHistoryEmpty>Chưa có khách hàng</CustomerHistoryEmpty>
-                      )}
-                    </CustomerHistoryPopover>
                   )}
                 </InputActionWrap>
               </Field>
