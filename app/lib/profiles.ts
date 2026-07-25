@@ -127,9 +127,12 @@ function toAmount(value: unknown) {
 }
 
 function normalizeInput(input: Partial<ProfileInput>): ProfileInput {
+  const vehiclePlate = String(input.vehiclePlate || "").trim();
+
   return {
     ...createEmptyProfileInput(),
     ...input,
+    vehiclePlate: vehiclePlate === "--" ? "" : vehiclePlate,
     vehicleType: input.vehicleType === "SMRM" ? "Sơ mi rơ mooc" : input.vehicleType || VEHICLE_TYPES[0],
     receivingAgency: input.receivingAgency || RECEIVING_AGENCIES[0],
     serviceType: input.serviceType || SERVICE_TYPES[0],
@@ -142,6 +145,13 @@ function normalizeInput(input: Partial<ProfileInput>): ProfileInput {
     initialCost: toAmount(input.initialCost),
     owesVehiclePlate: input.owesVehiclePlate === true,
     owesRegistration: input.owesRegistration === true,
+  };
+}
+
+function toScriptRecord(input: ProfileInput): ProfileInput {
+  return {
+    ...input,
+    vehiclePlate: input.vehiclePlate.trim() || "--",
   };
 }
 
@@ -208,7 +218,7 @@ export const profileService = {
   async create(input: ProfileInput): Promise<ProfileRecord> {
     const cleanInput = normalizeInput(input);
     if (scriptUrl) {
-      return normalizeRecord(await requestScript<ProfileRecord>("create", { record: cleanInput }));
+      return normalizeRecord(await requestScript<ProfileRecord>("create", { record: toScriptRecord(cleanInput) }));
     }
 
     const timestamp = now();
@@ -226,7 +236,7 @@ export const profileService = {
   async update(id: string, input: ProfileInput): Promise<ProfileRecord> {
     const cleanInput = normalizeInput(input);
     if (scriptUrl) {
-      return normalizeRecord(await requestScript<ProfileRecord>("update", { id, record: cleanInput }));
+      return normalizeRecord(await requestScript<ProfileRecord>("update", { id, record: toScriptRecord(cleanInput) }));
     }
 
     const existing = demoProfiles.find((profile) => profile.id === id);
