@@ -579,29 +579,36 @@ const ProfileValueRow = styled.div`
 `;
 
 const MobileCopyButton = styled.button<{ $copied?: boolean }>`
-  display: none;
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: ${({ $copied }) => ($copied ? "#e7f6ec" : "#f1f2f5")};
+  padding: 0;
+  color: ${({ $copied }) => ($copied ? "#217448" : "#20242e")};
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, transform 120ms ease;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  &:active {
+    transform: scale(0.94);
+  }
 
   @media (max-width: 1100px) {
-    display: inline-grid;
     width: 24px;
     height: 24px;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 0;
     border-radius: 9px;
-    background: ${({ $copied }) => ($copied ? "#e7f6ec" : "#f1f2f5")};
-    padding: 0;
-    color: ${({ $copied }) => ($copied ? "#217448" : "#20242e")};
-    cursor: pointer;
-    transition: background 160ms ease, color 160ms ease, transform 120ms ease;
 
     svg {
       width: 11px;
       height: 11px;
-    }
-
-    &:active {
-      transform: scale(0.94);
     }
   }
 `;
@@ -2949,7 +2956,7 @@ export function ProfileManager() {
                     <CostLine aria-label="Biển Số Cũ">
                       <span><ProfileIcon><IdCard size={14} /></ProfileIcon>Biển Số Cũ</span>
                       <CostValueActions>
-                        <strong>{profile.vehiclePlate || "—"}</strong>
+                        <strong>{profile.vehiclePlate || "--"}</strong>
                         {profile.vehiclePlate && (
                           <MobileCopyButton $copied={copiedKey === `${profile.id}:old-plate`} type="button" aria-label="Sao chép Biển Số Cũ" title="Sao chép Biển Số Cũ" onClick={() => void copyProfileValue(profile.vehiclePlate, "Biển Số Cũ", `${profile.id}:old-plate`)}>
                             {copiedKey === `${profile.id}:old-plate` ? <Check size={12} /> : <Copy size={12} />}
@@ -3012,7 +3019,17 @@ export function ProfileManager() {
                 <ProfileGroup aria-label="Tổng kết chi phí">
                   <DesktopPaperworkLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><FileText size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></DesktopPaperworkLine>
-                  <DesktopPaperworkLine><span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span><strong>{profile.newVehiclePlate || "--"}</strong></DesktopPaperworkLine>
+                  <DesktopPaperworkLine>
+                    <span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span>
+                    <CostValueActions>
+                      <strong>{profile.newVehiclePlate || "--"}</strong>
+                      {hasCopyableVehiclePlate(profile.newVehiclePlate) && (
+                        <MobileCopyButton $copied={copiedKey === `${profile.id}:new-plate`} type="button" aria-label="Sao chép biển số mới" title="Sao chép biển số mới" onClick={() => void copyProfileValue(profile.newVehiclePlate, "biển số mới", `${profile.id}:new-plate`)}>
+                          {copiedKey === `${profile.id}:new-plate` ? <Check size={12} /> : <Copy size={12} />}
+                        </MobileCopyButton>
+                      )}
+                    </CostValueActions>
+                  </DesktopPaperworkLine>
                   <CostLine $total $amountTone="danger"><span><ProfileIcon $tone="danger"><HandCoins size={14} /></ProfileIcon>Chi phí ban đầu</span><strong>{formatCurrency(profile.initialCost)}</strong></CostLine>
                   <CostLine $total $profit $amountTone="success"><span><ProfileIcon $tone="success"><TrendingUp size={14} /></ProfileIcon>Lợi Nhuận Thu Về</span><strong>{formatCurrency(profile.profit)}</strong></CostLine>
                 </ProfileGroup>

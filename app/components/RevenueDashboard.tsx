@@ -260,9 +260,9 @@ const CurrencyValue = styled.div<{ $tone: "danger" | "success" }>`
   span {
     display: inline;
     color: var(--ink);
-    font-size: inherit;
-    font-weight: inherit;
-    letter-spacing: 0;
+    font-size: 23px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
     line-height: 1.2;
   }
 
@@ -270,6 +270,10 @@ const CurrencyValue = styled.div<{ $tone: "danger" | "success" }>`
     margin-top: 10px;
 
     strong {
+      font-size: 18px;
+    }
+
+    span {
       font-size: 18px;
     }
   }
