@@ -60,12 +60,11 @@ const Header = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
   margin-bottom: 18px;
 
   @media (max-width: 640px) {
-    align-items: stretch;
-    flex-direction: column;
+    gap: 12px;
   }
 `;
 
@@ -79,10 +78,8 @@ const TitleBlock = styled.div`
   }
 
   @media (max-width: 640px) {
-    text-align: center;
-
     h1 {
-      font-size: 19px;
+      font-size: 18px;
     }
   }
 `;
@@ -117,11 +114,11 @@ const PrimaryButton = styled.button`
 
 const MonthSelectWrap = styled.div`
   position: relative;
-  width: 150px;
+  width: 160px;
+  flex-shrink: 0;
 
   @media (max-width: 640px) {
-    width: 100%;
-    margin-top: 8px;
+    width: 135px;
   }
 `;
 
@@ -132,7 +129,7 @@ const MonthSelect = styled.select`
   border: 1px solid var(--line);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.88);
-  padding: 0 36px 0 14px;
+  padding: 0 32px 0 38px;
   color: var(--ink);
   font-size: 14px;
   font-weight: 600;
@@ -151,6 +148,17 @@ const MonthSelect = styled.select`
     outline: none;
     box-shadow: 0 0 0 3px rgba(56, 89, 217, 0.15);
   }
+`;
+
+const CalendarIcon = styled.span`
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  color: var(--primary);
 `;
 
 const DropdownIcon = styled.span`
@@ -359,7 +367,7 @@ const ProfileRow = styled.article`
 
   @media (max-width: 1100px) {
     grid-template-columns: minmax(0, 1fr);
-    padding: 24px 16px;
+    padding: 8px 14px;
     font-size: 15px;
 
     > ${ProfileGroup},
@@ -367,7 +375,7 @@ const ProfileRow = styled.article`
     > ${ProfileGroup}:last-child {
       border-right: 0;
       border-bottom: 1px solid #eff0f4;
-      padding: 18px 0;
+      padding: 8px 0;
     }
 
     > ${ProfileGroup}:last-child {
@@ -398,8 +406,8 @@ const ProfileRow = styled.article`
     > ${ProfileGroup}[aria-label="Thao tác hồ sơ"],
     > ${ProfileGroup}[aria-label="Thao tác hồ sơ"]:last-child {
       position: absolute;
-      top: 38px;
-      right: 16px;
+      top: 14px;
+      right: 14px;
       width: auto;
       border: 0;
       padding: 0;
@@ -2274,9 +2282,12 @@ export function ProfileManager() {
     <AppShell>
       <Header>
         <TitleBlock>
-          <h1>Danh sách hồ sơ xe 2026</h1>
+          <h1>DS Hồ Sơ</h1>
         </TitleBlock>
         <MonthSelectWrap>
+          <CalendarIcon>
+            <Calendar size={18} />
+          </CalendarIcon>
           <MonthSelect
             aria-label="Lọc hồ sơ theo tháng"
             value={selectedMonth}

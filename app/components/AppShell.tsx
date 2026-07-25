@@ -38,11 +38,12 @@ const Sidebar = styled.aside`
     inset: auto auto max(14px, env(safe-area-inset-bottom)) 50%;
     width: min(230px, calc(100vw - 28px));
     height: auto;
-    border: 1px solid rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     padding: 4px;
-    box-shadow: 0 16px 45px rgba(27, 35, 64, 0.2);
     transform: translateX(-50%);
 
     body.profile-modal-open & {

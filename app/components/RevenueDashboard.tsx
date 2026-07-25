@@ -3,6 +3,7 @@
 import {
   BadgeCheck,
   Calculator,
+  Calendar,
   CheckCircle2,
   ChevronDown,
   Clock,
@@ -21,7 +22,7 @@ const Header = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
   margin-bottom: 18px;
 
   h1 {
@@ -33,23 +34,21 @@ const Header = styled.header`
   }
 
   @media (max-width: 640px) {
-    align-items: stretch;
-    flex-direction: column;
+    gap: 12px;
 
     h1 {
-      font-size: 19px;
-      text-align: center;
+      font-size: 18px;
     }
   }
 `;
 
 const MonthSelectWrap = styled.div`
   position: relative;
-  width: 150px;
+  width: 160px;
+  flex-shrink: 0;
 
   @media (max-width: 640px) {
-    width: 100%;
-    margin-top: 8px;
+    width: 135px;
   }
 `;
 
@@ -60,7 +59,7 @@ const MonthSelect = styled.select`
   border: 1px solid var(--line);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.88);
-  padding: 0 36px 0 14px;
+  padding: 0 32px 0 38px;
   color: var(--ink);
   font-size: 14px;
   font-weight: 600;
@@ -79,6 +78,17 @@ const MonthSelect = styled.select`
     outline: none;
     box-shadow: 0 0 0 3px rgba(56, 89, 217, 0.15);
   }
+`;
+
+const CalendarIcon = styled.span`
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  color: var(--primary);
 `;
 
 const DropdownIcon = styled.span`
@@ -318,8 +328,11 @@ export function RevenueDashboard() {
   return (
     <AppShell>
       <Header>
-        <h1>Doanh thu 2026</h1>
+        <h1>Doanh Thu</h1>
         <MonthSelectWrap>
+          <CalendarIcon>
+            <Calendar size={18} />
+          </CalendarIcon>
           <MonthSelect
             aria-label="Lọc doanh thu theo tháng"
             value={selectedMonth}
