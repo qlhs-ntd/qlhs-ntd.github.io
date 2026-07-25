@@ -2362,10 +2362,10 @@ export function ProfileManager() {
         </Toolbar>
 
         {loading ? (
-          <StateBox><div><LoaderCircle className="spin" size={30} /><h3>Đang tải hồ sơ</h3><p>Vui lòng chờ trong giây lát.</p></div></StateBox>
+          <StateBox><div><LoaderCircle className="spin" size={30} /><h3>Đang tải hồ sơ</h3></div></StateBox>
         ) : visibleProfiles.length === 0 ? (
           <StateBox>
-            <div><Inbox size={34} /><h3>{query ? "Không tìm thấy kết quả" : "Chưa có hồ sơ trong tháng này"}</h3><p>{query ? "Hãy thử tìm bằng một tên khác." : "Bấm “Thêm hồ sơ” để tạo bản ghi đầu tiên."}</p></div>
+            <div><Inbox size={34} /><h3>{query ? "Không tìm thấy kết quả" : "Chưa có hồ sơ trong tháng này"}</h3></div>
           </StateBox>
         ) : (
           <ProfileList aria-label="Danh sách hồ sơ">
@@ -2381,7 +2381,7 @@ export function ProfileManager() {
                             ? <BadgeCheck size={12} />
                             : profile.status === "Đang chờ thanh toán"
                               ? <Clock size={12} />
-                            : <Loader className="spin" size={12} />}
+                            : <Loader size={12} />}
                         {formatStatus(profile.status)}
                       </StatusPill>
                     </div>
