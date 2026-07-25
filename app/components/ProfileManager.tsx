@@ -20,6 +20,7 @@ import {
   Copy,
   CornerLeftDown,
   createLucideIcon,
+  FileText,
   FilePlus2,
   HandCoins,
   IdCard,
@@ -468,14 +469,14 @@ const ProfileRow = styled.article`
   position: relative;
   display: grid;
   grid-template-columns:
-    minmax(270px, 1.55fr)
+    minmax(250px, 1.35fr)
     minmax(205px, 1.1fr)
     minmax(200px, 1fr)
     56px;
   border-top: 1px solid #eff0f4;
   padding: 36px 20px;
   color: #4c5569;
-  font-size: 16px;
+  font-size: 15px;
   transition: background 120ms ease;
 
   &:hover {
@@ -488,7 +489,7 @@ const ProfileRow = styled.article`
 
   > ${ProfileGroup}:last-child {
     border-right: 0;
-    padding-right: 18px;
+    padding-right: 0;
   }
 
   @media (max-width: 1100px) {
@@ -549,7 +550,7 @@ const ProfileField = styled.div`
 const ProfileValue = styled.span<{ $primary?: boolean }>`
   overflow-wrap: anywhere;
   color: #4c5569;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 650;
   line-height: 1.4;
 
@@ -633,7 +634,7 @@ const CostLine = styled.div<{
   justify-content: space-between;
   gap: 12px;
   color: #4c5569;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 650;
   line-height: 1.4;
 
@@ -2127,8 +2128,7 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                 saving ||
                 closing ||
                 !form.customerName.trim() ||
-                !form.vehicleOwnerName.trim() ||
-                !form.vehiclePlate.trim()
+                !form.vehicleOwnerName.trim()
               }
             >
               {saving ? <LoaderCircle className="spin" size={17} /> : <CheckCircle2 size={17} />}
@@ -2219,7 +2219,6 @@ function ProfileModal({ state, saving, onClose, onSave }: {
                   autoCorrect="off"
                   autoCapitalize="characters"
                   spellCheck={false}
-                  required
                   maxLength={30}
                   value={form.vehiclePlate}
                   onChange={(event) => updateField("vehiclePlate", event.target.value)}
@@ -2635,8 +2634,7 @@ export function ProfileManager() {
               <ProfileRow key={profile.id} aria-label={`Hồ sơ ${profile.customerName}`}>
                 <ProfileGroup>
                   <CostLine aria-label="Trạng thái">
-                    <span><ProfileIcon><ClipboardCheck size={14} /></ProfileIcon>Trạng Thái</span>
-                    <strong>
+                    <span>
                       <StatusPill $status={profile.status}>
                         {profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất"
                           ? <CheckCircle2 size={12} />
@@ -2647,10 +2645,7 @@ export function ProfileManager() {
                             : <Loader size={12} />}
                         {formatStatus(profile.status)}
                       </StatusPill>
-                    </strong>
-                  </CostLine>
-                  <CostLine aria-label="Ngày giờ tạo hồ sơ">
-                    <span><ProfileIcon><Clock size={14} /></ProfileIcon>Thời Gian</span>
+                    </span>
                     <strong>{formatCreatedAt(profile.createdAt)}</strong>
                   </CostLine>
                   <CostLine aria-label="Cơ quan nhận">
@@ -2701,7 +2696,7 @@ export function ProfileManager() {
                     </CostLine>
                     <MobilePaperwork aria-label="Giấy Tờ Bổ Sung và biển số mới">
                       <CostLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></CostLine>
-                      <CostLine><span><ProfileIcon><ListChecks size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></CostLine>
+                      <CostLine><span><ProfileIcon><FileText size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></CostLine>
                       <CostLine>
                         <span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span>
                         <CostValueActions>
@@ -2751,7 +2746,7 @@ export function ProfileManager() {
 
                 <ProfileGroup aria-label="Tổng kết chi phí">
                   <DesktopPaperworkLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></DesktopPaperworkLine>
-                  <DesktopPaperworkLine><span><ProfileIcon><ListChecks size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></DesktopPaperworkLine>
+                  <DesktopPaperworkLine><span><ProfileIcon><FileText size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span><strong>{profile.newVehiclePlate || "Chờ Cấp"}</strong></DesktopPaperworkLine>
                   <SummaryDivider />
                   <CostLine $total $amountTone="danger"><span><ProfileIcon $tone="danger"><HandCoins size={14} /></ProfileIcon>Chi phí ban đầu</span><strong>{formatCurrency(profile.initialCost)}</strong></CostLine>
