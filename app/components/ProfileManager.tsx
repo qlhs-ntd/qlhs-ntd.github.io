@@ -306,7 +306,7 @@ const StatusTab = styled.button<{ $active: boolean; $tone: StatusTabTone }>`
   height: 36px;
   align-items: center;
   gap: 8px;
-  border: 1px solid ${({ $active, $tone }) => ($active ? statusTabColor($tone) : "var(--line)")};
+  border: 1.5px solid ${({ $active, $tone }) => ($active ? statusTabColor($tone) : "var(--line)")};
   border-radius: 999px;
   background: ${({ $active, $tone }) => ($active ? statusTabBackground($tone) : "white")};
   padding: 0 12px;
