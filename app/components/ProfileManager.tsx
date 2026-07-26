@@ -657,7 +657,7 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     border: ${({ $expanded }) => ($expanded ? "1px solid #eef0f4" : "0")};
     border-radius: 12px;
     background: ${({ $expanded }) => ($expanded ? "#fbfcfd" : "transparent")};
-    padding: ${({ $expanded }) => ($expanded ? "12px 12px 6px" : "0")};
+    padding: ${({ $expanded }) => ($expanded ? "10px 10px 5px" : "0")};
 
     > div,
     > div > span,
@@ -813,6 +813,7 @@ const DesktopPaperworkLine = styled(CostLine)`
 
 const GroupDivider = styled.div`
   height: 1px;
+  width: 100%;
   background: #e4e7ee;
 `;
 
@@ -831,6 +832,18 @@ const SummaryDivider = styled(GroupDivider)`
 const CostDetailsDivider = styled(GroupDivider)`
   @media (max-width: 1100px) {
     display: none;
+  }
+`;
+
+const DesktopCostSeparator = styled.div`
+  display: none;
+
+  @media (min-width: 1101px) {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: #e4e7ee;
+    margin: 4px 0;
   }
 `;
 
@@ -1598,6 +1611,13 @@ const InputNativeSelectAction = styled.div`
   }
 `;
 
+const InputNativeSelectActionRight = styled(InputNativeSelectAction)`
+`;
+
+const InputIconButtonLeft = styled(InputIconButton)`
+  right: 46px;
+`;
+
 const SelectWrap = styled.div`
   position: relative;
 
@@ -2179,12 +2199,27 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
   const [closing, setClosing] = useState(false);
   const { totalCost, profit } = calculateProfileCosts(form);
   const showCustomerHistoryButton = !form.customerName.trim();
+  const showOwnerHistoryButton = !form.vehicleOwnerName.trim();
   const showOwnerCopyButton = Boolean(form.customerName.trim()) && !form.vehicleOwnerName.trim();
   const customerHistoryOptions = useMemo(() => {
     const counts = new Map<string, number>();
 
     for (const profile of profiles) {
       const name = profile.customerName.trim();
+      if (!name) continue;
+      counts.set(name, (counts.get(name) ?? 0) + 1);
+    }
+
+    return Array.from(counts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((first, second) => second.count - first.count || first.name.localeCompare(second.name, "vi"));
+  }, [profiles]);
+
+  const ownerHistoryOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    for (const profile of profiles) {
+      const name = profile.vehicleOwnerName.trim();
       if (!name) continue;
       counts.set(name, (counts.get(name) ?? 0) + 1);
     }
@@ -2220,6 +2255,10 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
 
   function selectCustomerName(name: string) {
     updateField("customerName", name);
+  }
+
+  function selectOwnerName(name: string) {
+    updateField("vehicleOwnerName", name);
   }
 
   useEffect(() => {
@@ -2463,9 +2502,9 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                 </InputActionWrap>
               </Field>
 
-              <Field as="div">
-                <FieldLabel><UserShield size={14} />Tên chủ phương tiện</FieldLabel>
-                <InputActionWrap $hasAction={showOwnerCopyButton || Boolean(form.vehicleOwnerName)}>
+                <Field as="div">
+                  <FieldLabel><UserShield size={14} />Tên chủ phương tiện</FieldLabel>
+                <InputActionWrap $hasAction={showOwnerHistoryButton || showOwnerCopyButton || Boolean(form.vehicleOwnerName)}>
                   <input
                     aria-label="Tên chủ phương tiện"
                     type="text"
@@ -2479,8 +2518,28 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                     onChange={(event) => updateField("vehicleOwnerName", event.target.value)}
                     placeholder="Nhập tên chủ phương tiện"
                   />
+                  {showOwnerHistoryButton && (
+                    <InputNativeSelectActionRight>
+                      <FileClock size={15} />
+                      <select
+                        aria-label="Chọn chủ phương tiện"
+                        value=""
+                        disabled={ownerHistoryOptions.length === 0}
+                        onChange={(event) => {
+                          if (event.target.value) selectOwnerName(event.target.value);
+                        }}
+                      >
+                        <option value="">Chủ Phương Tiện Gần Đây</option>
+                        {ownerHistoryOptions.map((option) => (
+                          <option key={option.name} value={option.name}>
+                            {option.name}
+                          </option>
+                        ))}
+                      </select>
+                    </InputNativeSelectActionRight>
+                  )}
                   {showOwnerCopyButton && (
-                    <InputIconButton
+                    <InputIconButtonLeft
                       type="button"
                       aria-label="Điền tên khách hàng vào tên chủ phương tiện"
                       onClick={() => {
@@ -2489,7 +2548,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                       title="Điền tên khách hàng"
                     >
                       <CornerDownLeft size={15} />
-                    </InputIconButton>
+                    </InputIconButtonLeft>
                   )}
                   {form.vehicleOwnerName && (
                     <ClearInputButton
@@ -3074,7 +3133,7 @@ export function ProfileManager() {
                     <CostLine><span><ProfileIcon><Box size={13} /></ProfileIcon>Hộp đen, Phù hiệu</span><strong>{formatCurrency(profile.blackBoxBadgeCost)}</strong></CostLine>
                     <CostLine><span><ProfileIcon><BadgePlus size={13} /></ProfileIcon>Phát sinh khác</span><strong>{formatCurrency(profile.otherIncidentalCost)}</strong></CostLine>
                   </CostList>
-                  <CostDetailsDivider />
+                  <DesktopCostSeparator />
                   <CostTotalLine $total $amountTone="primary">
                     <CostToggleButton
                       type="button"
@@ -3112,6 +3171,7 @@ export function ProfileManager() {
                       )}
                     </CostValueActions>
                   </DesktopPaperworkLine>
+                  <DesktopCostSeparator />
                   <CostLine $total $amountTone="danger"><span><ProfileIcon $tone="danger"><HandCoins size={14} /></ProfileIcon>Chi phí ban đầu</span><strong>{formatCurrency(profile.initialCost)}</strong></CostLine>
                   <CostLine $total $profit $amountTone="success"><span><ProfileIcon $tone="success"><TrendingUp size={14} /></ProfileIcon>Lợi Nhuận Thu Về</span><strong>{formatCurrency(profile.profit)}</strong></CostLine>
                 </ProfileGroup>
