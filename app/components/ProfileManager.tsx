@@ -858,6 +858,7 @@ const CostToggleButton = styled.button<{ $expanded: boolean; $neutral?: boolean 
 
   @media (max-width: 1100px) {
     color: var(--primary);
+    gap: 4px;
     cursor: pointer;
 
     .cost-toggle-chevron {
