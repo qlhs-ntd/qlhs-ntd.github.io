@@ -6,6 +6,9 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#f6f7fb",
+  colorScheme: "light",
 };
 
 export function generateMetadata(): Metadata {
@@ -19,9 +22,37 @@ export function generateMetadata(): Metadata {
       template: "%s | Quản Lý Hồ Sơ",
     },
     description: "Quản lý, cập nhật và đồng bộ hồ sơ với Google Sheets.",
+    applicationName: "Hồ Sơ Việt",
+    manifest: "/manifest.webmanifest",
+    keywords: ["quản lý hồ sơ", "hồ sơ", "Google Sheets"],
+    formatDetection: {
+      telephone: false,
+    },
+    icons: {
+      icon: [
+        { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+        { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+      shortcut: "/favicon-32.png",
+      apple: [
+        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+        { url: "/apple-touch-icon-167.png", sizes: "167x167", type: "image/png" },
+        { url: "/apple-touch-icon-152.png", sizes: "152x152", type: "image/png" },
+      ],
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "Hồ Sơ Việt",
+    },
     openGraph: {
       title: "Hồ Sơ Việt",
       description: "Quản lý hồ sơ, đơn giản và tập trung.",
+      url: "/",
+      siteName: "Hồ Sơ Việt",
+      locale: "vi_VN",
+      type: "website",
       images: [{ url: socialImage, width: 1200, height: 630, alt: "Hồ Sơ Việt" }],
     },
     twitter: {

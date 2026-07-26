@@ -3,23 +3,23 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FileChartLine, PanelBottomDashed } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import styled from "styled-components";
 
 const Shell = styled.div`
   min-height: 100vh;
 `;
 
-const Sidebar = styled.aside`
+const Sidebar = styled.aside<{ $mobileHidden: boolean }>`
   position: fixed;
   inset: 0 auto 0 0;
   z-index: 20;
   display: flex;
-  width: 84px;
+  width: 96px;
   flex-direction: column;
   border-right: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.88);
-  padding: 28px 14px 22px;
+  padding: 16px 12px 22px;
   backdrop-filter: blur(18px);
 
   @media (max-width: 860px) {
@@ -33,6 +33,14 @@ const Sidebar = styled.aside`
     -webkit-backdrop-filter: blur(20px);
     padding: 4px;
     transform: translateX(-50%);
+    transition: transform 220ms ease, opacity 150ms ease, visibility 150ms ease;
+    will-change: transform;
+
+    ${({ $mobileHidden }) =>
+      $mobileHidden &&
+      `
+        transform: translate(-50%, calc(100% + 28px));
+      `}
 
     body.profile-modal-open & {
       visibility: hidden;
@@ -44,7 +52,7 @@ const Sidebar = styled.aside`
 
 const Navigation = styled.nav`
   display: grid;
-  gap: 7px;
+  gap: 10px;
   width: 100%;
 
   @media (max-width: 860px) {
@@ -57,57 +65,38 @@ const Navigation = styled.nav`
 const NavItem = styled(Link)<{ $active: boolean }>`
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 48px;
-  border-radius: 13px;
+  min-height: 60px;
+  gap: 3px;
+  border-radius: 14px;
   padding: 0;
   background: ${({ $active }) => ($active ? "#edf0ff" : "transparent")};
   color: ${({ $active }) => ($active ? "var(--primary)" : "#5f6779")};
-  font-size: 14px;
+  font-size: 9px;
   font-weight: 650;
   text-decoration: none;
+  text-transform: capitalize;
   transition: 150ms ease;
 
   span {
-    display: none;
+    display: block;
   }
 
   svg {
+    width: 22px;
+    height: 22px;
     fill: none;
   }
 
   &::after {
-    position: absolute;
-    left: calc(100% + 12px);
-    top: 50%;
-    z-index: 30;
-    width: max-content;
-    border: 1px solid var(--line);
-    border-radius: 9px;
-    padding: 7px 10px;
-    background: #ffffff;
-    box-shadow: 0 8px 24px rgba(32, 39, 55, 0.12);
-    color: var(--ink);
-    content: attr(aria-label);
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 1;
-    opacity: 0;
-    pointer-events: none;
-    transform: translate(-5px, -50%);
-    transition: opacity 150ms ease, transform 150ms ease;
+    display: none;
   }
 
   &:hover {
     background: ${({ $active }) => ($active ? "#edf0ff" : "#f3f4f8")};
     color: ${({ $active }) => ($active ? "var(--primary)" : "var(--ink)")};
-  }
-
-  &:hover::after,
-  &:focus-visible::after {
-    opacity: 1;
-    transform: translate(0, -50%);
   }
 
   @media (max-width: 860px) {
@@ -138,8 +127,8 @@ const NavItem = styled(Link)<{ $active: boolean }>`
 
 const Main = styled.main`
   min-height: 100vh;
-  margin-left: 84px;
-  padding: 24px clamp(16px, 2vw, 32px) 56px;
+  margin-left: 96px;
+  padding: 24px clamp(14px, 1.6vw, 26px) 56px;
 
   @media (max-width: 860px) {
     margin-left: 0;
@@ -154,14 +143,75 @@ const MainInner = styled.div`
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [isMobileNavHidden, setIsMobileNavHidden] = useState(false);
   const normalizedPathname = pathname === "/" ? pathname : pathname.replace(/\/+$/, "");
 
   const hosoBActive = normalizedPathname === "/";
   const doanhThuActive = normalizedPathname === "/doanh-thu";
 
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let distanceInDirection = 0;
+    let frameId: number | null = null;
+
+    const updateNavigation = () => {
+      frameId = null;
+
+      if (window.innerWidth > 860) {
+        setIsMobileNavHidden(false);
+        return;
+      }
+
+      const currentScrollY = Math.max(0, window.scrollY);
+      const scrollDelta = currentScrollY - lastScrollY;
+
+      if (currentScrollY <= 8) {
+        distanceInDirection = 0;
+        setIsMobileNavHidden(false);
+      } else if (scrollDelta > 0) {
+        distanceInDirection = Math.max(0, distanceInDirection) + scrollDelta;
+
+        if (distanceInDirection >= 16) {
+          setIsMobileNavHidden(true);
+          distanceInDirection = 0;
+        }
+      } else if (scrollDelta < 0) {
+        distanceInDirection = Math.min(0, distanceInDirection) + scrollDelta;
+
+        if (distanceInDirection <= -16) {
+          setIsMobileNavHidden(false);
+          distanceInDirection = 0;
+        }
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    const scheduleUpdate = () => {
+      if (frameId === null) {
+        frameId = window.requestAnimationFrame(updateNavigation);
+      }
+    };
+
+    const resetOnResize = () => {
+      lastScrollY = window.scrollY;
+      distanceInDirection = 0;
+      if (window.innerWidth > 860) setIsMobileNavHidden(false);
+    };
+
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", resetOnResize);
+
+    return () => {
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", resetOnResize);
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+    };
+  }, []);
+
   return (
     <Shell>
-      <Sidebar>
+      <Sidebar $mobileHidden={isMobileNavHidden}>
         <Navigation aria-label="Điều hướng chính">
           <NavItem
             href="/"
