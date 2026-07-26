@@ -533,6 +533,7 @@ const ProfileRow = styled.article`
     > ${ProfileGroup}[aria-label="Chi Phí Dịch vụ hồ sơ"][data-customer-expanded="true"] {
       border-bottom: 0;
       padding-top: 2px;
+      padding-bottom: 2px;
     }
 
     > ${ProfileGroup}[aria-label="Chi Phí Dịch vụ hồ sơ"][data-cost-expanded="false"] {
