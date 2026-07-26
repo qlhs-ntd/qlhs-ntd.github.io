@@ -651,31 +651,16 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     padding: ${({ $expanded }) => ($expanded ? "10px 11px" : "0")};
 
     > div,
-    > div > div,
     > div > span,
-    > div > div > span,
     > div strong,
     > div button {
       font-size: 11.5px !important;
       font-weight: 600 !important;
     }
 
-    > div,
-    > div > div {
+    > div {
       border-bottom: 1px solid #eef0f4;
       padding-bottom: 8px;
-    }
-
-    > div > div {
-      padding-top: 8px;
-    }
-
-    > div:has(+ div) > div:last-child {
-      border-bottom: 1px solid #eef0f4;
-    }
-
-    > div > div:first-child {
-      padding-top: 0;
     }
 
     > div:last-child {
@@ -689,7 +674,31 @@ const CostList = styled.div<{ $expanded?: boolean }>`
   }
 `;
 
-const CustomerDetailsList = styled(CostList)``;
+const CustomerDetailsList = styled(CostList)`
+  @media (max-width: 1100px) {
+    > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] {
+      display: contents;
+    }
+
+    > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] > div,
+    > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] > div > span,
+    > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] > div strong,
+    > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] > div button {
+      font-size: 11.5px !important;
+      font-weight: 600 !important;
+    }
+
+    > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] > div {
+      border-bottom: 1px solid #eef0f4;
+      padding-bottom: 8px;
+    }
+
+    > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] > div:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+  }
+`;
 
 const CostLine = styled.div<{
   $total?: boolean;
