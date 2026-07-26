@@ -541,6 +541,10 @@ const ProfileRow = styled.article`
       padding-bottom: 0;
     }
 
+    > ${ProfileGroup}[aria-label="Chi Phí Dịch vụ hồ sơ"][data-cost-expanded="true"] {
+      border-bottom: 0;
+    }
+
     > ${ProfileGroup}[aria-label="Tổng kết chi phí"] {
       border-bottom: 0;
       padding-top: 10px;
@@ -647,9 +651,9 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     display: ${({ $expanded }) => ($expanded ? "grid" : "none")};
     gap: 8px;
     border: ${({ $expanded }) => ($expanded ? "1px solid #eef0f4" : "0")};
-    border-radius: 10px;
-    background: ${({ $expanded }) => ($expanded ? "#f7f8fa" : "transparent")};
-    padding: ${({ $expanded }) => ($expanded ? "10px 11px" : "0")};
+    border-radius: 12px;
+    background: transparent;
+    padding: ${({ $expanded }) => ($expanded ? "12px 13px" : "0")};
 
     > div,
     > div > span,
@@ -660,6 +664,7 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     }
 
     > div {
+      min-height: 24px;
       border-bottom: 1px solid #eef0f4;
       padding-bottom: 8px;
     }
@@ -690,6 +695,7 @@ const CustomerDetailsList = styled(CostList)`
     }
 
     > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] > div {
+      min-height: 24px;
       border-bottom: 1px solid #eef0f4;
       padding-bottom: 8px;
     }
