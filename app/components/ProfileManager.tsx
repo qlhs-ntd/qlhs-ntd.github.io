@@ -2649,6 +2649,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
 export function ProfileManager() {
   const monthTabs = useMemo(() => getYearEndMonths(), []);
   const copyResetTimerRef = useRef<number | null>(null);
+  const statusTabLoadingTimerRef = useRef<number | null>(null);
   const statusTabsRef = useRef<HTMLDivElement>(null);
   const actionMenuRootRef = useRef<HTMLDivElement>(null);
   const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
@@ -2657,6 +2658,7 @@ export function ProfileManager() {
   const [query, setQuery] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isStatusTabLoading, setIsStatusTabLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<ProfileRecord | null>(null);
@@ -2706,6 +2708,7 @@ export function ProfileManager() {
 
   useEffect(() => () => {
     if (copyResetTimerRef.current !== null) window.clearTimeout(copyResetTimerRef.current);
+    if (statusTabLoadingTimerRef.current !== null) window.clearTimeout(statusTabLoadingTimerRef.current);
   }, []);
 
   useEffect(() => {
@@ -2762,6 +2765,22 @@ export function ProfileManager() {
       ].join(" ")).includes(normalizedQuery);
     });
   }, [activeStatus, monthlyProfiles, query]);
+
+  const handleStatusTabChange = (nextTab: StatusTabKey) => {
+    if (nextTab === activeStatusTab) return;
+
+    setIsStatusTabLoading(true);
+    setActiveStatusTab(nextTab);
+
+    if (statusTabLoadingTimerRef.current !== null) {
+      window.clearTimeout(statusTabLoadingTimerRef.current);
+    }
+
+    statusTabLoadingTimerRef.current = window.setTimeout(() => {
+      setIsStatusTabLoading(false);
+      statusTabLoadingTimerRef.current = null;
+    }, 240);
+  };
 
   async function copyProfileValue(value: string, label: string, key: string) {
     const copyValue = value.trim();
@@ -2923,7 +2942,7 @@ export function ProfileManager() {
                 $active={active}
                 $tone={tab.tone}
                 aria-selected={active}
-                onClick={() => setActiveStatusTab(tab.key)}
+                onClick={() => handleStatusTabChange(tab.key)}
               >
                 {tab.label}
                 <StatusBadge $active={active} $tone={tab.tone}>{statusTabCounts.get(tab.key) ?? 0}</StatusBadge>
@@ -2932,8 +2951,8 @@ export function ProfileManager() {
           })}
         </StatusTabs>
 
-        {loading ? (
-          <StateBox><div><Loader className="spin" size={30} /><h3>Đang tải hồ sơ</h3></div></StateBox>
+        {loading || isStatusTabLoading ? (
+          <StateBox><div><Loader className="spin" size={30} /><h3>{loading ? "Đang tải hồ sơ" : "Đang cập nhật danh sách"}</h3></div></StateBox>
         ) : visibleProfiles.length === 0 ? (
           <StateBox>
             <div><Inbox size={34} /><h3>{emptyStateTitle}</h3></div>
