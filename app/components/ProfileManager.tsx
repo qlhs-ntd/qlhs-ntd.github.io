@@ -68,7 +68,7 @@ function statusTabColor(tone: StatusTabTone) {
     case "processing":
       return "#c99300";
     case "waiting":
-      return "#7656c9";
+      return "#fbbe0c";
     case "paid":
       return "var(--primary)";
     case "completed":
@@ -83,7 +83,7 @@ function statusTabBackground(tone: StatusTabTone) {
     case "processing":
       return "rgba(201, 147, 0, 0.08)";
     case "waiting":
-      return "rgba(118, 86, 201, 0.08)";
+      return "rgba(251, 190, 12, 0.12)";
     case "paid":
       return "rgba(56, 89, 217, 0.08)";
     case "completed":
@@ -104,7 +104,7 @@ function statusColor(status: string) {
     case "Đã thanh toán":
       return "var(--primary)";
     case "Đang chờ thanh toán":
-      return "#7656c9";
+      return "#fbbe0c";
     default:
       return "#c99300";
   }
@@ -551,6 +551,10 @@ const ProfileRow = styled.article`
       padding-bottom: 8px;
     }
 
+    > ${ProfileGroup}[aria-label="Tổng kết chi phí"][data-cost-expanded="true"] {
+      padding-top: 2px;
+    }
+
     > ${ProfileGroup}[aria-label="Thao tác hồ sơ"],
     > ${ProfileGroup}[aria-label="Thao tác hồ sơ"]:last-child {
       position: absolute;
@@ -652,8 +656,8 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     gap: 8px;
     border: ${({ $expanded }) => ($expanded ? "1px solid #eef0f4" : "0")};
     border-radius: 12px;
-    background: transparent;
-    padding: ${({ $expanded }) => ($expanded ? "12px 13px" : "0")};
+    background: ${({ $expanded }) => ($expanded ? "#f7f8fa" : "transparent")};
+    padding: ${({ $expanded }) => ($expanded ? "12px 13px 9px" : "0")};
 
     > div,
     > div > span,
@@ -666,7 +670,7 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     > div {
       min-height: 24px;
       border-bottom: 1px solid #eef0f4;
-      padding-bottom: 8px;
+      padding: 0 0 8px;
     }
 
     > div:last-child {
@@ -697,7 +701,7 @@ const CustomerDetailsList = styled(CostList)`
     > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] > div {
       min-height: 24px;
       border-bottom: 1px solid #eef0f4;
-      padding-bottom: 8px;
+      padding: 0 0 8px;
     }
 
     > [aria-label="Giấy Tờ Bổ Sung và biển số mới"] > div:last-child {
@@ -906,10 +910,10 @@ const StatusPill = styled.span<{ $status: string }>`
       : $status === "Đã thanh toán"
         ? "var(--primary)"
         : $status === "Đang chờ thanh toán"
-          ? "#7656c9"
+          ? "#fbbe0c"
         : "#c99300"};
   padding: 0 12px;
-  color: white;
+  color: ${({ $status }) => ($status === "Đang chờ thanh toán" ? "#202736" : "white")};
   font-size: 15px;
   font-weight: 650;
   white-space: nowrap;
@@ -2931,7 +2935,7 @@ export function ProfileManager() {
         </StatusTabs>
 
         {loading ? (
-          <StateBox><div><LoaderCircle className="spin" size={30} /><h3>Đang tải hồ sơ</h3></div></StateBox>
+          <StateBox><div><Loader className="spin" size={30} /><h3>Đang tải hồ sơ</h3></div></StateBox>
         ) : visibleProfiles.length === 0 ? (
           <StateBox>
             <div><Inbox size={34} /><h3>{emptyStateTitle}</h3></div>
@@ -3066,7 +3070,7 @@ export function ProfileManager() {
                   </CostTotalLine>
                 </ProfileGroup>
 
-                <ProfileGroup aria-label="Tổng kết chi phí">
+                <ProfileGroup aria-label="Tổng kết chi phí" data-cost-expanded={expandedCostIds.has(profile.id) ? "true" : "false"}>
                   <DesktopPaperworkLine><span><ProfileIcon><IdCard size={14} /></ProfileIcon>Nợ Biển Số</span><strong>{profile.owesVehiclePlate ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine><span><ProfileIcon><FileText size={14} /></ProfileIcon>Nợ Giấy Tờ</span><strong>{profile.owesRegistration ? "Có" : "Không"}</strong></DesktopPaperworkLine>
                   <DesktopPaperworkLine>

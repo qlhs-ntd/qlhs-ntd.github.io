@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderOpen, TrendingUp } from "lucide-react";
+import { FileChartLine, PanelBottomDashed } from "lucide-react";
 import type { ReactNode } from "react";
 import styled from "styled-components";
 
@@ -71,6 +71,10 @@ const NavItem = styled(Link)<{ $active: boolean }>`
 
   span {
     display: none;
+  }
+
+  svg {
+    fill: none;
   }
 
   &::after {
@@ -166,7 +170,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-label="Hồ sơ"
             title="Hồ sơ"
           >
-            <FolderOpen size={19} fill={hosoBActive ? "currentColor" : "none"} />
+            <PanelBottomDashed size={19} />
             <span>Hồ sơ</span>
           </NavItem>
           <NavItem
@@ -176,7 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             aria-label="Doanh thu"
             title="Doanh thu"
           >
-            <TrendingUp size={19} fill={doanhThuActive ? "currentColor" : "none"} />
+            <FileChartLine size={19} />
             <span>Doanh thu</span>
           </NavItem>
         </Navigation>

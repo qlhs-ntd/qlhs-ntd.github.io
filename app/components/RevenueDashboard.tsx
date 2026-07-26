@@ -151,7 +151,7 @@ const MetricCard = styled.article<{
           : $tone === "warning"
             ? "#fff6d9"
             : $tone === "violet"
-              ? "#f1edff"
+              ? "rgba(251, 190, 12, 0.12)"
               : "#edf0ff"};
     color: ${({ $tone }) =>
       $tone === "danger"
@@ -161,7 +161,7 @@ const MetricCard = styled.article<{
           : $tone === "warning"
             ? "#a66f00"
             : $tone === "violet"
-              ? "#7656c9"
+              ? "#fbbe0c"
               : "var(--primary)"};
 
     svg {
@@ -284,13 +284,8 @@ const LoadingValue = styled.div`
   display: inline-flex;
   width: fit-content;
   align-items: center;
-  gap: 7px;
   margin-top: 14px;
   color: #687086;
-  font-size: 13px;
-  font-weight: 650;
-  letter-spacing: 0;
-  line-height: 1.2;
 
   svg {
     width: 16px;
@@ -305,9 +300,7 @@ const LoadingValue = styled.div`
   }
 
   @media (max-width: 560px) {
-    gap: 6px;
     margin-top: 10px;
-    font-size: 12px;
 
     svg {
       width: 14px;
@@ -423,7 +416,7 @@ export function RevenueDashboard() {
   }, [profiles, selectedMonth]);
 
   const displayNumber = (value: number) => formatNumber(value);
-  const loadingValue = <><Loader aria-hidden="true" size={16} />Đang tải</>;
+  const loadingValue = <Loader aria-label="Đang tải" size={16} />;
   const metricValue = (value: number) =>
     loading ? <LoadingValue>{loadingValue}</LoadingValue> : <strong>{displayNumber(value)}</strong>;
   const currencyValue = (value: number, tone: "danger" | "success") => (
