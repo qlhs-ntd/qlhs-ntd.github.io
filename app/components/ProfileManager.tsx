@@ -68,7 +68,7 @@ function statusTabColor(tone: StatusTabTone) {
     case "processing":
       return "#c99300";
     case "waiting":
-      return "#fbbe0c";
+      return "#7656c9";
     case "paid":
       return "var(--primary)";
     case "completed":
@@ -83,7 +83,7 @@ function statusTabBackground(tone: StatusTabTone) {
     case "processing":
       return "rgba(201, 147, 0, 0.08)";
     case "waiting":
-      return "rgba(251, 190, 12, 0.12)";
+      return "rgba(118, 86, 201, 0.08)";
     case "paid":
       return "rgba(56, 89, 217, 0.08)";
     case "completed":
@@ -104,7 +104,7 @@ function statusColor(status: string) {
     case "Đã thanh toán":
       return "var(--primary)";
     case "Đang chờ thanh toán":
-      return "#fbbe0c";
+      return "#7656c9";
     default:
       return "#c99300";
   }
@@ -123,12 +123,12 @@ function statusIcon(status: string): LucideIcon {
   }
 }
 
-const STATUS_TABS: Array<{ key: StatusTabKey; label: string; tone: StatusTabTone; icon: LucideIcon; matches: (profile: ProfileRecord) => boolean }> = [
-  { key: "all", label: "Tất Cả", tone: "neutral", icon: ListChecks, matches: () => true },
-  { key: "processing", label: "Đang Xử Lí", tone: "processing", icon: Loader, matches: (profile) => (profile.status || "Đang xử lí") === "Đang xử lí" },
-  { key: "waiting", label: "Chờ Thanh Toán", tone: "waiting", icon: Clock, matches: (profile) => profile.status === "Đang chờ thanh toán" },
-  { key: "paid", label: "Đã Thanh Toán", tone: "paid", icon: BadgeCheck, matches: (profile) => profile.status === "Đã thanh toán" },
-  { key: "completed", label: "Hoàn Tất", tone: "completed", icon: CheckCircle2, matches: (profile) => profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất" },
+const STATUS_TABS: Array<{ key: StatusTabKey; label: string; tone: StatusTabTone; matches: (profile: ProfileRecord) => boolean }> = [
+  { key: "all", label: "Tất Cả", tone: "neutral", matches: () => true },
+  { key: "processing", label: "Đang Xử Lí", tone: "processing", matches: (profile) => (profile.status || "Đang xử lí") === "Đang xử lí" },
+  { key: "waiting", label: "Chờ Thanh Toán", tone: "waiting", matches: (profile) => profile.status === "Đang chờ thanh toán" },
+  { key: "paid", label: "Đã Thanh Toán", tone: "paid", matches: (profile) => profile.status === "Đã thanh toán" },
+  { key: "completed", label: "Hoàn Tất", tone: "completed", matches: (profile) => profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất" },
 ];
 
 const Header = styled.header`
@@ -910,10 +910,10 @@ const StatusPill = styled.span<{ $status: string }>`
       : $status === "Đã thanh toán"
         ? "var(--primary)"
         : $status === "Đang chờ thanh toán"
-          ? "#fbbe0c"
+          ? "#7656c9"
         : "#c99300"};
   padding: 0 12px;
-  color: ${({ $status }) => ($status === "Đang chờ thanh toán" ? "#202736" : "white")};
+  color: white;
   font-size: 15px;
   font-weight: 650;
   white-space: nowrap;
@@ -2915,7 +2915,6 @@ export function ProfileManager() {
         <StatusTabs ref={statusTabsRef} role="tablist" aria-label="Lọc hồ sơ theo trạng thái">
           {STATUS_TABS.map((tab) => {
             const active = activeStatusTab === tab.key;
-            const TabIcon = tab.icon;
             return (
               <StatusTab
                 key={tab.key}
@@ -2926,7 +2925,6 @@ export function ProfileManager() {
                 aria-selected={active}
                 onClick={() => setActiveStatusTab(tab.key)}
               >
-                <TabIcon size={14} />
                 {tab.label}
                 <StatusBadge $active={active} $tone={tab.tone}>{statusTabCounts.get(tab.key) ?? 0}</StatusBadge>
               </StatusTab>

@@ -151,7 +151,7 @@ const MetricCard = styled.article<{
           : $tone === "warning"
             ? "#fff6d9"
             : $tone === "violet"
-              ? "rgba(251, 190, 12, 0.12)"
+              ? "#f1edff"
               : "#edf0ff"};
     color: ${({ $tone }) =>
       $tone === "danger"
@@ -161,7 +161,7 @@ const MetricCard = styled.article<{
           : $tone === "warning"
             ? "#a66f00"
             : $tone === "violet"
-              ? "#fbbe0c"
+              ? "#7656c9"
               : "var(--primary)"};
 
     svg {
