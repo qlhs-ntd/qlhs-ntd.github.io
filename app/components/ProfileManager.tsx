@@ -872,6 +872,13 @@ const CostToggleButton = styled.button<{ $expanded: boolean; $neutral?: boolean 
   }
 `;
 
+const CostToggleLabel = styled.span`
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 2px;
+`;
+
 const CustomerToggleDesktopLabel = styled.span`
   display: inline;
 
@@ -3005,9 +3012,11 @@ export function ProfileManager() {
                         })}
                       >
                         <ProfileIcon><UserRound size={14} /></ProfileIcon>
-                        <CustomerToggleDesktopLabel>Khách Hàng</CustomerToggleDesktopLabel>
-                        <CustomerToggleMobileLabel>Khách Hàng</CustomerToggleMobileLabel>
-                        <ChevronDown className="cost-toggle-chevron" size={14} />
+                        <CostToggleLabel>
+                          <CustomerToggleDesktopLabel>Khách Hàng</CustomerToggleDesktopLabel>
+                          <CustomerToggleMobileLabel>Khách Hàng</CustomerToggleMobileLabel>
+                          <ChevronDown className="cost-toggle-chevron" size={14} />
+                        </CostToggleLabel>
                       </CostToggleButton>
                       <CustomerNameActions>
                         <strong>{profile.customerName || "—"}</strong>
@@ -3080,8 +3089,10 @@ export function ProfileManager() {
                       })}
                     >
                       <ProfileIcon><Calculator size={14} /></ProfileIcon>
-                      Chi Phí Khách Trả
-                      <ChevronDown className="cost-toggle-chevron" size={14} />
+                      <CostToggleLabel>
+                        Chi Phí Khách Trả
+                        <ChevronDown className="cost-toggle-chevron" size={14} />
+                      </CostToggleLabel>
                     </CostToggleButton>
                     <strong>{formatCurrency(profile.totalCost)}</strong>
                   </CostTotalLine>
