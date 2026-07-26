@@ -339,10 +339,19 @@ const StatusBadge = styled.span<{ $active: boolean; $tone: StatusTabTone }>`
   line-height: 1;
 `;
 
+const SearchHighlight = styled.mark`
+  border-radius: 4px;
+  background: #ffd84d;
+  color: #111827;
+  padding: 0 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+`;
+
 const SearchBox = styled.label`
   position: relative;
   display: block;
-  width: min(300px, 100%);
+  width: min(340px, 100%);
 
   svg {
     position: absolute;
@@ -367,11 +376,32 @@ const SearchBox = styled.label`
       border-color: rgba(56, 89, 217, 0.55);
       background: white;
     }
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
   }
 
   @media (max-width: 560px) {
     display: none;
   }
+`;
+
+const SearchClearButton = styled.button`
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  padding: 0;
+  color: #667085;
+  cursor: pointer;
+  transform: translateY(-50%);
 `;
 
 const MobileSearch = styled.div<{ $open: boolean }>`
@@ -1569,6 +1599,10 @@ const InputIconButton = styled.button`
 `;
 
 const ClearInputButton = styled(InputIconButton)`
+  right: 4px;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
   background: transparent;
   color: #667085;
 
@@ -1580,6 +1614,11 @@ const ClearInputButton = styled(InputIconButton)`
 
   &:active {
     color: #667085;
+  }
+
+  svg {
+    width: 17px;
+    height: 17px;
   }
 `;
 
@@ -2057,6 +2096,36 @@ function normalize(value: string) {
 function hasCopyableVehiclePlate(value: string) {
   const normalizedValue = normalize(value.trim());
   return Boolean(normalizedValue) && normalizedValue !== "cho cap" && normalizedValue !== "chua cap";
+}
+
+function highlightText(value: string, query: string) {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) return value;
+
+  const normalizedValue = normalize(value);
+  const normalizedQuery = normalize(trimmedQuery);
+  const matchIndex = normalizedValue.indexOf(normalizedQuery);
+  if (matchIndex === -1) return value;
+
+  const endIndex = matchIndex + normalizedQuery.length;
+  return {
+    before: value.slice(0, matchIndex),
+    match: value.slice(matchIndex, endIndex),
+    after: value.slice(endIndex),
+  };
+}
+
+function renderHighlightedText(value: string, query: string) {
+  const highlighted = highlightText(value, query);
+  if (typeof highlighted === "string") return highlighted;
+
+  return (
+    <>
+      {highlighted.before}
+      <SearchHighlight>{highlighted.match}</SearchHighlight>
+      {highlighted.after}
+    </>
+  );
 }
 
 function formatCurrentTime(value: Date) {
@@ -2801,9 +2870,11 @@ export function ProfileManager() {
     return !Number.isNaN(createdAt.getTime()) && monthKey(createdAt) === selectedMonth;
   }), [profiles, selectedMonth]);
 
+  const normalizedQuery = normalize(query.trim());
+
   const activeStatus = STATUS_TABS.find((tab) => tab.key === activeStatusTab) ?? STATUS_TABS[0];
-  const emptyStateTitle = query
-    ? "Không tìm thấy kết quả"
+  const emptyStateTitle = normalizedQuery
+    ? "Không tìm thấy hồ sơ"
     : activeStatusTab === "all"
       ? "Chưa có hồ sơ"
       : `Chưa có hồ sơ ${activeStatus.label}`;
@@ -2816,11 +2887,35 @@ export function ProfileManager() {
     return counts;
   }, [monthlyProfiles]);
 
+  const searchResults = useMemo(() => {
+    if (!normalizedQuery) return [];
+    return monthlyProfiles.filter((profile) =>
+      normalize([
+        profile.customerName,
+        profile.vehicleOwnerName,
+        profile.vehiclePlate,
+        profile.newVehiclePlate,
+        profile.receivingAgency,
+        profile.serviceType,
+      ].join(" ")).includes(normalizedQuery),
+    );
+  }, [monthlyProfiles, normalizedQuery]);
+
+  const isSearchMode = Boolean(normalizedQuery);
+
   const visibleProfiles = useMemo(() => {
-    const normalizedQuery = normalize(query.trim());
     return monthlyProfiles.filter((profile) => {
+      if (isSearchMode) {
+        return normalize([
+          profile.customerName,
+          profile.vehicleOwnerName,
+          profile.vehiclePlate,
+          profile.newVehiclePlate,
+          profile.receivingAgency,
+          profile.serviceType,
+        ].join(" ")).includes(normalizedQuery);
+      }
       if (!activeStatus.matches(profile)) return false;
-      if (!normalizedQuery) return true;
       return normalize([
         profile.customerName,
         profile.vehicleOwnerName,
@@ -2830,7 +2925,7 @@ export function ProfileManager() {
         profile.serviceType,
       ].join(" ")).includes(normalizedQuery);
     });
-  }, [activeStatus, monthlyProfiles, query]);
+  }, [activeStatus, monthlyProfiles, isSearchMode, normalizedQuery]);
 
   const handleStatusTabChange = (nextTab: StatusTabKey) => {
     if (nextTab === activeStatusTab) return;
@@ -2950,9 +3045,19 @@ export function ProfileManager() {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Tìm tên, biển số..."
+              placeholder="Tìm theo tên, chủ phương tiện, biển số"
               aria-label="Tìm hồ sơ theo tên hoặc biển số"
             />
+            {query && (
+              <SearchClearButton
+                type="button"
+                aria-label="Xoá tìm kiếm"
+                title="Xoá tìm kiếm"
+                onClick={() => setQuery("")}
+              >
+                <CircleX size={17} />
+              </SearchClearButton>
+            )}
           </SearchBox>
           <MobileSearch $open={mobileSearchOpen}>
             {mobileSearchOpen ? (
@@ -2963,7 +3068,7 @@ export function ProfileManager() {
                   type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Tìm tên, biển số..."
+                  placeholder="Tìm theo tên, chủ phương tiện, biển số"
                   aria-label="Tìm hồ sơ theo tên hoặc biển số"
                 />
                 <button
@@ -2997,24 +3102,37 @@ export function ProfileManager() {
             Thêm Mới
           </PrimaryButton>
         </Toolbar>
-        <StatusTabs ref={statusTabsRef} role="tablist" aria-label="Lọc hồ sơ theo trạng thái">
-          {STATUS_TABS.map((tab) => {
-            const active = activeStatusTab === tab.key;
-            return (
-              <StatusTab
-                key={tab.key}
-                type="button"
-                role="tab"
-                $active={active}
-                $tone={tab.tone}
-                aria-selected={active}
-                onClick={() => handleStatusTabChange(tab.key)}
-              >
-                {tab.label}
-                <StatusBadge $active={active} $tone={tab.tone}>{statusTabCounts.get(tab.key) ?? 0}</StatusBadge>
-              </StatusTab>
-            );
-          })}
+        <StatusTabs ref={statusTabsRef} role="tablist" aria-label={isSearchMode ? "Kết quả tìm kiếm" : "Lọc hồ sơ theo trạng thái"}>
+          {isSearchMode ? (
+            <StatusTab
+              type="button"
+              role="tab"
+              $active
+              $tone="neutral"
+              aria-selected="true"
+            >
+              Kết Quả Tìm Kiếm
+              <StatusBadge $active $tone="neutral">{Math.min(2, searchResults.length)}</StatusBadge>
+            </StatusTab>
+          ) : (
+            STATUS_TABS.map((tab) => {
+              const active = activeStatusTab === tab.key;
+              return (
+                <StatusTab
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  $active={active}
+                  $tone={tab.tone}
+                  aria-selected={active}
+                  onClick={() => handleStatusTabChange(tab.key)}
+                >
+                  {tab.label}
+                  <StatusBadge $active={active} $tone={tab.tone}>{statusTabCounts.get(tab.key) ?? 0}</StatusBadge>
+                </StatusTab>
+              );
+            })
+          )}
         </StatusTabs>
 
         {loading || isStatusTabLoading ? (
@@ -3049,11 +3167,11 @@ export function ProfileManager() {
                   </MobileTimeLine>
                   <CostLine aria-label="Cơ quan nhận">
                     <span><ProfileIcon><Building2 size={14} /></ProfileIcon>Cơ quan nhận</span>
-                    <strong>{profile.receivingAgency ? capitalizeWords(profile.receivingAgency) : "—"}</strong>
+                    <strong>{profile.receivingAgency ? (isSearchMode ? renderHighlightedText(capitalizeWords(profile.receivingAgency), query) : capitalizeWords(profile.receivingAgency)) : "—"}</strong>
                   </CostLine>
                   <CostLine aria-label="Loại dịch vụ">
                     <span><ProfileIcon><BriefcaseBusiness size={14} /></ProfileIcon>Loại dịch vụ</span>
-                    <strong>{profile.serviceType ? capitalizeWords(profile.serviceType) : "—"}</strong>
+                    <strong>{profile.serviceType ? (isSearchMode ? renderHighlightedText(capitalizeWords(profile.serviceType), query) : capitalizeWords(profile.serviceType)) : "—"}</strong>
                   </CostLine>
                   <MobileHiddenGroupDivider />
                     <CostLine aria-label="Khách Hàng" $total>
@@ -3078,24 +3196,24 @@ export function ProfileManager() {
                         </CostToggleLabel>
                       </CostToggleButton>
                       <CustomerNameActions>
-                        <strong>{profile.customerName || "—"}</strong>
+                        <strong>{profile.customerName ? (isSearchMode ? renderHighlightedText(profile.customerName, query) : profile.customerName) : "—"}</strong>
                       </CustomerNameActions>
                     </CostLine>
                   <CustomerDetailsList id={`customer-details-${profile.id}`} $expanded={expandedCustomerIds.has(profile.id)}>
                     <CostLine aria-label="Chủ Phương Tiện">
                       <span><ProfileIcon><UserShield size={14} /></ProfileIcon>Chủ Phương Tiện</span>
                       <CostValueActions>
-                        <strong>{profile.vehicleOwnerName || "—"}</strong>
+                        <strong>{profile.vehicleOwnerName ? (isSearchMode ? renderHighlightedText(profile.vehicleOwnerName, query) : profile.vehicleOwnerName) : "—"}</strong>
                       </CostValueActions>
                     </CostLine>
                     <CostLine aria-label="Loại xe">
                       <span><ProfileIcon><CarFront size={14} /></ProfileIcon>Loại xe</span>
-                      <strong>{profile.vehicleType ? capitalizeWords(profile.vehicleType) : "—"}</strong>
+                      <strong>{profile.vehicleType ? (isSearchMode ? renderHighlightedText(capitalizeWords(profile.vehicleType), query) : capitalizeWords(profile.vehicleType)) : "—"}</strong>
                     </CostLine>
                     <CostLine aria-label="Biển Số Cũ">
                       <span><ProfileIcon><IdCard size={14} /></ProfileIcon>Biển Số Cũ</span>
                       <CostValueActions>
-                        <strong>{profile.vehiclePlate || "--"}</strong>
+                        <strong>{profile.vehiclePlate ? (isSearchMode ? renderHighlightedText(profile.vehiclePlate, query) : profile.vehiclePlate) : "--"}</strong>
                         {profile.vehiclePlate && (
                           <MobileCopyButton $copied={copiedKey === `${profile.id}:old-plate`} type="button" aria-label="Sao chép Biển Số Cũ" title="Sao chép Biển Số Cũ" onClick={() => void copyProfileValue(profile.vehiclePlate, "Biển Số Cũ", `${profile.id}:old-plate`)}>
                             {copiedKey === `${profile.id}:old-plate` ? <Check size={12} /> : <Copy size={12} />}
@@ -3109,7 +3227,7 @@ export function ProfileManager() {
                       <CostLine>
                         <span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span>
                         <CostValueActions>
-                          <strong>{profile.newVehiclePlate || "--"}</strong>
+                          <strong>{profile.newVehiclePlate ? (isSearchMode ? renderHighlightedText(profile.newVehiclePlate, query) : profile.newVehiclePlate) : "--"}</strong>
                           {hasCopyableVehiclePlate(profile.newVehiclePlate) && (
                             <MobileCopyButton $copied={copiedKey === `${profile.id}:new-plate`} type="button" aria-label="Sao chép biển số mới" title="Sao chép biển số mới" onClick={() => void copyProfileValue(profile.newVehiclePlate, "biển số mới", `${profile.id}:new-plate`)}>
                               {copiedKey === `${profile.id}:new-plate` ? <Check size={12} /> : <Copy size={12} />}
