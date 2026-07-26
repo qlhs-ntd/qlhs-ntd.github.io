@@ -656,8 +656,8 @@ const CostList = styled.div<{ $expanded?: boolean }>`
     gap: 8px;
     border: ${({ $expanded }) => ($expanded ? "1px solid #eef0f4" : "0")};
     border-radius: 12px;
-    background: ${({ $expanded }) => ($expanded ? "#f7f8fa" : "transparent")};
-    padding: ${({ $expanded }) => ($expanded ? "12px 13px 9px" : "0")};
+    background: ${({ $expanded }) => ($expanded ? "#fbfcfd" : "transparent")};
+    padding: ${({ $expanded }) => ($expanded ? "12px 12px 6px" : "0")};
 
     > div,
     > div > span,
@@ -787,7 +787,7 @@ const MobilePaperwork = styled.div`
 
   @media (max-width: 1100px) {
     display: grid;
-    gap: 10px;
+    gap: 8px;
   }
 `;
 
@@ -862,7 +862,7 @@ const CostToggleButton = styled.button<{ $expanded: boolean; $neutral?: boolean 
 
   @media (max-width: 1100px) {
     color: var(--primary);
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
 
     .cost-toggle-chevron {
