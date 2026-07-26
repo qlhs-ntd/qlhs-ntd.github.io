@@ -2952,7 +2952,7 @@ export function ProfileManager() {
         </StatusTabs>
 
         {loading || isStatusTabLoading ? (
-          <StateBox><div><Loader className="spin" size={30} /><h3>{loading ? "Đang tải hồ sơ" : "Đang cập nhật danh sách"}</h3></div></StateBox>
+          <StateBox><div><Loader className="spin" size={30} /><h3>Đang tải hồ sơ</h3></div></StateBox>
         ) : visibleProfiles.length === 0 ? (
           <StateBox>
             <div><Inbox size={34} /><h3>{emptyStateTitle}</h3></div>
