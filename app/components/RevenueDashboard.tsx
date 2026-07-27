@@ -10,7 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import {
   profileService,
@@ -358,7 +358,7 @@ const StatusProgressTrack = styled.div`
 
   @media (max-width: 560px) {
     max-width: none;
-    height: 12px;
+    height: 10px;
   }
 `;
 
@@ -507,7 +507,7 @@ const ChartCard = styled.article`
 `;
 
 const ChartTitle = styled.h2`
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   color: var(--ink);
   font-size: 16px;
   font-weight: 700;
@@ -515,6 +515,7 @@ const ChartTitle = styled.h2`
   text-transform: capitalize;
 
   @media (max-width: 560px) {
+    margin-bottom: 8px;
     font-size: 14px;
   }
 `;
@@ -528,7 +529,7 @@ const ChartViewport = styled.div`
   height: 288px;
 
   @media (max-width: 560px) {
-    height: 260px;
+    height: 224px;
   }
 `;
 
@@ -541,7 +542,7 @@ const ChartEmptyState = styled.div`
   font-size: 14px;
 
   @media (max-width: 560px) {
-    height: 260px;
+    height: 224px;
     font-size: 13px;
   }
 `;
@@ -624,6 +625,18 @@ function buildTopChartData(
     return left.label.localeCompare(right.label, "vi");
   });
 
+  const hasAnyData = data.some((item) => item.count > 0);
+
+  if (!hasAnyData) {
+    return [
+      {
+        label: "Không Có Dữ Liệu",
+        count: 0,
+        tooltipLabel: "Không Có Dữ Liệu",
+      },
+    ] satisfies ChartDatum[];
+  }
+
   const topItems = data
     .filter((item) => item.count > 0)
     .slice(0, topCount)
@@ -665,6 +678,175 @@ function titleCaseLabel(value: string) {
 function truncateChartLabel(value: string, maxLength: number) {
   if (value.length <= maxLength) return value;
   return `${value.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+}
+
+type BarChartCardProps = {
+  title: string;
+  data: ChartDatum[];
+  loading: boolean;
+  isDesktop: boolean;
+};
+
+function BarChartCard({ title, data, loading, isDesktop }: BarChartCardProps) {
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const [chartWidth, setChartWidth] = useState(0);
+
+  useEffect(() => {
+    const element = viewportRef.current;
+    if (!element) return;
+
+    const syncWidth = () => {
+      const nextWidth = Math.round(element.getBoundingClientRect().width);
+      setChartWidth((currentWidth) => (currentWidth === nextWidth ? currentWidth : nextWidth));
+    };
+
+    syncWidth();
+
+    const resizeObserver = new ResizeObserver(syncWidth);
+    resizeObserver.observe(element);
+    window.addEventListener("resize", syncWidth);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", syncWidth);
+    };
+  }, []);
+
+  const targetSlotCount = isDesktop ? 6 : 4;
+  const displayData =
+    data.length >= targetSlotCount
+      ? data
+      : [
+          ...data,
+          ...Array.from({ length: targetSlotCount - data.length }, (_, index) => ({
+            label: `__empty_${index}`,
+            count: 0,
+            tooltipLabel: "",
+            hidden: true,
+          })),
+        ];
+
+  const options: ApexOptions = {
+    chart: {
+      type: "bar",
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      animations: { easing: "easeinout", speed: 360 },
+      redrawOnParentResize: true,
+      redrawOnWindowResize: true,
+      parentHeightOffset: 0,
+    },
+    colors: ["#2563eb"],
+    dataLabels: {
+      enabled: true,
+      offsetY: -12,
+      background: {
+        enabled: true,
+        backgroundColor: "#ffffff",
+        foreColor: "#2563eb",
+        borderRadius: 8,
+        padding: 6,
+        opacity: 1,
+        dropShadow: {
+          enabled: false,
+        },
+      },
+      style: {
+        colors: ["#2563eb"],
+        fontSize: isDesktop ? "15px" : "12px",
+        fontWeight: "700",
+      },
+      formatter: (value, opts) =>
+        opts && displayData[opts.dataPointIndex]?.hidden ? "" : `${value ?? 0}`,
+    },
+    grid: {
+      borderColor: "#e4e7ef",
+      strokeDashArray: 3,
+      padding: {
+        top: 18,
+      },
+    },
+    legend: { show: false },
+    plotOptions: {
+      bar: {
+        borderRadius: isDesktop ? 10 : 4,
+        borderRadiusApplication: "around",
+        columnWidth: isDesktop ? "46%" : "38%",
+        dataLabels: {
+          position: "top",
+        },
+      },
+    },
+    states: {
+      active: { filter: { type: "none" } },
+      hover: { filter: { type: "none" } },
+    },
+    stroke: {
+      show: false,
+    },
+    tooltip: {
+      enabled: false,
+    },
+    xaxis: {
+      categories: displayData.map((item) => (item.hidden ? "" : titleCaseLabel(item.label))),
+      labels: {
+        rotate: 0,
+        hideOverlappingLabels: !isDesktop,
+        trim: false,
+        formatter: (value) => {
+          const label = String(value);
+          return isDesktop ? label : truncateChartLabel(label, 11);
+        },
+        style: {
+          colors: "#121316",
+          fontSize: isDesktop ? "11px" : "10px",
+          fontWeight: 700,
+        },
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: {
+      show: false,
+      min: 0,
+      forceNiceScale: true,
+      decimalsInFloat: 0,
+      labels: { show: false },
+    },
+  };
+
+  const series = [
+    {
+      name: "Số lượng",
+      data: displayData.map((item) => (item.hidden ? null : item.count)),
+    },
+  ];
+
+  return (
+    <ChartCard>
+      <ChartTitle>{titleCaseLabel(title)}</ChartTitle>
+      <ChartScrollArea>
+        <ChartViewport ref={viewportRef}>
+          {loading ? (
+            <ChartEmptyState>
+              <LoadingValue>
+                <Loader aria-label="Đang tải" size={16} />
+              </LoadingValue>
+            </ChartEmptyState>
+          ) : chartWidth > 0 ? (
+            <ReactApexChart
+              key={`${title}-${isDesktop ? "desktop" : "mobile"}-${chartWidth}`}
+              options={options}
+              series={series}
+              type="bar"
+              height="100%"
+              width={chartWidth}
+            />
+          ) : null}
+        </ChartViewport>
+      </ChartScrollArea>
+    </ChartCard>
+  );
 }
 
 export function RevenueDashboard() {
@@ -776,131 +958,6 @@ export function RevenueDashboard() {
     [chartTopCount, monthlyProfiles],
   );
 
-  const renderBarChart = (title: string, data: ChartDatum[]) => {
-    const targetSlotCount = isDesktop ? 6 : 4;
-    const displayData =
-      data.length >= targetSlotCount
-        ? data
-        : [
-            ...data,
-            ...Array.from({ length: targetSlotCount - data.length }, (_, index) => ({
-              label: `__empty_${index}`,
-              count: 0,
-              tooltipLabel: "",
-              hidden: true,
-            })),
-          ];
-
-    const options: ApexOptions = {
-      chart: {
-        type: "bar",
-        toolbar: { show: false },
-        zoom: { enabled: false },
-        animations: { easing: "easeinout", speed: 360 },
-      },
-      colors: ["#2563eb"],
-      dataLabels: {
-        enabled: true,
-        offsetY: -12,
-        background: {
-          enabled: true,
-          backgroundColor: "#ffffff",
-          foreColor: "#2563eb",
-          borderRadius: 8,
-          padding: 6,
-          opacity: 1,
-          dropShadow: {
-            enabled: false,
-          },
-        },
-        style: {
-          colors: ["#2563eb"],
-          fontSize: isDesktop ? "15px" : "12px",
-          fontWeight: "700",
-        },
-        formatter: (value, opts) =>
-          opts && displayData[opts.dataPointIndex]?.hidden ? "" : `${value ?? 0}`,
-      },
-      grid: {
-        borderColor: "#e4e7ef",
-        strokeDashArray: 3,
-        padding: {
-          top: 18,
-        },
-      },
-      legend: { show: false },
-      plotOptions: {
-        bar: {
-          borderRadius: isDesktop ? 10 : 8,
-          borderRadiusApplication: "around",
-          columnWidth: isDesktop ? "46%" : "44%",
-          dataLabels: {
-            position: "top",
-          },
-        },
-      },
-      states: {
-        active: { filter: { type: "none" } },
-        hover: { filter: { type: "none" } },
-      },
-      stroke: {
-        show: false,
-      },
-      tooltip: {
-        enabled: false,
-      },
-      xaxis: {
-        categories: displayData.map((item) => (item.hidden ? "" : titleCaseLabel(item.label))),
-        labels: {
-          rotate: 0,
-          hideOverlappingLabels: !isDesktop,
-          trim: false,
-          formatter: (value) => {
-            const label = String(value);
-            return isDesktop ? label : truncateChartLabel(label, 11);
-          },
-          style: {
-            colors: "#121316",
-            fontSize: isDesktop ? "11px" : "10px",
-            fontWeight: 700,
-          },
-        },
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-      },
-      yaxis: {
-        show: false,
-        min: 0,
-        forceNiceScale: true,
-        decimalsInFloat: 0,
-        labels: { show: false },
-      },
-    };
-    const series = [
-      {
-        name: "Số lượng",
-        data: displayData.map((item) => (item.hidden ? null : item.count)),
-      },
-    ];
-
-    return (
-      <ChartCard>
-        <ChartTitle>{titleCaseLabel(title)}</ChartTitle>
-        {loading ? (
-          <ChartEmptyState>
-            <LoadingValue>{loadingValue}</LoadingValue>
-          </ChartEmptyState>
-        ) : (
-          <ChartScrollArea>
-            <ChartViewport>
-              <ReactApexChart options={options} series={series} type="bar" height="100%" width="100%" />
-            </ChartViewport>
-          </ChartScrollArea>
-        )}
-      </ChartCard>
-    );
-  };
-
   const displayNumber = (value: number) => formatNumber(value);
   const loadingValue = <Loader aria-label="Đang tải" size={16} />;
   const currencyValue = (value: number, tone: "danger" | "success") => (
@@ -985,9 +1042,19 @@ export function RevenueDashboard() {
         </SummaryLayout>
 
         <ChartsSection aria-label="Biểu đồ thống kê theo nhóm">
-          {renderBarChart("loại xe", vehicleTypeChartData)}
-          {renderBarChart("cơ quan nhận", receivingAgencyChartData)}
-          {renderBarChart("loại dịch vụ", serviceTypeChartData)}
+          <BarChartCard title="loại xe" data={vehicleTypeChartData} loading={loading} isDesktop={isDesktop} />
+          <BarChartCard
+            title="cơ quan nhận"
+            data={receivingAgencyChartData}
+            loading={loading}
+            isDesktop={isDesktop}
+          />
+          <BarChartCard
+            title="loại dịch vụ"
+            data={serviceTypeChartData}
+            loading={loading}
+            isDesktop={isDesktop}
+          />
         </ChartsSection>
       </ContentWrap>
     </AppShell>
