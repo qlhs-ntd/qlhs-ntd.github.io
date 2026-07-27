@@ -12,9 +12,11 @@
     "lint": "eslint . --ignore-pattern out --ignore-pattern .next"
   },
   "dependencies": {
+    "apexcharts": "^6.5.0",
     "lucide-react": "^1.26.0",
     "next": "16.2.6",
     "react": "19.2.6",
+    "react-apexcharts": "^2.1.1",
     "react-dom": "19.2.6",
     "sass": "^1.101.6",
     "styled-components": "^6.4.4"

@@ -1,22 +1,28 @@
 "use client";
 
+import type { ApexOptions } from "apexcharts";
 import {
-  BadgeCheck,
   Calculator,
   Calendar,
-  CheckCircle2,
   ChevronDown,
-  Clock,
   FolderOpen,
   Loader,
   TrendingUp,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { profileService, type ProfileRecord } from "../lib/profiles";
+import {
+  profileService,
+  RECEIVING_AGENCIES,
+  SERVICE_TYPES,
+  VEHICLE_TYPES,
+  type ProfileRecord,
+} from "../lib/profiles";
 import { AppShell } from "./AppShell";
 
 const PROFILE_YEAR = 2026;
+const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 const Header = styled.header`
   display: flex;
@@ -80,6 +86,12 @@ const MonthSelect = styled.select`
   }
 `;
 
+const ContentWrap = styled.div`
+  width: 100%;
+  max-width: 767px;
+  margin: 0 auto;
+`;
+
 const CalendarIcon = styled.span`
   position: absolute;
   top: 50%;
@@ -102,31 +114,45 @@ const DropdownIcon = styled.span`
   color: var(--primary);
 `;
 
-const MetricsGrid = styled.section`
+const SummaryLayout = styled.section`
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: 10px;
-  row-gap: 12px;
+  gap: 12px;
   margin-bottom: 18px;
+`;
 
-  @media (max-width: 980px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+const FinancialColumn = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 
   @media (max-width: 560px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr;
   }
 `;
 
+type MetricTone = "primary" | "danger" | "success" | "warning" | "violet";
+type StatusTone = "processing" | "waiting" | "paid" | "completed";
+
+function getMetricToneBackground(tone: MetricTone) {
+  if (tone === "danger") return "#fff1f3";
+  if (tone === "success") return "#e9f8ef";
+  if (tone === "warning") return "#fff6d9";
+  if (tone === "violet") return "#f1edff";
+  return "#edf0ff";
+}
+
+function getMetricToneColor(tone: MetricTone) {
+  if (tone === "danger") return "var(--danger)";
+  if (tone === "success") return "#217448";
+  if (tone === "warning") return "#a66f00";
+  if (tone === "violet") return "#7656c9";
+  return "var(--primary)";
+}
+
 const MetricCard = styled.article<{
-  $tone: "primary" | "danger" | "success" | "warning" | "violet";
-  $desktopSpan: number;
-  $mobileSpan: number;
-  $mobileOrder: number;
+  $tone: MetricTone;
 }>`
   display: grid;
-  grid-column: span ${({ $desktopSpan }) => $desktopSpan};
   grid-template-columns: 32px minmax(0, 1fr);
   align-content: start;
   align-items: center;
@@ -143,26 +169,8 @@ const MetricCard = styled.article<{
     height: 32px;
     place-items: center;
     border-radius: 10px;
-    background: ${({ $tone }) =>
-      $tone === "danger"
-        ? "#fff1f3"
-        : $tone === "success"
-          ? "#e9f8ef"
-          : $tone === "warning"
-            ? "#fff6d9"
-            : $tone === "violet"
-              ? "#f1edff"
-              : "#edf0ff"};
-    color: ${({ $tone }) =>
-      $tone === "danger"
-        ? "var(--danger)"
-        : $tone === "success"
-          ? "#217448"
-          : $tone === "warning"
-            ? "#a66f00"
-            : $tone === "violet"
-              ? "#7656c9"
-              : "var(--primary)"};
+    background: ${({ $tone }) => getMetricToneBackground($tone)};
+    color: ${({ $tone }) => getMetricToneColor($tone)};
 
     svg {
       width: 16px;
@@ -189,13 +197,7 @@ const MetricCard = styled.article<{
     line-height: 1.2;
   }
 
-  @media (max-width: 980px) {
-    grid-column: span 1;
-  }
-
   @media (max-width: 560px) {
-    grid-column: span ${({ $mobileSpan }) => $mobileSpan};
-    order: ${({ $mobileOrder }) => $mobileOrder};
     padding: 11px;
     grid-template-columns: 30px minmax(0, 1fr);
     column-gap: 8px;
@@ -224,6 +226,169 @@ const MetricCard = styled.article<{
   }
 `;
 
+const StatusSummaryCard = styled.article`
+  border: 1px solid #eceef3;
+  border-radius: 24px;
+  background: #ffffff;
+  padding: 18px 20px;
+  box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
+
+  @media (max-width: 560px) {
+    padding: 16px 14px;
+  }
+`;
+
+const StatusTotalWrap = styled.div`
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e8ebf2;
+
+  @media (max-width: 560px) {
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+  }
+`;
+
+const StatusTotalHeader = styled.div`
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 9px;
+
+  > span {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 10px;
+    background: #edf0ff;
+    color: var(--primary);
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 8px;
+
+    > span {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+
+      svg {
+        width: 15px;
+        height: 15px;
+      }
+    }
+  }
+`;
+
+const StatusTotalLabel = styled.div`
+  color: #121316;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: capitalize;
+
+  @media (max-width: 560px) {
+    font-size: 14px;
+  }
+`;
+
+const StatusTotalValue = styled.div`
+  margin-top: 10px;
+  color: #121316;
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+
+  @media (max-width: 560px) {
+    margin-top: 8px;
+    font-size: 18px;
+  }
+`;
+
+const StatusProgressList = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+`;
+
+const StatusProgressItem = styled.div`
+  display: grid;
+  gap: 9px;
+`;
+
+const StatusProgressLabel = styled.div<{ $tone: StatusTone }>`
+  color: #121316;
+  font-size: 15px;
+  font-weight: ${({ $tone }) => ($tone === "processing" || $tone === "waiting" ? 700 : 600)};
+  letter-spacing: -0.03em;
+
+  @media (max-width: 560px) {
+    font-size: 14px;
+  }
+`;
+
+const StatusProgressRow = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+
+  @media (max-width: 560px) {
+    gap: 12px;
+  }
+`;
+
+const StatusProgressTrack = styled.div`
+  position: relative;
+  width: 100%;
+  max-width: 660px;
+  height: 13px;
+  justify-self: start;
+  border-radius: 999px;
+  background: #eef0f4;
+  overflow: hidden;
+
+  @media (max-width: 560px) {
+    max-width: none;
+    height: 12px;
+  }
+`;
+
+const StatusProgressFill = styled.div<{ $tone: StatusTone; $width: number }>`
+  width: ${({ $width }) => `${$width}%`};
+  min-width: ${({ $width }) => ($width > 0 ? "10px" : "0")};
+  height: 100%;
+  border-radius: 999px;
+  background: ${({ $tone }) =>
+    $tone === "processing"
+      ? "#f0a018"
+      : $tone === "waiting"
+        ? "#7b61ff"
+        : $tone === "paid"
+          ? "#3859d9"
+          : "#24a36a"};
+`;
+
+const StatusProgressValue = styled.strong`
+  color: #121316;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+
+  @media (max-width: 560px) {
+    font-size: 16px;
+  }
+`;
+
 const DesktopMetricLabel = styled.span`
   display: inline;
 
@@ -244,7 +409,7 @@ const CurrencyValue = styled.div<{ $tone: "danger" | "success" }>`
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex-wrap: wrap;
   margin-top: 14px;
 
@@ -323,6 +488,82 @@ const ErrorMessage = styled.p`
   font-size: 13px;
 `;
 
+const ChartsSection = styled.section`
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+`;
+
+const ChartCard = styled.article`
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
+
+  @media (max-width: 560px) {
+    padding: 16px;
+  }
+`;
+
+const ChartTitle = styled.h2`
+  margin: 0 0 14px;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: capitalize;
+
+  @media (max-width: 560px) {
+    font-size: 14px;
+  }
+`;
+
+const ChartScrollArea = styled.div`
+  width: 100%;
+`;
+
+const ChartViewport = styled.div`
+  width: 100%;
+  height: 288px;
+
+  @media (max-width: 560px) {
+    height: 260px;
+  }
+`;
+
+const ChartEmptyState = styled.div`
+  display: flex;
+  height: 288px;
+  align-items: center;
+  justify-content: center;
+  color: #687086;
+  font-size: 14px;
+
+  @media (max-width: 560px) {
+    height: 260px;
+    font-size: 13px;
+  }
+`;
+
+type ChartDatum = {
+  label: string;
+  count: number;
+  tooltipLabel: string;
+  breakdown?: Array<{ label: string; count: number }>;
+  hidden?: boolean;
+};
+
+type SummaryState = {
+  totalProfiles: number;
+  totalCost: number;
+  totalProfit: number;
+  processing: number;
+  waitingForPayment: number;
+  paid: number;
+  completed: number;
+};
+
 function monthKey(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -352,12 +593,87 @@ function normalizedStatus(value: string) {
   return value.trim().toLocaleLowerCase("vi-VN");
 }
 
+function buildChartData(
+  profiles: ProfileRecord[],
+  options: readonly string[],
+  getValue: (profile: ProfileRecord) => string,
+) {
+  const counts = new Map<string, number>();
+
+  options.forEach((option) => {
+    counts.set(option, 0);
+  });
+
+  profiles.forEach((profile) => {
+    const value = getValue(profile)?.trim();
+    if (!value) return;
+    counts.set(value, (counts.get(value) || 0) + 1);
+  });
+
+  return Array.from(counts.entries()).map(([label, count]) => ({ label, count }));
+}
+
+function buildTopChartData(
+  profiles: ProfileRecord[],
+  options: readonly string[],
+  getValue: (profile: ProfileRecord) => string,
+  topCount: number,
+) {
+  const data = buildChartData(profiles, options, getValue).sort((left, right) => {
+    if (right.count !== left.count) return right.count - left.count;
+    return left.label.localeCompare(right.label, "vi");
+  });
+
+  const topItems = data
+    .filter((item) => item.count > 0)
+    .slice(0, topCount)
+    .map((item) => ({
+    label: titleCaseLabel(item.label),
+    count: item.count,
+    tooltipLabel: titleCaseLabel(item.label),
+    }));
+
+  const topLabels = new Set(topItems.map((item) => item.tooltipLabel));
+  const remaining = data.filter((item) => !topLabels.has(titleCaseLabel(item.label)));
+  const remainingCount = remaining.reduce((sum, item) => sum + item.count, 0);
+
+  return [
+    ...topItems,
+    {
+      label: "Còn Lại",
+      count: remainingCount,
+      tooltipLabel: "Còn Lại",
+      breakdown: remaining
+        .filter((item) => item.count > 0)
+        .map((item) => ({
+          label: titleCaseLabel(item.label),
+          count: item.count,
+        })),
+    },
+  ] satisfies ChartDatum[];
+}
+
+function titleCaseLabel(value: string) {
+  return value
+    .toLocaleLowerCase("vi-VN")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toLocaleUpperCase("vi-VN") + part.slice(1))
+    .join(" ");
+}
+
+function truncateChartLabel(value: string, maxLength: number) {
+  if (value.length <= maxLength) return value;
+  return `${value.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+}
+
 export function RevenueDashboard() {
   const monthTabs = useMemo(() => getRevenueMonths(), []);
   const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     const current = new Date();
@@ -383,14 +699,26 @@ export function RevenueDashboard() {
     return () => window.clearTimeout(timer);
   }, [loadProfiles]);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    const syncViewport = () => setIsDesktop(mediaQuery.matches);
 
+    syncViewport();
 
-  const summary = useMemo(() => {
-    const monthlyProfiles = profiles.filter((profile) => {
-      const createdAt = new Date(profile.createdAt);
-      return !Number.isNaN(createdAt.getTime()) && monthKey(createdAt) === selectedMonth;
-    });
+    mediaQuery.addEventListener("change", syncViewport);
+    return () => mediaQuery.removeEventListener("change", syncViewport);
+  }, []);
 
+  const monthlyProfiles = useMemo(
+    () =>
+      profiles.filter((profile) => {
+        const createdAt = new Date(profile.createdAt);
+        return !Number.isNaN(createdAt.getTime()) && monthKey(createdAt) === selectedMonth;
+      }),
+    [profiles, selectedMonth],
+  );
+
+  const summary = useMemo<SummaryState>(() => {
     return monthlyProfiles.reduce(
       (result, profile) => {
         const status = normalizedStatus(profile.status);
@@ -413,12 +741,168 @@ export function RevenueDashboard() {
         completed: 0,
       },
     );
-  }, [profiles, selectedMonth]);
+  }, [monthlyProfiles]);
+
+  const statusProgressItems = useMemo(
+    () => [
+      { key: "processing", label: "Đang xử lí", count: summary.processing, tone: "processing" as const },
+      {
+        key: "waiting",
+        label: "Chờ thanh toán",
+        count: summary.waitingForPayment,
+        tone: "waiting" as const,
+      },
+      { key: "paid", label: "Đã thanh toán", count: summary.paid, tone: "paid" as const },
+      { key: "completed", label: "Đã hoàn tất", count: summary.completed, tone: "completed" as const },
+    ],
+    [summary.completed, summary.paid, summary.processing, summary.totalProfiles, summary.waitingForPayment],
+  );
+
+  const chartTopCount = isDesktop ? 5 : 3;
+
+  const vehicleTypeChartData = useMemo(
+    () => buildTopChartData(monthlyProfiles, VEHICLE_TYPES, (profile) => profile.vehicleType, chartTopCount),
+    [chartTopCount, monthlyProfiles],
+  );
+
+  const receivingAgencyChartData = useMemo(
+    () =>
+      buildTopChartData(monthlyProfiles, RECEIVING_AGENCIES, (profile) => profile.receivingAgency, chartTopCount),
+    [chartTopCount, monthlyProfiles],
+  );
+
+  const serviceTypeChartData = useMemo(
+    () => buildTopChartData(monthlyProfiles, SERVICE_TYPES, (profile) => profile.serviceType, chartTopCount),
+    [chartTopCount, monthlyProfiles],
+  );
+
+  const renderBarChart = (title: string, data: ChartDatum[]) => {
+    const targetSlotCount = isDesktop ? 6 : 4;
+    const displayData =
+      data.length >= targetSlotCount
+        ? data
+        : [
+            ...data,
+            ...Array.from({ length: targetSlotCount - data.length }, (_, index) => ({
+              label: `__empty_${index}`,
+              count: 0,
+              tooltipLabel: "",
+              hidden: true,
+            })),
+          ];
+
+    const options: ApexOptions = {
+      chart: {
+        type: "bar",
+        toolbar: { show: false },
+        zoom: { enabled: false },
+        animations: { easing: "easeinout", speed: 360 },
+      },
+      colors: ["#2563eb"],
+      dataLabels: {
+        enabled: true,
+        offsetY: -12,
+        background: {
+          enabled: true,
+          backgroundColor: "#ffffff",
+          foreColor: "#2563eb",
+          borderRadius: 8,
+          padding: 6,
+          opacity: 1,
+          dropShadow: {
+            enabled: false,
+          },
+        },
+        style: {
+          colors: ["#2563eb"],
+          fontSize: isDesktop ? "15px" : "12px",
+          fontWeight: "700",
+        },
+        formatter: (value, opts) =>
+          opts && displayData[opts.dataPointIndex]?.hidden ? "" : `${value ?? 0}`,
+      },
+      grid: {
+        borderColor: "#e4e7ef",
+        strokeDashArray: 3,
+        padding: {
+          top: 18,
+        },
+      },
+      legend: { show: false },
+      plotOptions: {
+        bar: {
+          borderRadius: isDesktop ? 10 : 8,
+          borderRadiusApplication: "around",
+          columnWidth: isDesktop ? "46%" : "44%",
+          dataLabels: {
+            position: "top",
+          },
+        },
+      },
+      states: {
+        active: { filter: { type: "none" } },
+        hover: { filter: { type: "none" } },
+      },
+      stroke: {
+        show: false,
+      },
+      tooltip: {
+        enabled: false,
+      },
+      xaxis: {
+        categories: displayData.map((item) => (item.hidden ? "" : titleCaseLabel(item.label))),
+        labels: {
+          rotate: 0,
+          hideOverlappingLabels: !isDesktop,
+          trim: false,
+          formatter: (value) => {
+            const label = String(value);
+            return isDesktop ? label : truncateChartLabel(label, 11);
+          },
+          style: {
+            colors: "#121316",
+            fontSize: isDesktop ? "11px" : "10px",
+            fontWeight: 700,
+          },
+        },
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+      },
+      yaxis: {
+        show: false,
+        min: 0,
+        forceNiceScale: true,
+        decimalsInFloat: 0,
+        labels: { show: false },
+      },
+    };
+    const series = [
+      {
+        name: "Số lượng",
+        data: displayData.map((item) => (item.hidden ? null : item.count)),
+      },
+    ];
+
+    return (
+      <ChartCard>
+        <ChartTitle>{titleCaseLabel(title)}</ChartTitle>
+        {loading ? (
+          <ChartEmptyState>
+            <LoadingValue>{loadingValue}</LoadingValue>
+          </ChartEmptyState>
+        ) : (
+          <ChartScrollArea>
+            <ChartViewport>
+              <ReactApexChart options={options} series={series} type="bar" height="100%" width="100%" />
+            </ChartViewport>
+          </ChartScrollArea>
+        )}
+      </ChartCard>
+    );
+  };
 
   const displayNumber = (value: number) => formatNumber(value);
   const loadingValue = <Loader aria-label="Đang tải" size={16} />;
-  const metricValue = (value: number) =>
-    loading ? <LoadingValue>{loadingValue}</LoadingValue> : <strong>{displayNumber(value)}</strong>;
   const currencyValue = (value: number, tone: "danger" | "success") => (
     <CurrencyValue $tone={tone}>
       {loading ? (
@@ -457,17 +941,55 @@ export function RevenueDashboard() {
         </MonthSelectWrap>
       </Header>
 
-      {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
+      <ContentWrap>
+        {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
 
-      <MetricsGrid aria-label="Số liệu hồ sơ và doanh thu trong tháng">
-        <MetricCard $tone="danger" $desktopSpan={4} $mobileSpan={2} $mobileOrder={1}><span><Calculator size={18} /></span><small><DesktopMetricLabel>Chi Phí Khách Trả</DesktopMetricLabel><MobileMetricLabel>Chi Phí</MobileMetricLabel></small>{currencyValue(summary.totalCost, "danger")}</MetricCard>
-        <MetricCard $tone="success" $desktopSpan={4} $mobileSpan={2} $mobileOrder={2}><span><TrendingUp size={18} /></span><small><DesktopMetricLabel>Lợi Nhuận Thu Về</DesktopMetricLabel><MobileMetricLabel>Lợi Nhuận</MobileMetricLabel></small>{currencyValue(summary.totalProfit, "success")}</MetricCard>
-        <MetricCard $tone="primary" $desktopSpan={4} $mobileSpan={2} $mobileOrder={3}><span><FolderOpen size={18} /></span><small><DesktopMetricLabel>Tổng hồ sơ</DesktopMetricLabel><MobileMetricLabel>Hồ Sơ</MobileMetricLabel></small>{metricValue(summary.totalProfiles)}</MetricCard>
-        <MetricCard $tone="warning" $desktopSpan={3} $mobileSpan={1} $mobileOrder={4}><span><Loader size={18} /></span><small>Đang xử lí</small>{metricValue(summary.processing)}</MetricCard>
-        <MetricCard $tone="violet" $desktopSpan={3} $mobileSpan={1} $mobileOrder={5}><span><Clock size={18} /></span><small>Chờ thanh toán</small>{metricValue(summary.waitingForPayment)}</MetricCard>
-        <MetricCard $tone="primary" $desktopSpan={3} $mobileSpan={1} $mobileOrder={6}><span><BadgeCheck size={18} /></span><small>Đã thanh toán</small>{metricValue(summary.paid)}</MetricCard>
-        <MetricCard $tone="success" $desktopSpan={3} $mobileSpan={1} $mobileOrder={7}><span><CheckCircle2 size={18} /></span><small>Đã hoàn tất</small>{metricValue(summary.completed)}</MetricCard>
-      </MetricsGrid>
+        <SummaryLayout aria-label="Số liệu hồ sơ và doanh thu trong tháng">
+          <FinancialColumn>
+            <MetricCard $tone="danger"><span><Calculator size={18} /></span><small><DesktopMetricLabel>Chi Phí Khách Trả</DesktopMetricLabel><MobileMetricLabel>Chi Phí</MobileMetricLabel></small>{currencyValue(summary.totalCost, "danger")}</MetricCard>
+            <MetricCard $tone="success"><span><TrendingUp size={18} /></span><small><DesktopMetricLabel>Lợi Nhuận Thu Về</DesktopMetricLabel><MobileMetricLabel>Lợi Nhuận</MobileMetricLabel></small>{currencyValue(summary.totalProfit, "success")}</MetricCard>
+          </FinancialColumn>
+          <StatusSummaryCard>
+            <StatusTotalWrap>
+              <StatusTotalHeader>
+                <span><FolderOpen size={18} /></span>
+                <StatusTotalLabel>Tổng Hồ Sơ</StatusTotalLabel>
+              </StatusTotalHeader>
+              {loading ? (
+                <LoadingValue>{loadingValue}</LoadingValue>
+              ) : (
+                <StatusTotalValue>{displayNumber(summary.totalProfiles)}</StatusTotalValue>
+              )}
+            </StatusTotalWrap>
+            <StatusProgressList>
+              {statusProgressItems.map((item) => {
+                const progressWidth =
+                  summary.totalProfiles > 0 ? (item.count / summary.totalProfiles) * 100 : 0;
+
+                return (
+                  <StatusProgressItem key={item.key}>
+                    <StatusProgressLabel $tone={item.tone}>{titleCaseLabel(item.label)}</StatusProgressLabel>
+                    <StatusProgressRow>
+                      <StatusProgressTrack>
+                        <StatusProgressFill $tone={item.tone} $width={progressWidth} />
+                      </StatusProgressTrack>
+                      <StatusProgressValue>
+                        {loading ? <Loader aria-label="Đang tải" size={16} /> : displayNumber(item.count)}
+                      </StatusProgressValue>
+                    </StatusProgressRow>
+                  </StatusProgressItem>
+                );
+              })}
+            </StatusProgressList>
+          </StatusSummaryCard>
+        </SummaryLayout>
+
+        <ChartsSection aria-label="Biểu đồ thống kê theo nhóm">
+          {renderBarChart("loại xe", vehicleTypeChartData)}
+          {renderBarChart("cơ quan nhận", receivingAgencyChartData)}
+          {renderBarChart("loại dịch vụ", serviceTypeChartData)}
+        </ChartsSection>
+      </ContentWrap>
     </AppShell>
   );
 }

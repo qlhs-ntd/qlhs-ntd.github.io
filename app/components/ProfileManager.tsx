@@ -2093,6 +2093,23 @@ function normalize(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
+function matchesProfileSearch(profile: ProfileRecord, normalizedQuery: string) {
+  return normalize([
+    profile.customerName,
+    profile.vehicleOwnerName,
+    profile.vehiclePlate,
+    profile.newVehiclePlate,
+  ].join(" ")).includes(normalizedQuery);
+}
+
+function matchesCustomerDetailsSearch(profile: ProfileRecord, normalizedQuery: string) {
+  return normalize([
+    profile.vehicleOwnerName,
+    profile.vehiclePlate,
+    profile.newVehiclePlate,
+  ].join(" ")).includes(normalizedQuery);
+}
+
 function hasCopyableVehiclePlate(value: string) {
   const normalizedValue = normalize(value.trim());
   return Boolean(normalizedValue) && normalizedValue !== "cho cap" && normalizedValue !== "chua cap";
@@ -2889,41 +2906,15 @@ export function ProfileManager() {
 
   const searchResults = useMemo(() => {
     if (!normalizedQuery) return [];
-    return monthlyProfiles.filter((profile) =>
-      normalize([
-        profile.customerName,
-        profile.vehicleOwnerName,
-        profile.vehiclePlate,
-        profile.newVehiclePlate,
-        profile.receivingAgency,
-        profile.serviceType,
-      ].join(" ")).includes(normalizedQuery),
-    );
+    return monthlyProfiles.filter((profile) => matchesProfileSearch(profile, normalizedQuery));
   }, [monthlyProfiles, normalizedQuery]);
 
   const isSearchMode = Boolean(normalizedQuery);
 
   const visibleProfiles = useMemo(() => {
     return monthlyProfiles.filter((profile) => {
-      if (isSearchMode) {
-        return normalize([
-          profile.customerName,
-          profile.vehicleOwnerName,
-          profile.vehiclePlate,
-          profile.newVehiclePlate,
-          profile.receivingAgency,
-          profile.serviceType,
-        ].join(" ")).includes(normalizedQuery);
-      }
-      if (!activeStatus.matches(profile)) return false;
-      return normalize([
-        profile.customerName,
-        profile.vehicleOwnerName,
-        profile.vehiclePlate,
-        profile.newVehiclePlate,
-        profile.receivingAgency,
-        profile.serviceType,
-      ].join(" ")).includes(normalizedQuery);
+      if (isSearchMode) return matchesProfileSearch(profile, normalizedQuery);
+      return activeStatus.matches(profile);
     });
   }, [activeStatus, monthlyProfiles, isSearchMode, normalizedQuery]);
 
@@ -3143,9 +3134,13 @@ export function ProfileManager() {
           </StateBox>
         ) : (
           <ProfileList aria-label="Danh sách hồ sơ">
-            {visibleProfiles.map((profile) => (
-              <ProfileRow key={profile.id} aria-label={`Hồ sơ ${profile.customerName}`}>
-                <ProfileGroup data-customer-expanded={expandedCustomerIds.has(profile.id) ? "true" : "false"}>
+            {visibleProfiles.map((profile) => {
+              const customerDetailsExpanded = expandedCustomerIds.has(profile.id)
+                || (isSearchMode && matchesCustomerDetailsSearch(profile, normalizedQuery));
+
+              return (
+                <ProfileRow key={profile.id} aria-label={`Hồ sơ ${profile.customerName}`}>
+                  <ProfileGroup data-customer-expanded={customerDetailsExpanded ? "true" : "false"}>
                   <CostLine aria-label="Trạng thái" $mobileStack>
                     <span>
                       <StatusPill $status={profile.status}>
@@ -3167,19 +3162,19 @@ export function ProfileManager() {
                   </MobileTimeLine>
                   <CostLine aria-label="Cơ quan nhận">
                     <span><ProfileIcon><Building2 size={14} /></ProfileIcon>Cơ quan nhận</span>
-                    <strong>{profile.receivingAgency ? (isSearchMode ? renderHighlightedText(capitalizeWords(profile.receivingAgency), query) : capitalizeWords(profile.receivingAgency)) : "—"}</strong>
+                    <strong>{profile.receivingAgency ? capitalizeWords(profile.receivingAgency) : "—"}</strong>
                   </CostLine>
                   <CostLine aria-label="Loại dịch vụ">
                     <span><ProfileIcon><BriefcaseBusiness size={14} /></ProfileIcon>Loại dịch vụ</span>
-                    <strong>{profile.serviceType ? (isSearchMode ? renderHighlightedText(capitalizeWords(profile.serviceType), query) : capitalizeWords(profile.serviceType)) : "—"}</strong>
+                    <strong>{profile.serviceType ? capitalizeWords(profile.serviceType) : "—"}</strong>
                   </CostLine>
                   <MobileHiddenGroupDivider />
                     <CostLine aria-label="Khách Hàng" $total>
                       <CostToggleButton
                         type="button"
-                        $expanded={expandedCustomerIds.has(profile.id)}
+                        $expanded={customerDetailsExpanded}
                         $neutral
-                        aria-expanded={expandedCustomerIds.has(profile.id)}
+                        aria-expanded={customerDetailsExpanded}
                         aria-controls={`customer-details-${profile.id}`}
                         onClick={() => setExpandedCustomerIds((current) => {
                           const next = new Set(current);
@@ -3199,7 +3194,7 @@ export function ProfileManager() {
                         <strong>{profile.customerName ? (isSearchMode ? renderHighlightedText(profile.customerName, query) : profile.customerName) : "—"}</strong>
                       </CustomerNameActions>
                     </CostLine>
-                  <CustomerDetailsList id={`customer-details-${profile.id}`} $expanded={expandedCustomerIds.has(profile.id)}>
+                  <CustomerDetailsList id={`customer-details-${profile.id}`} $expanded={customerDetailsExpanded}>
                     <CostLine aria-label="Chủ Phương Tiện">
                       <span><ProfileIcon><UserShield size={14} /></ProfileIcon>Chủ Phương Tiện</span>
                       <CostValueActions>
@@ -3208,7 +3203,7 @@ export function ProfileManager() {
                     </CostLine>
                     <CostLine aria-label="Loại xe">
                       <span><ProfileIcon><CarFront size={14} /></ProfileIcon>Loại xe</span>
-                      <strong>{profile.vehicleType ? (isSearchMode ? renderHighlightedText(capitalizeWords(profile.vehicleType), query) : capitalizeWords(profile.vehicleType)) : "—"}</strong>
+                      <strong>{profile.vehicleType ? capitalizeWords(profile.vehicleType) : "—"}</strong>
                     </CostLine>
                     <CostLine aria-label="Biển Số Cũ">
                       <span><ProfileIcon><IdCard size={14} /></ProfileIcon>Biển Số Cũ</span>
@@ -3240,10 +3235,10 @@ export function ProfileManager() {
                 </ProfileGroup>
 
                 <ProfileGroup
-                  aria-label="Chi Phí Dịch vụ hồ sơ"
-                  data-customer-expanded={expandedCustomerIds.has(profile.id) ? "true" : "false"}
-                  data-cost-expanded={expandedCostIds.has(profile.id) ? "true" : "false"}
-                >
+                    aria-label="Chi Phí Dịch vụ hồ sơ"
+                    data-customer-expanded={customerDetailsExpanded ? "true" : "false"}
+                    data-cost-expanded={expandedCostIds.has(profile.id) ? "true" : "false"}
+                  >
                   <CostList id={`cost-details-${profile.id}`} $expanded={expandedCostIds.has(profile.id)}>
                     <CostLine><span><ProfileIcon><Wallet size={13} /></ProfileIcon>Chi Phí Dịch vụ</span><strong>{formatCurrency(profile.cost)}</strong></CostLine>
                     <CostLine><span><ProfileIcon><ReceiptText size={13} /></ProfileIcon>Lệ Phí Trước Bạ</span><strong>{formatCurrency(profile.registrationFeeCost)}</strong></CostLine>
@@ -3281,7 +3276,7 @@ export function ProfileManager() {
                   <DesktopPaperworkLine>
                     <span><ProfileIcon><BadgeCheck size={14} /></ProfileIcon>Biển Số Mới</span>
                     <CostValueActions>
-                      <strong>{profile.newVehiclePlate || "--"}</strong>
+                      <strong>{profile.newVehiclePlate ? (isSearchMode ? renderHighlightedText(profile.newVehiclePlate, query) : profile.newVehiclePlate) : "--"}</strong>
                       {hasCopyableVehiclePlate(profile.newVehiclePlate) && (
                         <MobileCopyButton $copied={copiedKey === `${profile.id}:new-plate`} type="button" aria-label="Sao chép biển số mới" title="Sao chép biển số mới" onClick={() => void copyProfileValue(profile.newVehiclePlate, "biển số mới", `${profile.id}:new-plate`)}>
                           {copiedKey === `${profile.id}:new-plate` ? <Check size={12} /> : <Copy size={12} />}
@@ -3336,8 +3331,9 @@ export function ProfileManager() {
                     )}
                   </ActionGroup>
                 </ProfileGroup>
-              </ProfileRow>
-            ))}
+                </ProfileRow>
+              );
+            })}
           </ProfileList>
         )}
       </Panel>
