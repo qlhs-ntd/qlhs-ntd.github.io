@@ -630,9 +630,9 @@ function buildTopChartData(
   if (!hasAnyData) {
     return [
       {
-        label: "Không Có Dữ Liệu",
+        label: "Trống",
         count: 0,
-        tooltipLabel: "Không Có Dữ Liệu",
+        tooltipLabel: "Trống",
       },
     ] satisfies ChartDatum[];
   }
@@ -769,9 +769,10 @@ function BarChartCard({ title, data, loading, isDesktop }: BarChartCardProps) {
     legend: { show: false },
     plotOptions: {
       bar: {
-        borderRadius: isDesktop ? 10 : 4,
+        borderRadius: isDesktop ? 10 : 6,
         borderRadiusApplication: "around",
-        columnWidth: isDesktop ? "46%" : "38%",
+        borderRadiusWhenStacked: "all",
+        columnWidth: isDesktop ? "46%" : "34%",
         dataLabels: {
           position: "top",
         },
