@@ -1,16 +1,22 @@
 "use client";
 
-import type { ApexOptions } from "apexcharts";
 import {
+  Briefcase,
+  Building2,
   Calculator,
   Calendar,
+  CarFront,
   ChevronDown,
+  ClockArrowUp,
   FolderOpen,
+  Info,
+  ListChevronsUpDown,
   Loader,
   TrendingUp,
+  UserStar,
+  X,
 } from "lucide-react";
-import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import styled from "styled-components";
 import {
   profileService,
@@ -22,7 +28,16 @@ import {
 import { AppShell } from "./AppShell";
 
 const PROFILE_YEAR = 2026;
-const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
+
+const SpinnerIcon = styled(Loader)`
+  animation: revenue-value-spin 850ms linear infinite;
+
+  @keyframes revenue-value-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
 
 const Header = styled.header`
   display: flex;
@@ -39,7 +54,7 @@ const Header = styled.header`
     line-height: 1.05;
   }
 
-  @media (max-width: 860px) {
+  @media (max-width: 1199px) {
     gap: 12px;
 
     h1 {
@@ -53,7 +68,7 @@ const MonthSelectWrap = styled.div`
   width: 160px;
   flex-shrink: 0;
 
-  @media (max-width: 860px) {
+  @media (max-width: 1199px) {
     width: 135px;
   }
 `;
@@ -88,8 +103,6 @@ const MonthSelect = styled.select`
 
 const ContentWrap = styled.div`
   width: 100%;
-  max-width: 767px;
-  margin: 0 auto;
 `;
 
 const CalendarIcon = styled.span`
@@ -118,20 +131,89 @@ const SummaryLayout = styled.section`
   display: grid;
   gap: 12px;
   margin-bottom: 18px;
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
 `;
 
 const FinancialColumn = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 12px;
 
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     grid-template-columns: 1fr;
   }
 `;
 
+const SummaryMetricColumn = styled.div`
+  display: grid;
+  gap: 12px;
+
+  @media (min-width: 1200px) {
+    height: 100%;
+  }
+`;
+
+const MetricSection = styled.div<{ $topPadding?: boolean }>`
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 9px;
+  padding-top: ${({ $topPadding }) => ($topPadding ? "12px" : "0")};
+
+  > span {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 10px;
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media (max-width: 1199px) {
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 8px;
+
+    > span {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+
+      svg {
+        width: 15px;
+        height: 15px;
+      }
+    }
+  }
+`;
+
+const MetricSectionLabel = styled.small<{ $tone: "danger" | "success" }>`
+  display: block;
+  color: ${({ $tone }) => getMetricToneColor($tone)};
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-transform: capitalize;
+
+  @media (max-width: 1199px) {
+    color: #121316;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+  }
+`;
+
 type MetricTone = "primary" | "danger" | "success" | "warning" | "violet";
-type StatusTone = "processing" | "waiting" | "paid" | "completed";
+type StatusTone = "processing" | "waiting" | "paid" | "completed" | "neutral";
 
 function getMetricToneBackground(tone: MetricTone) {
   if (tone === "danger") return "#fff1f3";
@@ -162,6 +244,10 @@ const MetricCard = styled.article<{
   background: rgba(255, 255, 255, 0.92);
   padding: 16px;
   box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
+
+  @media (min-width: 1200px) {
+    height: 100%;
+  }
 
   > span {
     display: grid;
@@ -197,7 +283,7 @@ const MetricCard = styled.article<{
     line-height: 1.2;
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     padding: 11px;
     grid-template-columns: 30px minmax(0, 1fr);
     column-gap: 8px;
@@ -214,9 +300,11 @@ const MetricCard = styled.article<{
     }
 
     small {
-      color: #687086;
-      font-size: 11px;
-      line-height: 1.25;
+      color: #121316;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
     }
 
     strong {
@@ -233,7 +321,11 @@ const StatusSummaryCard = styled.article`
   padding: 18px 20px;
   box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
 
-  @media (max-width: 560px) {
+  @media (min-width: 1200px) {
+    height: 100%;
+  }
+
+  @media (max-width: 1199px) {
     padding: 16px 14px;
   }
 `;
@@ -243,7 +335,7 @@ const StatusTotalWrap = styled.div`
   margin-bottom: 16px;
   border-bottom: 1px solid #e8ebf2;
 
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     padding-bottom: 14px;
     margin-bottom: 14px;
   }
@@ -270,7 +362,7 @@ const StatusTotalHeader = styled.div`
     }
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     grid-template-columns: 30px minmax(0, 1fr);
     column-gap: 8px;
 
@@ -294,7 +386,7 @@ const StatusTotalLabel = styled.div`
   letter-spacing: -0.03em;
   text-transform: capitalize;
 
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     font-size: 14px;
   }
 `;
@@ -307,7 +399,7 @@ const StatusTotalValue = styled.div`
   letter-spacing: -0.03em;
   line-height: 1.2;
 
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     margin-top: 8px;
     font-size: 18px;
   }
@@ -316,7 +408,7 @@ const StatusTotalValue = styled.div`
 const StatusProgressList = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 20px;
 `;
 
 const StatusProgressItem = styled.div`
@@ -326,22 +418,23 @@ const StatusProgressItem = styled.div`
 
 const StatusProgressLabel = styled.div<{ $tone: StatusTone }>`
   color: #121316;
-  font-size: 15px;
-  font-weight: ${({ $tone }) => ($tone === "processing" || $tone === "waiting" ? 700 : 600)};
+  font-size: 14px;
+  font-weight: ${({ $tone }) => ($tone === "processing" || $tone === "waiting" ? 650 : 600)};
   letter-spacing: -0.03em;
+  line-height: 1.2;
 
-  @media (max-width: 560px) {
-    font-size: 14px;
+  @media (max-width: 1199px) {
+    font-size: 13px;
   }
 `;
 
 const StatusProgressRow = styled.div`
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
   gap: 14px;
 
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     gap: 12px;
   }
 `;
@@ -350,15 +443,15 @@ const StatusProgressTrack = styled.div`
   position: relative;
   width: 100%;
   max-width: 660px;
-  height: 13px;
+  height: 10px;
   justify-self: start;
   border-radius: 999px;
   background: #eef0f4;
   overflow: hidden;
 
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     max-width: none;
-    height: 10px;
+    height: 9px;
   }
 `;
 
@@ -367,45 +460,44 @@ const StatusProgressFill = styled.div<{ $tone: StatusTone; $width: number }>`
   min-width: ${({ $width }) => ($width > 0 ? "10px" : "0")};
   height: 100%;
   border-radius: 999px;
+  transform-origin: left center;
   background: ${({ $tone }) =>
-    $tone === "processing"
+    $tone === "neutral"
+      ? "#2b313a"
+      : $tone === "processing"
       ? "#f0a018"
       : $tone === "waiting"
         ? "#7b61ff"
         : $tone === "paid"
           ? "#3859d9"
           : "#24a36a"};
+  transition: width 520ms ease;
+  animation: revenue-progress-grow 720ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  @keyframes revenue-progress-grow {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
 `;
 
 const StatusProgressValue = styled.strong`
   color: #121316;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
 
-  @media (max-width: 560px) {
-    font-size: 16px;
+  @media (max-width: 1199px) {
+    font-size: 13px;
   }
 `;
 
-const DesktopMetricLabel = styled.span`
-  display: inline;
-
-  @media (max-width: 560px) {
-    display: none;
-  }
-`;
-
-const MobileMetricLabel = styled.span`
-  display: none;
-
-  @media (max-width: 560px) {
-    display: inline;
-  }
-`;
-
-const CurrencyValue = styled.div<{ $tone: "danger" | "success" }>`
+const CurrencyValue = styled.div<{ $tone: "primary" | "danger" | "success" }>`
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
@@ -415,7 +507,7 @@ const CurrencyValue = styled.div<{ $tone: "danger" | "success" }>`
 
   strong {
     margin-top: 0;
-    color: var(--ink);
+    color: ${({ $tone }) => getMetricToneColor($tone)};
     font-size: 23px;
     font-weight: 700;
     letter-spacing: -0.03em;
@@ -424,14 +516,14 @@ const CurrencyValue = styled.div<{ $tone: "danger" | "success" }>`
 
   span {
     display: inline;
-    color: var(--ink);
+    color: ${({ $tone }) => getMetricToneColor($tone)};
     font-size: 23px;
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.2;
   }
 
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     margin-top: 10px;
 
     strong {
@@ -452,30 +544,170 @@ const LoadingValue = styled.div`
   margin-top: 14px;
   color: #687086;
 
-  svg {
-    width: 16px;
-    height: 16px;
-    animation: revenue-value-spin 850ms linear infinite;
-  }
-
-  @keyframes revenue-value-spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @media (max-width: 560px) {
+  @media (max-width: 1199px) {
     margin-top: 10px;
-
-    svg {
-      width: 14px;
-      height: 14px;
-    }
   }
 `;
 
 const CurrencyLoadingValue = styled(LoadingValue)`
   margin-top: 0;
+`;
+
+const CurrencyInfoButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: #f4f5f8;
+  color: #121316;
+  cursor: pointer;
+
+  &:hover {
+    background: #eceff4;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(56, 89, 217, 0.18);
+  }
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  @media (max-width: 1199px) {
+    width: 24px;
+    height: 24px;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+`;
+
+const InlineInfoButton = styled(CurrencyInfoButton)`
+  width: 22px;
+  height: 22px;
+  margin-left: 0;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+`;
+
+const MetricDivider = styled.div`
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 1px;
+  margin-top: 14px;
+  background: #e8ebf2;
+
+  @media (max-width: 1199px) {
+    margin-top: 10px;
+  }
+`;
+
+const MetricBreakdownList = styled.div`
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 20px;
+  margin-top: 12px;
+
+  @media (max-width: 1199px) {
+    gap: 18px;
+    margin-top: 10px;
+  }
+`;
+
+const MetricBreakdownItem = styled.div`
+  display: grid;
+  gap: 9px;
+`;
+
+const MetricBreakdownRow = styled.div`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  color: #121316;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+
+  strong {
+    color: #121316;
+    margin-top: 0;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 1199px) {
+    font-size: 13px;
+
+    strong {
+      font-size: 13px;
+    }
+  }
+`;
+
+const MetricBreakdownTrack = styled.div`
+  position: relative;
+  width: 100%;
+  max-width: 660px;
+  height: 10px;
+  justify-self: start;
+  border-radius: 999px;
+  background: #eef0f4;
+  overflow: hidden;
+
+  @media (max-width: 1199px) {
+    max-width: none;
+    height: 9px;
+  }
+`;
+
+const MetricBreakdownFill = styled.div<{
+  $width: number;
+  $tone?: "neutral" | "processing" | "waiting" | "paid" | "completed";
+}>`
+  width: ${({ $width }) => `${$width}%`};
+  min-width: ${({ $width }) => ($width > 0 ? "10px" : "0")};
+  height: 100%;
+  border-radius: 999px;
+  transform-origin: left center;
+  background: ${({ $tone = "neutral" }) =>
+    $tone === "processing"
+      ? "#f0a018"
+      : $tone === "waiting"
+        ? "#7b61ff"
+      : $tone === "paid"
+        ? "#3859d9"
+        : $tone === "completed"
+          ? "#24a36a"
+          : "#2b313a"};
+  transition: width 520ms ease;
+  animation: revenue-progress-grow 720ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  @keyframes revenue-progress-grow {
+    from {
+      transform: scaleX(0);
+    }
+
+    to {
+      transform: scaleX(1);
+    }
+  }
 `;
 
 const ErrorMessage = styled.p`
@@ -488,77 +720,435 @@ const ErrorMessage = styled.p`
   font-size: 13px;
 `;
 
-const ChartsSection = styled.section`
-  display: grid;
-  gap: 12px;
-  margin-bottom: 18px;
-`;
-
-const ChartCard = styled.article`
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.92);
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(36, 48, 87, 0.04);
-
-  @media (max-width: 560px) {
-    padding: 16px;
-  }
-`;
-
-const ChartTitle = styled.h2`
-  margin: 0 0 10px;
-  color: var(--ink);
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  text-transform: capitalize;
-
-  @media (max-width: 560px) {
-    margin-bottom: 8px;
-    font-size: 14px;
-  }
-`;
-
-const ChartScrollArea = styled.div`
-  width: 100%;
-`;
-
-const ChartViewport = styled.div`
-  width: 100%;
-  height: 288px;
-
-  @media (max-width: 560px) {
-    height: 224px;
-  }
-`;
-
-const ChartEmptyState = styled.div`
+const CostModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 60;
   display: flex;
-  height: 288px;
   align-items: center;
   justify-content: center;
-  color: #687086;
-  font-size: 14px;
+  background: rgba(15, 23, 42, 0.32);
+  padding: 24px;
 
-  @media (max-width: 560px) {
-    height: 224px;
+  @media (max-width: 1199px) {
+    align-items: flex-end;
+    padding: 0;
+  }
+`;
+
+const CostModalDialog = styled.div`
+  width: min(560px, 100%);
+  max-height: min(80vh, 860px);
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 30px 90px rgba(14, 22, 45, 0.28);
+  padding: 22px 22px 20px;
+
+  @media (max-width: 1199px) {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 24px 24px 0 0;
+    padding: 18px 16px 16px;
+  }
+`;
+
+const CostModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e8ebf2;
+
+  h2 {
+    margin: 0;
+    color: #121316;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+  }
+
+  @media (max-width: 1199px) {
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+
+    h2 {
+      font-size: 17px;
+    }
+  }
+`;
+
+const CostModalCloseButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: #f4f5f8;
+  color: #4b5565;
+  cursor: pointer;
+
+  &:hover {
+    background: #eceff4;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(36, 48, 87, 0.12);
+  }
+`;
+
+const CostModalTotal = styled.div`
+  display: grid;
+  margin-bottom: 18px;
+
+  strong {
+    color: var(--primary);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  @media (max-width: 1199px) {
+    margin-bottom: 16px;
+
+    strong {
+      font-size: 23px;
+    }
+  }
+`;
+
+const InfoModalBody = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+const CalendarModalWrap = styled.div`
+  display: grid;
+  gap: 14px;
+`;
+
+const CalendarWeekHeader = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+
+  @media (max-width: 1199px) {
+    gap: 6px;
+  }
+`;
+
+const CalendarWeekLabel = styled.div`
+  display: grid;
+  place-items: center;
+  color: #5f6b7a;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+
+  @media (max-width: 1199px) {
+    font-size: 11px;
+  }
+`;
+
+const CalendarGrid = styled.div`
+  display: grid;
+  gap: 8px;
+
+  @media (max-width: 1199px) {
+    gap: 6px;
+  }
+`;
+
+const CalendarWeekRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+
+  @media (max-width: 1199px) {
+    gap: 6px;
+  }
+`;
+
+const CalendarDayCard = styled.div<{ $isActive: boolean; $isEmpty?: boolean }>`
+  min-height: 60px;
+  border-radius: 18px;
+  border: 1px solid ${({ $isActive, $isEmpty }) => ($isEmpty ? "transparent" : $isActive ? "#d9e1f2" : "#dde3eb")};
+  background: ${({ $isActive, $isEmpty }) => ($isEmpty ? "transparent" : $isActive ? "#ffffff" : "#eef2f6")};
+  padding: ${({ $isEmpty }) => ($isEmpty ? "0" : "10px 10px 9px")};
+  display: ${({ $isEmpty }) => ($isEmpty ? "block" : "grid")};
+  align-content: space-between;
+  gap: 10px;
+
+  @media (max-width: 1199px) {
+    min-height: 54px;
+    border-radius: 14px;
+    padding: ${({ $isEmpty }) => ($isEmpty ? "0" : "8px 8px 7px")};
+    gap: 8px;
+  }
+`;
+
+const CalendarDayNumber = styled.div<{ $isActive: boolean }>`
+  color: ${({ $isActive }) => ($isActive ? "#3859d9" : "#64748b")};
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+
+  @media (max-width: 1199px) {
+    font-size: 11px;
+  }
+`;
+
+const CalendarDayCount = styled.div<{ $isActive: boolean }>`
+  align-self: end;
+  color: ${({ $isActive }) => ($isActive ? "#121316" : "#8a94a6")};
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+
+  @media (max-width: 1199px) {
+    font-size: 18px;
+  }
+`;
+
+const InfoModalParagraph = styled.p`
+  margin: 0;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.6;
+
+  strong {
+    color: #121316;
+    font-weight: 700;
+  }
+
+  @media (max-width: 1199px) {
     font-size: 13px;
   }
 `;
 
-type ChartDatum = {
+const CategorySection = styled.section`
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+  }
+`;
+
+const CategoryCard = styled(StatusSummaryCard)``;
+
+const CategoryCardHeader = styled.div`
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 9px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e8ebf2;
+
+  > span {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border-radius: 10px;
+    background: #edf0ff;
+    color: var(--primary);
+
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  @media (max-width: 1199px) {
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    column-gap: 8px;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+
+    > span {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+
+      svg {
+        width: 15px;
+        height: 15px;
+      }
+    }
+  }
+`;
+
+const CategoryDetailButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: #f1f3f6;
+  color: #121316;
+  cursor: pointer;
+
+  &:hover {
+    background: #e7ebf0;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(18, 19, 22, 0.12);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  @media (max-width: 1199px) {
+    width: 28px;
+    height: 28px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+  }
+`;
+
+const CategoryCardTitle = styled.div`
+  color: #121316;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: capitalize;
+
+  @media (max-width: 1199px) {
+    font-size: 14px;
+  }
+`;
+
+const CategoryEmptyState = styled.div`
+  color: #687086;
+  font-size: 13px;
+
+  @media (max-width: 1199px) {
+    font-size: 12px;
+  }
+`;
+
+type ProgressGroupDatum = {
+  key: string;
   label: string;
   count: number;
-  tooltipLabel: string;
-  breakdown?: Array<{ label: string; count: number }>;
-  hidden?: boolean;
+};
+
+type CategoryDetailState = {
+  title: string;
+  items: ProgressGroupDatum[];
+  totalCount: number;
+  layout?: "list" | "calendar";
+};
+
+type DetailInfoKey =
+  | "processing-cost"
+  | "waiting-cost"
+  | "paid-cost"
+  | "completed-cost"
+  | "processing-profit"
+  | "waiting-profit"
+  | "paid-profit"
+  | "completed-profit";
+
+type DetailInfoContent = {
+  title: string;
+  paragraphs: ReactNode[];
+};
+
+const DETAIL_INFO_CONTENT: Record<DetailInfoKey, DetailInfoContent> = {
+  "processing-cost": {
+    title: "Chi Phí Ghi Nhận",
+    paragraphs: [
+      <>Chi phí khách phải trả được ghi nhận bởi tất cả hồ sơ ở trạng thái <strong>Đang Xử Lí</strong>. Chi Phí này được ghi nhận và có thể đã thu của khách, hoặc chưa thu của khách.</>,
+      <>Khi có 1 hồ sơ chuyển sang trạng thái <strong>Chờ Thanh Toán</strong>, chi phí hồ sơ đó sẽ chuyển sang <strong>Chi Phí Công Nợ.</strong></>,
+      <>Khi có 1 hồ sơ chuyển sang trạng thái <strong>Đã Thanh Toán</strong>, chi phí hồ sơ đó sẽ chuyển sang <strong>Chi Phí Đã Thu.</strong></>,
+      <>Khi có 1 hồ sơ chuyển sang trạng thái <strong>Đã Hoàn Tất</strong>, chi phí hồ sơ đó sẽ chuyển sang <strong>Doanh Thu.</strong></>,
+    ],
+  },
+  "waiting-cost": {
+    title: "Chi Phí Công Nợ",
+    paragraphs: [<>Chi phí khách chưa thanh toán của tất cả các hồ sơ đang ở trạng thái <strong>Chờ Thanh Toán</strong>.</>],
+  },
+  "paid-cost": {
+    title: "Chi Phí Đã Thu",
+    paragraphs: [<>Chi phí đã thu của khách ở tất cả các hồ sơ đang ở trạng thái <strong>Đã Thanh Toán</strong>.</>],
+  },
+  "completed-cost": {
+    title: "Doanh Thu",
+    paragraphs: ["Chi phí đã thu của khách và đã hoàn tất hồ sơ xong. Đây là tổng số tiền ghi nhận cuối cùng từ khách."],
+  },
+  "processing-profit": {
+    title: "Lợi Nhuận Tạm Ghi",
+    paragraphs: [
+      <>Lợi nhuận tạm ghi nhận khi hồ sơ <strong>Đang Xử Lí</strong>. Lợi nhuận này có thể đã có hoặc chưa tuỳ vào tình trạng khách đã thanh toán hoặc chưa.</>,
+      <>Lợi nhuận này bằng số tiền <strong>(Chi Phí Khách Trả - Chi Phí Ban Đầu)</strong> của hồ sơ ở trạng thái <strong>Đang Xử Lí</strong>.</>,
+    ],
+  },
+  "waiting-profit": {
+    title: "Lợi Nhuận Chờ Thu",
+    paragraphs: [
+      <>Lợi nhuận đang chờ được thanh toán từ các hồ sơ <strong>Chờ Thanh Toán</strong>.</>,
+      <>Lợi nhuận này bằng số tiền <strong>(Chi Phí Khách Trả - Chi Phí Ban Đầu)</strong> của hồ sơ ở trạng thái <strong>Chờ Thanh Toán</strong>.</>,
+    ],
+  },
+  "paid-profit": {
+    title: "Lợi Nhuận Sau Thanh Toán",
+    paragraphs: [
+      <>Lợi nhuận đã được khách thanh toán từ các hồ sơ <strong>Đã Thanh Toán</strong>.</>,
+      <>Lợi nhuận này bằng số tiền <strong>(Chi Phí Khách Trả - Chi Phí Ban Đầu)</strong> của hồ sơ ở trạng thái <strong>Đã Thanh Toán</strong>.</>,
+    ],
+  },
+  "completed-profit": {
+    title: "Lợi Nhuận Sau Tất Toán",
+    paragraphs: [
+      <>Lợi nhuận đã được khách thanh toán từ các hồ sơ <strong>Đã Hoàn Tất</strong>.</>,
+      <>Lợi nhuận này bằng số tiền <strong>(Chi Phí Khách Trả - Chi Phí Ban Đầu)</strong> của hồ sơ ở trạng thái <strong>Đã Hoàn Tất</strong>. Đây là số tiền cuối cùng nhận được sau khi trừ đi Chi Phí và là tổng tiền lãi từ các hồ sơ.</>,
+    ],
+  },
 };
 
 type SummaryState = {
   totalProfiles: number;
   totalCost: number;
   totalProfit: number;
+  initialCost: number;
+  processingCost: number;
+  waitingCost: number;
+  paidCost: number;
+  completedCost: number;
+  processingProfit: number;
+  waitingProfit: number;
+  paidProfit: number;
+  completedProfit: number;
+  serviceCost: number;
+  registrationFeeCost: number;
+  otherCost: number;
+  blackBoxBadgeCost: number;
+  otherIncidentalCost: number;
   processing: number;
   waitingForPayment: number;
   paid: number;
@@ -594,7 +1184,16 @@ function normalizedStatus(value: string) {
   return value.trim().toLocaleLowerCase("vi-VN");
 }
 
-function buildChartData(
+function titleCaseLabel(value: string) {
+  return value
+    .toLocaleLowerCase("vi-VN")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toLocaleUpperCase("vi-VN") + part.slice(1))
+    .join(" ");
+}
+
+function buildProgressGroupData(
   profiles: ProfileRecord[],
   options: readonly string[],
   getValue: (profile: ProfileRecord) => string,
@@ -611,242 +1210,176 @@ function buildChartData(
     counts.set(value, (counts.get(value) || 0) + 1);
   });
 
-  return Array.from(counts.entries()).map(([label, count]) => ({ label, count }));
+  return Array.from(counts.entries())
+    .map(([label, count]) => ({
+      key: label,
+      label: titleCaseLabel(label),
+      count,
+    })) satisfies ProgressGroupDatum[];
 }
 
-function buildTopChartData(
-  profiles: ProfileRecord[],
-  options: readonly string[],
-  getValue: (profile: ProfileRecord) => string,
-  topCount: number,
-) {
-  const data = buildChartData(profiles, options, getValue).sort((left, right) => {
-    if (right.count !== left.count) return right.count - left.count;
-    return left.label.localeCompare(right.label, "vi");
-  });
+function getMonthParts(value: string) {
+  const [yearPart, monthPart] = value.split("-");
+  const year = Number(yearPart);
+  const month = Number(monthPart);
 
-  const hasAnyData = data.some((item) => item.count > 0);
+  return {
+    year: Number.isFinite(year) ? year : PROFILE_YEAR,
+    month: Number.isFinite(month) ? month : 1,
+  };
+}
 
-  if (!hasAnyData) {
-    return [
-      {
-        label: "Trống",
-        count: 0,
-        tooltipLabel: "Trống",
-      },
-    ] satisfies ChartDatum[];
+function formatDateLabel(value: Date) {
+  return `${String(value.getDate()).padStart(2, "0")}/${String(value.getMonth() + 1).padStart(2, "0")}/${value.getFullYear()}`;
+}
+
+function buildDailyProfileData(profiles: ProfileRecord[], year: number, month: number) {
+  const totalDays = new Date(year, month, 0).getDate();
+  const counts = new Map<string, number>();
+
+  for (let day = 1; day <= totalDays; day += 1) {
+    counts.set(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`, 0);
   }
 
-  const topItems = data
-    .filter((item) => item.count > 0)
-    .slice(0, topCount)
-    .map((item) => ({
-    label: titleCaseLabel(item.label),
-    count: item.count,
-    tooltipLabel: titleCaseLabel(item.label),
-    }));
+  profiles.forEach((profile) => {
+    const createdAt = new Date(profile.createdAt);
+    if (Number.isNaN(createdAt.getTime())) return;
 
-  const topLabels = new Set(topItems.map((item) => item.tooltipLabel));
-  const remaining = data.filter((item) => !topLabels.has(titleCaseLabel(item.label)));
-  const remainingCount = remaining.reduce((sum, item) => sum + item.count, 0);
+    const dayKey = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, "0")}-${String(createdAt.getDate()).padStart(2, "0")}`;
+    if (!counts.has(dayKey)) return;
+    counts.set(dayKey, (counts.get(dayKey) || 0) + 1);
+  });
 
-  return [
-    ...topItems,
-    {
-      label: "Còn Lại",
-      count: remainingCount,
-      tooltipLabel: "Còn Lại",
-      breakdown: remaining
-        .filter((item) => item.count > 0)
-        .map((item) => ({
-          label: titleCaseLabel(item.label),
-          count: item.count,
-        })),
-    },
-  ] satisfies ChartDatum[];
+  return Array.from(counts.entries()).map(([key, count]) => {
+    const [entryYear, entryMonth, entryDay] = key.split("-").map(Number);
+    const date = new Date(entryYear, entryMonth - 1, entryDay);
+
+    return {
+      key,
+      label: formatDateLabel(date),
+      count,
+    };
+  }) satisfies ProgressGroupDatum[];
 }
 
-function titleCaseLabel(value: string) {
-  return value
-    .toLocaleLowerCase("vi-VN")
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toLocaleUpperCase("vi-VN") + part.slice(1))
-    .join(" ");
+function buildCalendarWeeks(items: ProgressGroupDatum[]) {
+  if (items.length === 0) return [] as Array<Array<ProgressGroupDatum | null>>;
+
+  const sortedItems = [...items].sort((first, second) => first.key.localeCompare(second.key, "vi"));
+  const [firstYear, firstMonth, firstDay] = sortedItems[0].key.split("-").map(Number);
+  const firstDate = new Date(firstYear, firstMonth - 1, firstDay);
+  const firstWeekday = (firstDate.getDay() + 6) % 7;
+  const calendarItems: Array<ProgressGroupDatum | null> = Array.from({ length: firstWeekday }, () => null);
+
+  calendarItems.push(...sortedItems);
+
+  while (calendarItems.length % 7 !== 0) {
+    calendarItems.push(null);
+  }
+
+  const weeks: Array<Array<ProgressGroupDatum | null>> = [];
+
+  for (let index = 0; index < calendarItems.length; index += 7) {
+    weeks.push(calendarItems.slice(index, index + 7));
+  }
+
+  return weeks;
 }
 
-function truncateChartLabel(value: string, maxLength: number) {
-  if (value.length <= maxLength) return value;
-  return `${value.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+function buildCustomerProgressData(profiles: ProfileRecord[]) {
+  const customerStats = new Map<string, { count: number; firstCreatedAt: number }>();
+
+  profiles.forEach((profile) => {
+    const customerName = profile.customerName?.trim();
+    if (!customerName) return;
+    const createdAt = new Date(profile.createdAt);
+    const createdAtTime = Number.isNaN(createdAt.getTime()) ? Number.MAX_SAFE_INTEGER : createdAt.getTime();
+    const current = customerStats.get(customerName);
+
+    if (!current) {
+      customerStats.set(customerName, { count: 1, firstCreatedAt: createdAtTime });
+      return;
+    }
+
+    customerStats.set(customerName, {
+      count: current.count + 1,
+      firstCreatedAt: Math.min(current.firstCreatedAt, createdAtTime),
+    });
+  });
+
+  return Array.from(customerStats.entries())
+    .map(([label, stats]) => ({
+      key: label,
+      label,
+      count: stats.count,
+      firstCreatedAt: stats.firstCreatedAt,
+    }))
+    .sort((first, second) => {
+      if (second.count !== first.count) return second.count - first.count;
+      if (first.firstCreatedAt !== second.firstCreatedAt) return first.firstCreatedAt - second.firstCreatedAt;
+      return first.label.localeCompare(second.label, "vi");
+    })
+    .map(({ key, label, count }) => ({
+      key,
+      label,
+      count,
+    })) satisfies ProgressGroupDatum[];
 }
 
-type BarChartCardProps = {
+type ProgressSummaryCardProps = {
   title: string;
-  data: ChartDatum[];
+  items: ProgressGroupDatum[];
   loading: boolean;
-  isDesktop: boolean;
+  totalCount: number;
+  icon: React.ReactNode;
+  maxVisibleItems?: number;
+  onOpenDetails: () => void;
 };
 
-function BarChartCard({ title, data, loading, isDesktop }: BarChartCardProps) {
-  const viewportRef = useRef<HTMLDivElement | null>(null);
-  const [chartWidth, setChartWidth] = useState(0);
-
-  useEffect(() => {
-    const element = viewportRef.current;
-    if (!element) return;
-
-    const syncWidth = () => {
-      const nextWidth = Math.round(element.getBoundingClientRect().width);
-      setChartWidth((currentWidth) => (currentWidth === nextWidth ? currentWidth : nextWidth));
-    };
-
-    syncWidth();
-
-    const resizeObserver = new ResizeObserver(syncWidth);
-    resizeObserver.observe(element);
-    window.addEventListener("resize", syncWidth);
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", syncWidth);
-    };
-  }, []);
-
-  const targetSlotCount = isDesktop ? 6 : 4;
-  const displayData =
-    data.length >= targetSlotCount
-      ? data
-      : [
-          ...data,
-          ...Array.from({ length: targetSlotCount - data.length }, (_, index) => ({
-            label: `__empty_${index}`,
-            count: 0,
-            tooltipLabel: "",
-            hidden: true,
-          })),
-        ];
-
-  const options: ApexOptions = {
-    chart: {
-      type: "bar",
-      toolbar: { show: false },
-      zoom: { enabled: false },
-      animations: { easing: "easeinout", speed: 360 },
-      redrawOnParentResize: true,
-      redrawOnWindowResize: true,
-      parentHeightOffset: 0,
-    },
-    colors: ["#2563eb"],
-    dataLabels: {
-      enabled: true,
-      offsetY: -12,
-      background: {
-        enabled: true,
-        backgroundColor: "#ffffff",
-        foreColor: "#2563eb",
-        borderRadius: 8,
-        padding: 6,
-        opacity: 1,
-        dropShadow: {
-          enabled: false,
-        },
-      },
-      style: {
-        colors: ["#2563eb"],
-        fontSize: isDesktop ? "15px" : "12px",
-        fontWeight: "700",
-      },
-      formatter: (value, opts) =>
-        opts && displayData[opts.dataPointIndex]?.hidden ? "" : `${value ?? 0}`,
-    },
-    grid: {
-      borderColor: "#e4e7ef",
-      strokeDashArray: 3,
-      padding: {
-        top: 18,
-      },
-    },
-    legend: { show: false },
-    plotOptions: {
-      bar: {
-        borderRadius: isDesktop ? 10 : 6,
-        borderRadiusApplication: "around",
-        borderRadiusWhenStacked: "all",
-        columnWidth: isDesktop ? "46%" : "34%",
-        dataLabels: {
-          position: "top",
-        },
-      },
-    },
-    states: {
-      active: { filter: { type: "none" } },
-      hover: { filter: { type: "none" } },
-    },
-    stroke: {
-      show: false,
-    },
-    tooltip: {
-      enabled: false,
-    },
-    xaxis: {
-      categories: displayData.map((item) => (item.hidden ? "" : titleCaseLabel(item.label))),
-      labels: {
-        rotate: 0,
-        hideOverlappingLabels: !isDesktop,
-        trim: false,
-        formatter: (value) => {
-          const label = String(value);
-          return isDesktop ? label : truncateChartLabel(label, 11);
-        },
-        style: {
-          colors: "#121316",
-          fontSize: isDesktop ? "11px" : "10px",
-          fontWeight: 700,
-        },
-      },
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-    },
-    yaxis: {
-      show: false,
-      min: 0,
-      forceNiceScale: true,
-      decimalsInFloat: 0,
-      labels: { show: false },
-    },
-  };
-
-  const series = [
-    {
-      name: "Số lượng",
-      data: displayData.map((item) => (item.hidden ? null : item.count)),
-    },
-  ];
+function ProgressSummaryCard({
+  title,
+  items,
+  loading,
+  totalCount,
+  icon,
+  maxVisibleItems,
+  onOpenDetails,
+}: ProgressSummaryCardProps) {
+  const visibleItems = items.filter((item) => item.count > 0).slice(0, maxVisibleItems || items.length);
 
   return (
-    <ChartCard>
-      <ChartTitle>{titleCaseLabel(title)}</ChartTitle>
-      <ChartScrollArea>
-        <ChartViewport ref={viewportRef}>
-          {loading ? (
-            <ChartEmptyState>
-              <LoadingValue>
-                <Loader aria-label="Đang tải" size={16} />
-              </LoadingValue>
-            </ChartEmptyState>
-          ) : chartWidth > 0 ? (
-            <ReactApexChart
-              key={`${title}-${isDesktop ? "desktop" : "mobile"}-${chartWidth}`}
-              options={options}
-              series={series}
-              type="bar"
-              height="100%"
-              width={chartWidth}
-            />
-          ) : null}
-        </ChartViewport>
-      </ChartScrollArea>
-    </ChartCard>
+    <CategoryCard>
+      <CategoryCardHeader>
+        <span>{icon}</span>
+        <CategoryCardTitle>{title}</CategoryCardTitle>
+        <CategoryDetailButton type="button" aria-label={`Xem toàn bộ ${title}`} onClick={onOpenDetails}>
+          <ListChevronsUpDown size={16} />
+        </CategoryDetailButton>
+      </CategoryCardHeader>
+      {loading ? (
+        <LoadingValue><SpinnerIcon aria-label="Đang tải" size={16} /></LoadingValue>
+      ) : visibleItems.length > 0 ? (
+        <StatusProgressList>
+          {visibleItems.map((item) => {
+            const progressWidth = totalCount > 0 ? (item.count / totalCount) * 100 : 0;
+
+            return (
+              <StatusProgressItem key={item.key}>
+                <StatusProgressRow>
+                  <StatusProgressLabel $tone="processing">{item.label}</StatusProgressLabel>
+                  <StatusProgressValue>{formatNumber(item.count)}</StatusProgressValue>
+                </StatusProgressRow>
+                <StatusProgressTrack>
+                  <StatusProgressFill $tone="neutral" $width={progressWidth} />
+                </StatusProgressTrack>
+              </StatusProgressItem>
+            );
+          })}
+        </StatusProgressList>
+      ) : (
+        <CategoryEmptyState>Chưa có hồ sơ</CategoryEmptyState>
+      )}
+    </CategoryCard>
   );
 }
 
@@ -856,7 +1389,9 @@ export function RevenueDashboard() {
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isCostDetailOpen, setIsCostDetailOpen] = useState(false);
+  const [activeDetailInfo, setActiveDetailInfo] = useState<DetailInfoKey | null>(null);
+  const [activeCategoryDetail, setActiveCategoryDetail] = useState<CategoryDetailState | null>(null);
 
   useEffect(() => {
     const current = new Date();
@@ -882,15 +1417,14 @@ export function RevenueDashboard() {
     return () => window.clearTimeout(timer);
   }, [loadProfiles]);
 
+  const hasModalOpen = isCostDetailOpen || activeDetailInfo !== null || activeCategoryDetail !== null;
+
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(min-width: 768px)");
-    const syncViewport = () => setIsDesktop(mediaQuery.matches);
+    if (!hasModalOpen) return;
 
-    syncViewport();
-
-    mediaQuery.addEventListener("change", syncViewport);
-    return () => mediaQuery.removeEventListener("change", syncViewport);
-  }, []);
+    document.body.classList.add("profile-modal-open");
+    return () => document.body.classList.remove("profile-modal-open");
+  }, [hasModalOpen]);
 
   const monthlyProfiles = useMemo(
     () =>
@@ -905,19 +1439,58 @@ export function RevenueDashboard() {
     return monthlyProfiles.reduce(
       (result, profile) => {
         const status = normalizedStatus(profile.status);
+        const totalCost = Number(profile.totalCost) || 0;
+        const initialCost = Number(profile.initialCost) || 0;
+        const calculatedProfit = totalCost - initialCost;
         result.totalProfiles += 1;
-        result.totalCost += Number(profile.totalCost) || 0;
-        result.totalProfit += Number(profile.profit) || 0;
-        if (status === "đang xử lí" || status === "đang xử lý") result.processing += 1;
-        if (status === "đang chờ thanh toán") result.waitingForPayment += 1;
-        if (status === "đã thanh toán") result.paid += 1;
-        if (status === "hoàn tất" || status === "đã hoàn tất") result.completed += 1;
+        result.totalCost += totalCost;
+        result.totalProfit += calculatedProfit;
+        result.initialCost += initialCost;
+        result.serviceCost += Number(profile.cost) || 0;
+        result.registrationFeeCost += Number(profile.registrationFeeCost) || 0;
+        result.otherCost += Number(profile.otherCost) || 0;
+        result.blackBoxBadgeCost += Number(profile.blackBoxBadgeCost) || 0;
+        result.otherIncidentalCost += Number(profile.otherIncidentalCost) || 0;
+        if (status === "đang xử lí" || status === "đang xử lý") {
+          result.processing += 1;
+          result.processingCost += totalCost;
+          result.processingProfit += calculatedProfit;
+        }
+        if (status === "đang chờ thanh toán") {
+          result.waitingForPayment += 1;
+          result.waitingCost += totalCost;
+          result.waitingProfit += calculatedProfit;
+        }
+        if (status === "đã thanh toán") {
+          result.paid += 1;
+          result.paidCost += totalCost;
+          result.paidProfit += calculatedProfit;
+        }
+        if (status === "hoàn tất" || status === "đã hoàn tất") {
+          result.completed += 1;
+          result.completedCost += totalCost;
+          result.completedProfit += calculatedProfit;
+        }
         return result;
       },
       {
         totalProfiles: 0,
         totalCost: 0,
         totalProfit: 0,
+        initialCost: 0,
+        processingCost: 0,
+        waitingCost: 0,
+        paidCost: 0,
+        completedCost: 0,
+        processingProfit: 0,
+        waitingProfit: 0,
+        paidProfit: 0,
+        completedProfit: 0,
+        serviceCost: 0,
+        registrationFeeCost: 0,
+        otherCost: 0,
+        blackBoxBadgeCost: 0,
+        otherIncidentalCost: 0,
         processing: 0,
         waitingForPayment: 0,
         paid: 0,
@@ -925,6 +1498,83 @@ export function RevenueDashboard() {
       },
     );
   }, [monthlyProfiles]);
+
+  const totalCostBreakdown = useMemo(
+    () => [
+      { key: "service", label: "Chi Phí Dịch Vụ", value: summary.serviceCost },
+      { key: "registration", label: "Lệ Phí Trước Bạ", value: summary.registrationFeeCost },
+      { key: "other", label: "Chi Phí Khác", value: summary.otherCost },
+      { key: "black-box", label: "Hộp Đen, Phù Hiệu", value: summary.blackBoxBadgeCost },
+      { key: "incidental", label: "Phát Sinh Khác", value: summary.otherIncidentalCost },
+    ],
+    [
+      summary.blackBoxBadgeCost,
+      summary.otherCost,
+      summary.otherIncidentalCost,
+      summary.registrationFeeCost,
+      summary.serviceCost,
+    ],
+  );
+
+  const totalCostStatusBreakdown = useMemo(
+    () => [
+      {
+        key: "processing-cost",
+        label: "Ghi Nhận",
+        value: summary.processingCost,
+        tone: "processing" as const,
+      },
+      {
+        key: "waiting-cost",
+        label: "Công Nợ",
+        value: summary.waitingCost,
+        tone: "waiting" as const,
+      },
+      {
+        key: "paid-cost",
+        label: "Đã Thu",
+        value: summary.paidCost,
+        tone: "paid" as const,
+      },
+      {
+        key: "completed-cost",
+        label: "Doanh Thu",
+        value: summary.completedCost,
+        tone: "completed" as const,
+      },
+    ],
+    [summary.completedCost, summary.paidCost, summary.processingCost, summary.waitingCost],
+  );
+
+  const profitBreakdown = useMemo(
+    () => [
+      {
+        key: "processing-profit",
+        label: "Tạm Ghi",
+        value: summary.processingProfit,
+        tone: "processing" as const,
+      },
+      {
+        key: "waiting-profit",
+        label: "Chờ Thu",
+        value: summary.waitingProfit,
+        tone: "waiting" as const,
+      },
+      {
+        key: "paid-profit",
+        label: "Sau Thanh Toán",
+        value: summary.paidProfit,
+        tone: "paid" as const,
+      },
+      {
+        key: "completed-profit",
+        label: "Sau Tất Toán",
+        value: summary.completedProfit,
+        tone: "completed" as const,
+      },
+    ],
+    [summary.completedProfit, summary.paidProfit, summary.processingProfit, summary.waitingProfit],
+  );
 
   const statusProgressItems = useMemo(
     () => [
@@ -941,27 +1591,49 @@ export function RevenueDashboard() {
     [summary.completed, summary.paid, summary.processing, summary.totalProfiles, summary.waitingForPayment],
   );
 
-  const chartTopCount = isDesktop ? 5 : 3;
-
-  const vehicleTypeChartData = useMemo(
-    () => buildTopChartData(monthlyProfiles, VEHICLE_TYPES, (profile) => profile.vehicleType, chartTopCount),
-    [chartTopCount, monthlyProfiles],
+  const vehicleTypeProgressItems = useMemo(
+    () => buildProgressGroupData(monthlyProfiles, VEHICLE_TYPES, (profile) => profile.vehicleType),
+    [monthlyProfiles],
   );
 
-  const receivingAgencyChartData = useMemo(
+  const receivingAgencyProgressItems = useMemo(
+    () => buildProgressGroupData(monthlyProfiles, RECEIVING_AGENCIES, (profile) => profile.receivingAgency),
+    [monthlyProfiles],
+  );
+
+  const serviceTypeProgressItems = useMemo(
+    () => buildProgressGroupData(monthlyProfiles, SERVICE_TYPES, (profile) => profile.serviceType),
+    [monthlyProfiles],
+  );
+
+  const selectedMonthParts = useMemo(() => getMonthParts(selectedMonth), [selectedMonth]);
+
+  const dailyProfileProgressItems = useMemo(
+    () => buildDailyProfileData(monthlyProfiles, selectedMonthParts.year, selectedMonthParts.month),
+    [monthlyProfiles, selectedMonthParts.month, selectedMonthParts.year],
+  );
+
+  const topDailyProfileProgressItems = useMemo(
     () =>
-      buildTopChartData(monthlyProfiles, RECEIVING_AGENCIES, (profile) => profile.receivingAgency, chartTopCount),
-    [chartTopCount, monthlyProfiles],
+      [...dailyProfileProgressItems]
+        .filter((item) => item.count > 0)
+        .sort((first, second) => {
+          if (second.count !== first.count) return second.count - first.count;
+          return first.key.localeCompare(second.key, "vi");
+        }),
+    [dailyProfileProgressItems],
   );
 
-  const serviceTypeChartData = useMemo(
-    () => buildTopChartData(monthlyProfiles, SERVICE_TYPES, (profile) => profile.serviceType, chartTopCount),
-    [chartTopCount, monthlyProfiles],
-  );
+  const customerProgressItems = useMemo(() => buildCustomerProgressData(monthlyProfiles), [monthlyProfiles]);
+  const topCustomerProgressItems = useMemo(() => customerProgressItems, [customerProgressItems]);
+  const topDailyScale = summary.totalProfiles;
+  const topCustomerScale = summary.totalProfiles;
+  const dailyProfileCalendarWeeks = useMemo(() => buildCalendarWeeks(dailyProfileProgressItems), [dailyProfileProgressItems]);
 
   const displayNumber = (value: number) => formatNumber(value);
-  const loadingValue = <Loader aria-label="Đang tải" size={16} />;
-  const currencyValue = (value: number, tone: "danger" | "success") => (
+  const activeDetailContent = activeDetailInfo ? DETAIL_INFO_CONTENT[activeDetailInfo] : null;
+  const loadingValue = <SpinnerIcon aria-label="Đang tải" size={16} />;
+  const currencyValue = (value: number, tone: "primary" | "danger" | "success") => (
     <CurrencyValue $tone={tone}>
       {loading ? (
         <CurrencyLoadingValue>{loadingValue}</CurrencyLoadingValue>
@@ -1003,10 +1675,6 @@ export function RevenueDashboard() {
         {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
 
         <SummaryLayout aria-label="Số liệu hồ sơ và doanh thu trong tháng">
-          <FinancialColumn>
-            <MetricCard $tone="danger"><span><Calculator size={18} /></span><small><DesktopMetricLabel>Chi Phí Khách Trả</DesktopMetricLabel><MobileMetricLabel>Chi Phí</MobileMetricLabel></small>{currencyValue(summary.totalCost, "danger")}</MetricCard>
-            <MetricCard $tone="success"><span><TrendingUp size={18} /></span><small><DesktopMetricLabel>Lợi Nhuận Thu Về</DesktopMetricLabel><MobileMetricLabel>Lợi Nhuận</MobileMetricLabel></small>{currencyValue(summary.totalProfit, "success")}</MetricCard>
-          </FinancialColumn>
           <StatusSummaryCard>
             <StatusTotalWrap>
               <StatusTotalHeader>
@@ -1026,37 +1694,296 @@ export function RevenueDashboard() {
 
                 return (
                   <StatusProgressItem key={item.key}>
-                    <StatusProgressLabel $tone={item.tone}>{titleCaseLabel(item.label)}</StatusProgressLabel>
                     <StatusProgressRow>
-                      <StatusProgressTrack>
-                        <StatusProgressFill $tone={item.tone} $width={progressWidth} />
-                      </StatusProgressTrack>
+                      <StatusProgressLabel $tone={item.tone}>{titleCaseLabel(item.label)}</StatusProgressLabel>
                       <StatusProgressValue>
-                        {loading ? <Loader aria-label="Đang tải" size={16} /> : displayNumber(item.count)}
+                        {loading ? <SpinnerIcon aria-label="Đang tải" size={16} /> : displayNumber(item.count)}
                       </StatusProgressValue>
                     </StatusProgressRow>
+                    <StatusProgressTrack>
+                      <StatusProgressFill $tone={item.tone} $width={progressWidth} />
+                    </StatusProgressTrack>
                   </StatusProgressItem>
                 );
               })}
             </StatusProgressList>
           </StatusSummaryCard>
+          <FinancialColumn>
+            <MetricCard $tone="primary">
+              <span><Calculator size={18} /></span>
+              <small>Tổng Chi Phí Khách Trả</small>
+              <CurrencyValue $tone="primary">
+                {loading ? (
+                  <CurrencyLoadingValue>{loadingValue}</CurrencyLoadingValue>
+                ) : (
+                  <>
+                    <strong>{displayNumber(summary.totalCost)}</strong>
+                    <span>đ</span>
+                    <CurrencyInfoButton
+                      type="button"
+                      aria-label="Xem chi tiết tổng chi phí khách trả"
+                      onClick={() => setIsCostDetailOpen(true)}
+                    >
+                      <Info size={15} />
+                    </CurrencyInfoButton>
+                  </>
+                )}
+              </CurrencyValue>
+              <MetricDivider />
+              <MetricBreakdownList>
+                {totalCostStatusBreakdown.map((item) => (
+                  <MetricBreakdownItem key={item.key}>
+                    <MetricBreakdownRow>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        {item.label}
+                        <InlineInfoButton
+                          type="button"
+                          aria-label={`Xem mô tả ${item.label}`}
+                          onClick={() => setActiveDetailInfo(item.key as DetailInfoKey)}
+                        >
+                          <Info size={12} />
+                        </InlineInfoButton>
+                      </span>
+                      <strong>{loading ? <SpinnerIcon aria-label="Đang tải" size={14} /> : `${displayNumber(item.value)}đ`}</strong>
+                    </MetricBreakdownRow>
+                    <MetricBreakdownTrack>
+                      <MetricBreakdownFill
+                        $tone={item.tone}
+                        $width={summary.totalCost > 0 ? (item.value / summary.totalCost) * 100 : 0}
+                      />
+                    </MetricBreakdownTrack>
+                  </MetricBreakdownItem>
+                ))}
+              </MetricBreakdownList>
+            </MetricCard>
+          </FinancialColumn>
+          <SummaryMetricColumn>
+            <MetricCard $tone="danger">
+              <MetricSection>
+                <span
+                  style={{
+                    background: getMetricToneBackground("danger"),
+                    color: getMetricToneColor("danger"),
+                  }}
+                >
+                  <Calculator size={18} />
+                </span>
+                <MetricSectionLabel $tone="danger">Tổng Chi Phí Ban Đầu</MetricSectionLabel>
+                {currencyValue(summary.initialCost, "danger")}
+              </MetricSection>
+              <MetricDivider />
+              <MetricSection $topPadding>
+                <span
+                  style={{
+                    background: getMetricToneBackground("success"),
+                    color: getMetricToneColor("success"),
+                  }}
+                >
+                  <TrendingUp size={18} />
+                </span>
+                <MetricSectionLabel $tone="success">Tổng Lợi Nhuận Dự Kiến</MetricSectionLabel>
+                {currencyValue(summary.totalProfit, "success")}
+              </MetricSection>
+              <MetricDivider />
+              <MetricBreakdownList>
+                {profitBreakdown.map((item) => (
+                  <MetricBreakdownItem key={item.key}>
+                    <MetricBreakdownRow>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        {item.label}
+                        <InlineInfoButton
+                          type="button"
+                          aria-label={`Xem mô tả ${item.label}`}
+                          onClick={() => setActiveDetailInfo(item.key as DetailInfoKey)}
+                        >
+                          <Info size={12} />
+                        </InlineInfoButton>
+                      </span>
+                      <strong>{loading ? <SpinnerIcon aria-label="Đang tải" size={14} /> : `${displayNumber(item.value)}đ`}</strong>
+                    </MetricBreakdownRow>
+                    <MetricBreakdownTrack>
+                      <MetricBreakdownFill
+                        $tone={item.tone}
+                        $width={summary.totalProfit > 0 ? (item.value / summary.totalProfit) * 100 : 0}
+                      />
+                    </MetricBreakdownTrack>
+                  </MetricBreakdownItem>
+                ))}
+              </MetricBreakdownList>
+            </MetricCard>
+          </SummaryMetricColumn>
         </SummaryLayout>
 
-        <ChartsSection aria-label="Biểu đồ thống kê theo nhóm">
-          <BarChartCard title="loại xe" data={vehicleTypeChartData} loading={loading} isDesktop={isDesktop} />
-          <BarChartCard
-            title="cơ quan nhận"
-            data={receivingAgencyChartData}
+        <CategorySection aria-label="Thống kê theo nhóm">
+          <ProgressSummaryCard
+            title="Loại Xe"
+            items={vehicleTypeProgressItems}
             loading={loading}
-            isDesktop={isDesktop}
+            totalCount={summary.totalProfiles}
+            icon={<CarFront size={18} />}
+            onOpenDetails={() =>
+              setActiveCategoryDetail({ title: "Loại Xe", items: vehicleTypeProgressItems, totalCount: summary.totalProfiles })
+            }
           />
-          <BarChartCard
-            title="loại dịch vụ"
-            data={serviceTypeChartData}
+          <ProgressSummaryCard
+            title="Cơ Quan Nhận"
+            items={receivingAgencyProgressItems}
             loading={loading}
-            isDesktop={isDesktop}
+            totalCount={summary.totalProfiles}
+            icon={<Building2 size={18} />}
+            onOpenDetails={() =>
+              setActiveCategoryDetail({ title: "Cơ Quan Nhận", items: receivingAgencyProgressItems, totalCount: summary.totalProfiles })
+            }
           />
-        </ChartsSection>
+          <ProgressSummaryCard
+            title="Loại Dịch Vụ"
+            items={serviceTypeProgressItems}
+            loading={loading}
+            totalCount={summary.totalProfiles}
+            icon={<Briefcase size={18} />}
+            onOpenDetails={() =>
+              setActiveCategoryDetail({ title: "Loại Dịch Vụ", items: serviceTypeProgressItems, totalCount: summary.totalProfiles })
+            }
+          />
+          <ProgressSummaryCard
+            title="Top Hồ Sơ Theo Ngày"
+            items={topDailyProfileProgressItems}
+            loading={loading}
+            totalCount={topDailyScale}
+            maxVisibleItems={3}
+            icon={<ClockArrowUp size={18} />}
+            onOpenDetails={() =>
+              setActiveCategoryDetail({
+                title: "Top Hồ Sơ Theo Ngày",
+                items: dailyProfileProgressItems,
+                totalCount: topDailyScale,
+                layout: "calendar",
+              })
+            }
+          />
+          <ProgressSummaryCard
+            title="Top Khách Hàng Có Hồ Sơ"
+            items={topCustomerProgressItems}
+            loading={loading}
+            totalCount={topCustomerScale}
+            maxVisibleItems={3}
+            icon={<UserStar size={18} />}
+            onOpenDetails={() =>
+              setActiveCategoryDetail({
+                title: "Top Khách Hàng Có Hồ Sơ",
+                items: customerProgressItems,
+                totalCount: topCustomerScale,
+                layout: "list",
+              })
+            }
+          />
+        </CategorySection>
+
+        {isCostDetailOpen && (
+          <CostModalOverlay role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setIsCostDetailOpen(false)}>
+            <CostModalDialog role="dialog" aria-modal="true" aria-labelledby="cost-detail-title" onMouseDown={(event) => event.stopPropagation()}>
+              <CostModalHeader>
+                <h2 id="cost-detail-title">Tổng Chi Phí Khách Trả</h2>
+                <CostModalCloseButton type="button" aria-label="Đóng chi tiết tổng chi phí khách trả" onClick={() => setIsCostDetailOpen(false)}>
+                  <X size={18} />
+                </CostModalCloseButton>
+              </CostModalHeader>
+              <CostModalTotal>
+                <strong>{loading ? <SpinnerIcon aria-label="Đang tải" size={18} /> : `${displayNumber(summary.totalCost)} đ`}</strong>
+              </CostModalTotal>
+              <MetricBreakdownList>
+                {totalCostBreakdown.map((item) => (
+                  <MetricBreakdownItem key={item.key}>
+                    <MetricBreakdownRow>
+                      <span>{item.label}</span>
+                      <strong>{loading ? <SpinnerIcon aria-label="Đang tải" size={14} /> : `${displayNumber(item.value)}đ`}</strong>
+                    </MetricBreakdownRow>
+                    <MetricBreakdownTrack>
+                      <MetricBreakdownFill
+                        $width={summary.totalCost > 0 ? (item.value / summary.totalCost) * 100 : 0}
+                      />
+                    </MetricBreakdownTrack>
+                  </MetricBreakdownItem>
+                ))}
+              </MetricBreakdownList>
+            </CostModalDialog>
+          </CostModalOverlay>
+        )}
+
+        {activeDetailContent && (
+          <CostModalOverlay role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setActiveDetailInfo(null)}>
+            <CostModalDialog role="dialog" aria-modal="true" aria-labelledby="detail-info-title" onMouseDown={(event) => event.stopPropagation()}>
+              <CostModalHeader>
+                <h2 id="detail-info-title">{activeDetailContent.title}</h2>
+                <CostModalCloseButton type="button" aria-label="Đóng mô tả chi tiết" onClick={() => setActiveDetailInfo(null)}>
+                  <X size={18} />
+                </CostModalCloseButton>
+              </CostModalHeader>
+              <InfoModalBody>
+                {activeDetailContent.paragraphs.map((paragraph, index) => (
+                  <InfoModalParagraph key={index}>{paragraph}</InfoModalParagraph>
+                ))}
+              </InfoModalBody>
+            </CostModalDialog>
+          </CostModalOverlay>
+        )}
+
+        {activeCategoryDetail && (
+          <CostModalOverlay role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setActiveCategoryDetail(null)}>
+            <CostModalDialog role="dialog" aria-modal="true" aria-labelledby="category-detail-title" onMouseDown={(event) => event.stopPropagation()}>
+              <CostModalHeader>
+                <h2 id="category-detail-title">{activeCategoryDetail.title}</h2>
+                <CostModalCloseButton type="button" aria-label="Đóng danh sách chi tiết" onClick={() => setActiveCategoryDetail(null)}>
+                  <X size={18} />
+                </CostModalCloseButton>
+              </CostModalHeader>
+              {activeCategoryDetail.layout === "calendar" ? (
+                <CalendarModalWrap>
+                  <CalendarWeekHeader>
+                    {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((label) => (
+                      <CalendarWeekLabel key={label}>{label}</CalendarWeekLabel>
+                    ))}
+                  </CalendarWeekHeader>
+                  <CalendarGrid>
+                    {dailyProfileCalendarWeeks.map((week, weekIndex) => (
+                      <CalendarWeekRow key={weekIndex}>
+                        {week.map((item, dayIndex) =>
+                          item ? (
+                            <CalendarDayCard key={item.key} $isActive={item.count > 0}>
+                              <CalendarDayNumber $isActive={item.count > 0}>{item.label.slice(0, 2)}</CalendarDayNumber>
+                              <CalendarDayCount $isActive={item.count > 0}>
+                                {item.count > 0 ? displayNumber(item.count) : null}
+                              </CalendarDayCount>
+                            </CalendarDayCard>
+                          ) : (
+                            <CalendarDayCard key={`empty-${weekIndex}-${dayIndex}`} $isActive={false} $isEmpty />
+                          ),
+                        )}
+                      </CalendarWeekRow>
+                    ))}
+                  </CalendarGrid>
+                </CalendarModalWrap>
+              ) : (
+                <MetricBreakdownList>
+                  {activeCategoryDetail.items.map((item) => (
+                    <MetricBreakdownItem key={item.key}>
+                      <MetricBreakdownRow>
+                        <span>{item.label}</span>
+                        <strong>{loading ? <SpinnerIcon aria-label="Đang tải" size={14} /> : displayNumber(item.count)}</strong>
+                      </MetricBreakdownRow>
+                      <MetricBreakdownTrack>
+                        <MetricBreakdownFill
+                          $tone="neutral"
+                          $width={activeCategoryDetail.totalCount > 0 ? (item.count / activeCategoryDetail.totalCount) * 100 : 0}
+                        />
+                      </MetricBreakdownTrack>
+                    </MetricBreakdownItem>
+                  ))}
+                </MetricBreakdownList>
+              )}
+            </CostModalDialog>
+          </CostModalOverlay>
+        )}
       </ContentWrap>
     </AppShell>
   );
