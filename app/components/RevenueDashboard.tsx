@@ -28,6 +28,7 @@ import {
 import { AppShell } from "./AppShell";
 
 const PROFILE_YEAR = 2026;
+const REVENUE_MODAL_CLOSE_MS = 280;
 
 const SpinnerIcon = styled(Loader)`
   animation: revenue-value-spin 850ms linear infinite;
@@ -445,7 +446,7 @@ const StatusProgressTrack = styled.div`
   max-width: 660px;
   height: 10px;
   justify-self: start;
-  border-radius: 7px;
+  border-radius: 3px;
   background: #eef0f4;
   overflow: hidden;
 
@@ -459,7 +460,7 @@ const StatusProgressFill = styled.div<{ $tone: StatusTone; $width: number }>`
   width: ${({ $width }) => `${$width}%`};
   min-width: ${({ $width }) => ($width > 0 ? "10px" : "0")};
   height: 100%;
-  border-radius: 7px;
+  border-radius: 3px;
   transform-origin: left center;
   background: ${({ $tone }) =>
     $tone === "neutral"
@@ -667,7 +668,7 @@ const MetricBreakdownTrack = styled.div`
   max-width: 660px;
   height: 10px;
   justify-self: start;
-  border-radius: 7px;
+  border-radius: 3px;
   background: #eef0f4;
   overflow: hidden;
 
@@ -684,7 +685,7 @@ const MetricBreakdownFill = styled.div<{
   width: ${({ $width }) => `${$width}%`};
   min-width: ${({ $width }) => ($width > 0 ? "10px" : "0")};
   height: 100%;
-  border-radius: 7px;
+  border-radius: 3px;
   transform-origin: left center;
   background: ${({ $tone = "neutral" }) =>
     $tone === "processing"
@@ -720,7 +721,7 @@ const ErrorMessage = styled.p`
   font-size: 13px;
 `;
 
-const CostModalOverlay = styled.div`
+const CostModalOverlay = styled.div<{ $closing: boolean }>`
   position: fixed;
   inset: 0;
   z-index: 60;
@@ -729,14 +730,43 @@ const CostModalOverlay = styled.div`
   justify-content: center;
   background: rgba(15, 23, 42, 0.32);
   padding: 24px;
+  backdrop-filter: blur(5px);
+  animation: ${({ $closing }) =>
+    $closing ? "revenue-overlay-out 220ms ease both" : "revenue-overlay-in 220ms ease both"};
+
+  @keyframes revenue-overlay-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes revenue-overlay-out {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
 
   @media (max-width: 1199px) {
     align-items: flex-end;
     padding: 0;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
-const CostModalDialog = styled.div`
+const CostModalDialog = styled.div<{ $closing: boolean }>`
+  --revenue-modal-enter-offset: 24px;
+  --revenue-modal-edge-opacity: 0;
   width: min(560px, 100%);
   max-height: min(80vh, 860px);
   overflow: auto;
@@ -745,20 +775,58 @@ const CostModalDialog = styled.div`
   background: #ffffff;
   box-shadow: 0 30px 90px rgba(14, 22, 45, 0.28);
   padding: 22px 22px 20px;
+  animation: ${({ $closing }) =>
+    $closing
+      ? "revenue-modal-out 280ms cubic-bezier(0.4, 0, 0.2, 1) both"
+      : "revenue-modal-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both"};
+
+  @keyframes revenue-modal-in {
+    from {
+      opacity: var(--revenue-modal-edge-opacity);
+      transform: translate3d(0, var(--revenue-modal-enter-offset), 0);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  @keyframes revenue-modal-out {
+    from {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    to {
+      opacity: var(--revenue-modal-edge-opacity);
+      transform: translate3d(0, var(--revenue-modal-enter-offset), 0);
+    }
+  }
 
   @media (max-width: 1199px) {
+    --revenue-modal-enter-offset: 100%;
+    --revenue-modal-edge-opacity: 1;
     width: 100%;
     max-height: 92vh;
     border-radius: 24px 24px 0 0;
-    padding: 18px 16px 16px;
+    padding: 18px 16px calc(44px + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 `;
 
 const CostModalHeader = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  background: #ffffff;
   padding-bottom: 14px;
   margin-bottom: 16px;
   border-bottom: 1px solid #e8ebf2;
@@ -1390,8 +1458,11 @@ export function RevenueDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isCostDetailOpen, setIsCostDetailOpen] = useState(false);
+  const [isCostDetailClosing, setIsCostDetailClosing] = useState(false);
   const [activeDetailInfo, setActiveDetailInfo] = useState<DetailInfoKey | null>(null);
+  const [isDetailInfoClosing, setIsDetailInfoClosing] = useState(false);
   const [activeCategoryDetail, setActiveCategoryDetail] = useState<CategoryDetailState | null>(null);
+  const [isCategoryDetailClosing, setIsCategoryDetailClosing] = useState(false);
 
   useEffect(() => {
     const current = new Date();
@@ -1417,7 +1488,13 @@ export function RevenueDashboard() {
     return () => window.clearTimeout(timer);
   }, [loadProfiles]);
 
-  const hasModalOpen = isCostDetailOpen || activeDetailInfo !== null || activeCategoryDetail !== null;
+  const hasModalOpen =
+    isCostDetailOpen ||
+    isCostDetailClosing ||
+    activeDetailInfo !== null ||
+    isDetailInfoClosing ||
+    activeCategoryDetail !== null ||
+    isCategoryDetailClosing;
 
   useEffect(() => {
     if (!hasModalOpen) return;
@@ -1633,6 +1710,42 @@ export function RevenueDashboard() {
   const displayNumber = (value: number) => formatNumber(value);
   const activeDetailContent = activeDetailInfo ? DETAIL_INFO_CONTENT[activeDetailInfo] : null;
   const loadingValue = <SpinnerIcon aria-label="Đang tải" size={16} />;
+  const openCostDetail = useCallback(() => {
+    setIsCostDetailClosing(false);
+    setIsCostDetailOpen(true);
+  }, []);
+  const closeCostDetail = useCallback(() => {
+    if (!isCostDetailOpen || isCostDetailClosing) return;
+    setIsCostDetailClosing(true);
+    window.setTimeout(() => {
+      setIsCostDetailOpen(false);
+      setIsCostDetailClosing(false);
+    }, REVENUE_MODAL_CLOSE_MS);
+  }, [isCostDetailClosing, isCostDetailOpen]);
+  const openDetailInfo = useCallback((key: DetailInfoKey) => {
+    setIsDetailInfoClosing(false);
+    setActiveDetailInfo(key);
+  }, []);
+  const closeDetailInfo = useCallback(() => {
+    if (activeDetailInfo === null || isDetailInfoClosing) return;
+    setIsDetailInfoClosing(true);
+    window.setTimeout(() => {
+      setActiveDetailInfo(null);
+      setIsDetailInfoClosing(false);
+    }, REVENUE_MODAL_CLOSE_MS);
+  }, [activeDetailInfo, isDetailInfoClosing]);
+  const openCategoryDetail = useCallback((detail: CategoryDetailState) => {
+    setIsCategoryDetailClosing(false);
+    setActiveCategoryDetail(detail);
+  }, []);
+  const closeCategoryDetail = useCallback(() => {
+    if (activeCategoryDetail === null || isCategoryDetailClosing) return;
+    setIsCategoryDetailClosing(true);
+    window.setTimeout(() => {
+      setActiveCategoryDetail(null);
+      setIsCategoryDetailClosing(false);
+    }, REVENUE_MODAL_CLOSE_MS);
+  }, [activeCategoryDetail, isCategoryDetailClosing]);
   const currencyValue = (value: number, tone: "primary" | "danger" | "success") => (
     <CurrencyValue $tone={tone}>
       {loading ? (
@@ -1722,7 +1835,7 @@ export function RevenueDashboard() {
                     <CurrencyInfoButton
                       type="button"
                       aria-label="Xem chi tiết tổng chi phí khách trả"
-                      onClick={() => setIsCostDetailOpen(true)}
+                      onClick={openCostDetail}
                     >
                       <Info size={15} />
                     </CurrencyInfoButton>
@@ -1739,7 +1852,7 @@ export function RevenueDashboard() {
                         <InlineInfoButton
                           type="button"
                           aria-label={`Xem mô tả ${item.label}`}
-                          onClick={() => setActiveDetailInfo(item.key as DetailInfoKey)}
+                          onClick={() => openDetailInfo(item.key as DetailInfoKey)}
                         >
                           <Info size={12} />
                         </InlineInfoButton>
@@ -1794,7 +1907,7 @@ export function RevenueDashboard() {
                         <InlineInfoButton
                           type="button"
                           aria-label={`Xem mô tả ${item.label}`}
-                          onClick={() => setActiveDetailInfo(item.key as DetailInfoKey)}
+                          onClick={() => openDetailInfo(item.key as DetailInfoKey)}
                         >
                           <Info size={12} />
                         </InlineInfoButton>
@@ -1822,7 +1935,7 @@ export function RevenueDashboard() {
             totalCount={summary.totalProfiles}
             icon={<CarFront size={18} />}
             onOpenDetails={() =>
-              setActiveCategoryDetail({ title: "Loại Xe", items: vehicleTypeProgressItems, totalCount: summary.totalProfiles })
+              openCategoryDetail({ title: "Loại Xe", items: vehicleTypeProgressItems, totalCount: summary.totalProfiles })
             }
           />
           <ProgressSummaryCard
@@ -1832,7 +1945,7 @@ export function RevenueDashboard() {
             totalCount={summary.totalProfiles}
             icon={<Building2 size={18} />}
             onOpenDetails={() =>
-              setActiveCategoryDetail({ title: "Cơ Quan Nhận", items: receivingAgencyProgressItems, totalCount: summary.totalProfiles })
+              openCategoryDetail({ title: "Cơ Quan Nhận", items: receivingAgencyProgressItems, totalCount: summary.totalProfiles })
             }
           />
           <ProgressSummaryCard
@@ -1842,7 +1955,7 @@ export function RevenueDashboard() {
             totalCount={summary.totalProfiles}
             icon={<Briefcase size={18} />}
             onOpenDetails={() =>
-              setActiveCategoryDetail({ title: "Loại Dịch Vụ", items: serviceTypeProgressItems, totalCount: summary.totalProfiles })
+              openCategoryDetail({ title: "Loại Dịch Vụ", items: serviceTypeProgressItems, totalCount: summary.totalProfiles })
             }
           />
           <ProgressSummaryCard
@@ -1853,7 +1966,7 @@ export function RevenueDashboard() {
             maxVisibleItems={3}
             icon={<ClockArrowUp size={18} />}
             onOpenDetails={() =>
-              setActiveCategoryDetail({
+              openCategoryDetail({
                 title: "Top Hồ Sơ Theo Ngày",
                 items: dailyProfileProgressItems,
                 totalCount: topDailyScale,
@@ -1869,7 +1982,7 @@ export function RevenueDashboard() {
             maxVisibleItems={3}
             icon={<UserStar size={18} />}
             onOpenDetails={() =>
-              setActiveCategoryDetail({
+              openCategoryDetail({
                 title: "Top Khách Hàng Có Hồ Sơ",
                 items: customerProgressItems,
                 totalCount: topCustomerScale,
@@ -1879,12 +1992,12 @@ export function RevenueDashboard() {
           />
         </CategorySection>
 
-        {isCostDetailOpen && (
-          <CostModalOverlay role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setIsCostDetailOpen(false)}>
-            <CostModalDialog role="dialog" aria-modal="true" aria-labelledby="cost-detail-title" onMouseDown={(event) => event.stopPropagation()}>
+        {(isCostDetailOpen || isCostDetailClosing) && (
+          <CostModalOverlay $closing={isCostDetailClosing} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeCostDetail()}>
+            <CostModalDialog $closing={isCostDetailClosing} role="dialog" aria-modal="true" aria-labelledby="cost-detail-title" onMouseDown={(event) => event.stopPropagation()}>
               <CostModalHeader>
                 <h2 id="cost-detail-title">Tổng Chi Phí Khách Trả</h2>
-                <CostModalCloseButton type="button" aria-label="Đóng chi tiết tổng chi phí khách trả" onClick={() => setIsCostDetailOpen(false)}>
+                <CostModalCloseButton type="button" aria-label="Đóng chi tiết tổng chi phí khách trả" onClick={closeCostDetail}>
                   <X size={18} />
                 </CostModalCloseButton>
               </CostModalHeader>
@@ -1910,12 +2023,12 @@ export function RevenueDashboard() {
           </CostModalOverlay>
         )}
 
-        {activeDetailContent && (
-          <CostModalOverlay role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setActiveDetailInfo(null)}>
-            <CostModalDialog role="dialog" aria-modal="true" aria-labelledby="detail-info-title" onMouseDown={(event) => event.stopPropagation()}>
+        {(activeDetailContent || isDetailInfoClosing) && activeDetailContent && (
+          <CostModalOverlay $closing={isDetailInfoClosing} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeDetailInfo()}>
+            <CostModalDialog $closing={isDetailInfoClosing} role="dialog" aria-modal="true" aria-labelledby="detail-info-title" onMouseDown={(event) => event.stopPropagation()}>
               <CostModalHeader>
                 <h2 id="detail-info-title">{activeDetailContent.title}</h2>
-                <CostModalCloseButton type="button" aria-label="Đóng mô tả chi tiết" onClick={() => setActiveDetailInfo(null)}>
+                <CostModalCloseButton type="button" aria-label="Đóng mô tả chi tiết" onClick={closeDetailInfo}>
                   <X size={18} />
                 </CostModalCloseButton>
               </CostModalHeader>
@@ -1928,12 +2041,12 @@ export function RevenueDashboard() {
           </CostModalOverlay>
         )}
 
-        {activeCategoryDetail && (
-          <CostModalOverlay role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setActiveCategoryDetail(null)}>
-            <CostModalDialog role="dialog" aria-modal="true" aria-labelledby="category-detail-title" onMouseDown={(event) => event.stopPropagation()}>
+        {(activeCategoryDetail || isCategoryDetailClosing) && activeCategoryDetail && (
+          <CostModalOverlay $closing={isCategoryDetailClosing} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeCategoryDetail()}>
+            <CostModalDialog $closing={isCategoryDetailClosing} role="dialog" aria-modal="true" aria-labelledby="category-detail-title" onMouseDown={(event) => event.stopPropagation()}>
               <CostModalHeader>
                 <h2 id="category-detail-title">{activeCategoryDetail.title}</h2>
-                <CostModalCloseButton type="button" aria-label="Đóng danh sách chi tiết" onClick={() => setActiveCategoryDetail(null)}>
+                <CostModalCloseButton type="button" aria-label="Đóng danh sách chi tiết" onClick={closeCategoryDetail}>
                   <X size={18} />
                 </CostModalCloseButton>
               </CostModalHeader>
