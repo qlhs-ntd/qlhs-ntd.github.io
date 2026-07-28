@@ -445,7 +445,7 @@ const StatusProgressTrack = styled.div`
   max-width: 660px;
   height: 10px;
   justify-self: start;
-  border-radius: 999px;
+  border-radius: 7px;
   background: #eef0f4;
   overflow: hidden;
 
@@ -459,7 +459,7 @@ const StatusProgressFill = styled.div<{ $tone: StatusTone; $width: number }>`
   width: ${({ $width }) => `${$width}%`};
   min-width: ${({ $width }) => ($width > 0 ? "10px" : "0")};
   height: 100%;
-  border-radius: 999px;
+  border-radius: 7px;
   transform-origin: left center;
   background: ${({ $tone }) =>
     $tone === "neutral"
@@ -667,7 +667,7 @@ const MetricBreakdownTrack = styled.div`
   max-width: 660px;
   height: 10px;
   justify-self: start;
-  border-radius: 999px;
+  border-radius: 7px;
   background: #eef0f4;
   overflow: hidden;
 
@@ -684,7 +684,7 @@ const MetricBreakdownFill = styled.div<{
   width: ${({ $width }) => `${$width}%`};
   min-width: ${({ $width }) => ($width > 0 ? "10px" : "0")};
   height: 100%;
-  border-radius: 999px;
+  border-radius: 7px;
   transform-origin: left center;
   background: ${({ $tone = "neutral" }) =>
     $tone === "processing"
