@@ -820,15 +820,15 @@ const CostModalDialog = styled.div<{ $closing: boolean }>`
 
 const CostModalHeader = styled.div`
   position: sticky;
-  top: 0;
+  top: -22px;
   z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  margin: -22px -22px 16px;
+  padding: 22px 22px 14px;
   background: #ffffff;
-  padding-bottom: 14px;
-  margin-bottom: 16px;
   border-bottom: 1px solid #e8ebf2;
 
   h2 {
@@ -841,8 +841,9 @@ const CostModalHeader = styled.div`
   }
 
   @media (max-width: 1199px) {
-    padding-bottom: 12px;
-    margin-bottom: 14px;
+    top: -18px;
+    margin: -18px -16px 14px;
+    padding: 18px 16px 12px;
 
     h2 {
       font-size: 17px;
