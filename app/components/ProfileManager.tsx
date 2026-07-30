@@ -134,6 +134,8 @@ const STATUS_TABS: Array<{ key: StatusTabKey; label: string; tone: StatusTabTone
   { key: "all", label: "Tất Cả", tone: "neutral", matches: () => true },
 ];
 
+const CUSTOMER_STATUS_TABS = [STATUS_TABS[4], ...STATUS_TABS.slice(0, 4)];
+
 const Header = styled.header`
   display: flex;
   align-items: center;
@@ -3077,7 +3079,7 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
   const statusTabsRef = useRef<HTMLDivElement>(null);
   const actionMenuRootRef = useRef<HTMLDivElement>(null);
   const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
-  const [activeStatusTab, setActiveStatusTab] = useState<StatusTabKey>("processing");
+  const [activeStatusTab, setActiveStatusTab] = useState<StatusTabKey>(embedded ? "all" : "processing");
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [query, setQuery] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -3097,6 +3099,7 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
   const [expandedCustomerIds, setExpandedCustomerIds] = useState<Set<string>>(() => new Set());
   const activeMonth = selectedMonthOverride ?? selectedMonth;
   const isCurrentMonthSelected = activeMonth === monthKey(new Date());
+  const statusTabs = embedded ? CUSTOMER_STATUS_TABS : STATUS_TABS;
 
   useEffect(() => {
     const current = new Date();
@@ -3178,7 +3181,7 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
     if (value.trim()) setActiveStatusTab("all");
   };
 
-  const activeStatus = STATUS_TABS.find((tab) => tab.key === activeStatusTab) ?? STATUS_TABS[0];
+  const activeStatus = statusTabs.find((tab) => tab.key === activeStatusTab) ?? statusTabs[0];
   const emptyStateTitle = normalizedQuery
     ? "Không tìm thấy hồ sơ"
     : activeStatusTab === "all"
@@ -3187,11 +3190,11 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
 
   const statusTabCounts = useMemo(() => {
     const counts = new Map<StatusTabKey, number>();
-    for (const tab of STATUS_TABS) {
+    for (const tab of statusTabs) {
       counts.set(tab.key, monthlyProfiles.filter(tab.matches).length);
     }
     return counts;
-  }, [monthlyProfiles]);
+  }, [monthlyProfiles, statusTabs]);
 
   const searchResults = useMemo(() => {
     if (!normalizedQuery) return [];
@@ -3484,7 +3487,7 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
               <StatusBadge $active $tone="neutral">{searchResults.length}</StatusBadge>
             </StatusTab>
           ) : (
-            STATUS_TABS.map((tab) => {
+            statusTabs.map((tab) => {
               const active = activeStatusTab === tab.key;
               return (
                 <StatusTab
