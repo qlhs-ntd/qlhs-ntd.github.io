@@ -42,6 +42,13 @@ body.profile-modal-open {
   touch-action: none;
 }
 
+.auth-gate-loading {
+  display: grid;
+  min-height: 100dvh;
+  color: var(--muted);
+  place-items: center;
+}
+
 button,
 input,
 select {

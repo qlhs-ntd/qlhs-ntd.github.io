@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.scss";
 import StyledComponentsRegistry from "./StyledComponentsRegistry";
+import { AuthGate } from "./components/AuthGate";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -13,52 +14,52 @@ export const viewport: Viewport = {
 
 export function generateMetadata(): Metadata {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const socialImage = new URL("og.png", `${siteUrl.replace(/\/$/, "")}/`).toString();
+  const socialImage = new URL("logo.png?v=2", `${siteUrl.replace(/\/$/, "")}/`).toString();
 
   return {
     metadataBase: new URL(siteUrl),
     title: {
-      default: "Quản Lý Hồ Sơ",
-      template: "%s | Quản Lý Hồ Sơ",
+      default: "Dũng - QLHS",
+      template: "%s | QLHS",
     },
-    description: "Quản lý, cập nhật và đồng bộ hồ sơ với Google Sheets.",
-    applicationName: "Hồ Sơ Việt",
+    description: "QLHS",
+    applicationName: "QLHS",
     manifest: "/manifest.webmanifest",
-    keywords: ["quản lý hồ sơ", "hồ sơ", "Google Sheets"],
+    keywords: ["quản lý hồ sơ", "hồ sơ"],
     formatDetection: {
       telephone: false,
     },
     icons: {
       icon: [
-        { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
-        { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-        { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+        { url: "/favicon-32.png?v=2", sizes: "32x32", type: "image/png" },
+        { url: "/icon-192.png?v=2", sizes: "192x192", type: "image/png" },
+        { url: "/icon-512.png?v=2", sizes: "512x512", type: "image/png" },
       ],
-      shortcut: "/favicon-32.png",
+      shortcut: "/favicon-32.png?v=2",
       apple: [
-        { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-        { url: "/apple-touch-icon-167.png", sizes: "167x167", type: "image/png" },
-        { url: "/apple-touch-icon-152.png", sizes: "152x152", type: "image/png" },
+        { url: "/apple-touch-icon.png?v=2", sizes: "180x180", type: "image/png" },
+        { url: "/apple-touch-icon-167.png?v=2", sizes: "167x167", type: "image/png" },
+        { url: "/apple-touch-icon-152.png?v=2", sizes: "152x152", type: "image/png" },
       ],
     },
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",
-      title: "Hồ Sơ Việt",
+      title: "Dũng - QLHS",
     },
     openGraph: {
-      title: "Hồ Sơ Việt",
-      description: "Quản lý hồ sơ, đơn giản và tập trung.",
+      title: "Dũng - QLHS",
+      description: "QLHS",
       url: "/",
-      siteName: "Hồ Sơ Việt",
+      siteName: "Dũng - QLHS",
       locale: "vi_VN",
       type: "website",
-      images: [{ url: socialImage, width: 1200, height: 630, alt: "Hồ Sơ Việt" }],
+      images: [{ url: socialImage, width: 1024, height: 1024, alt: "Dũng - QLHS" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Hồ Sơ Việt",
-      description: "Quản lý hồ sơ, đơn giản và tập trung.",
+      title: "Dũng - QLHS",
+      description: "QLHS",
       images: [socialImage],
     },
   };
@@ -72,7 +73,7 @@ export default function RootLayout({
   return (
     <html lang="vi" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+        <StyledComponentsRegistry><AuthGate>{children}</AuthGate></StyledComponentsRegistry>
       </body>
     </html>
   );

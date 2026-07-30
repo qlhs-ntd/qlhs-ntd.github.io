@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { type FocusEvent, FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
+import { AccountMenu } from "./AccountMenu";
 import { AppShell } from "./AppShell";
 import {
   calculateProfileCosts,
@@ -157,6 +158,12 @@ const TitleBlock = styled.div`
       font-size: 18px;
     }
   }
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const PrimaryButton = styled.button`
@@ -3005,7 +3012,10 @@ export function ProfileManager() {
     <AppShell>
       <Header>
         <TitleBlock>
-          <h1>Danh Sách Hồ Sơ</h1>
+          <TitleRow>
+            <AccountMenu />
+            <h1>Danh Sách Hồ Sơ</h1>
+          </TitleRow>
         </TitleBlock>
         <MonthSelectWrap>
           <CalendarIcon>

@@ -26,6 +26,7 @@ import {
   type ProfileRecord,
 } from "../lib/profiles";
 import { AppShell } from "./AppShell";
+import { AccountMenu } from "./AccountMenu";
 
 const PROFILE_YEAR = 2026;
 const REVENUE_MODAL_CLOSE_MS = 280;
@@ -62,6 +63,12 @@ const Header = styled.header`
       font-size: 18px;
     }
   }
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const MonthSelectWrap = styled.div`
@@ -1763,7 +1770,10 @@ export function RevenueDashboard() {
   return (
     <AppShell>
       <Header>
-        <h1>Doanh Thu</h1>
+        <TitleRow>
+          <AccountMenu />
+          <h1>Doanh Thu</h1>
+        </TitleRow>
         <MonthSelectWrap>
           <CalendarIcon>
             <Calendar size={18} />
