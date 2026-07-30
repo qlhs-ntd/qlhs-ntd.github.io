@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileChartLine, PanelBottomDashed } from "lucide-react";
+import { FileChartLine, PanelBottomDashed, UserStar } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import styled from "styled-components";
 
@@ -24,7 +24,7 @@ const Sidebar = styled.aside<{ $mobileHidden: boolean }>`
 
   @media (max-width: 860px) {
     inset: auto auto max(14px, env(safe-area-inset-bottom)) 50%;
-    width: min(230px, calc(100vw - 28px));
+    width: min(270px, calc(100vw - 28px));
     height: auto;
     border: 0.5px solid rgba(0, 0, 0, 0.06);
     border-radius: 999px;
@@ -104,10 +104,10 @@ const NavItem = styled(Link)<{ $active: boolean }>`
     min-height: 46px;
     flex: 1 1 0;
     flex-direction: column;
-    gap: 1px;
+    gap: 3px;
     border-radius: 999px;
     background: ${({ $active }) => ($active ? "#edf0ff" : "transparent")};
-    font-size: 10px;
+    font-size: 9px;
     line-height: 1;
 
     &::after {
@@ -148,6 +148,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const hosoBActive = normalizedPathname === "/";
   const doanhThuActive = normalizedPathname === "/doanh-thu";
+  const khachHangActive = normalizedPathname === "/khach-hang";
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -232,6 +233,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           >
             <FileChartLine size={19} />
             <span>Doanh thu</span>
+          </NavItem>
+          <NavItem
+            href="/khach-hang"
+            $active={khachHangActive}
+            aria-current={khachHangActive ? "page" : undefined}
+            aria-label="Khách hàng"
+            title="Khách hàng"
+          >
+            <UserStar size={19} />
+            <span>Khách Hàng</span>
           </NavItem>
         </Navigation>
       </Sidebar>

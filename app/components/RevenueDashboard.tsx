@@ -13,6 +13,7 @@ import {
   ListChevronsUpDown,
   Loader,
   TrendingUp,
+  UserSearch,
   UserStar,
   X,
 } from "lucide-react";
@@ -27,6 +28,7 @@ import {
 } from "../lib/profiles";
 import { AppShell } from "./AppShell";
 import { AccountMenu } from "./AccountMenu";
+import { ProfileManager } from "./ProfileManager";
 
 const PROFILE_YEAR = 2026;
 const REVENUE_MODAL_CLOSE_MS = 280;
@@ -41,7 +43,7 @@ const SpinnerIcon = styled(Loader)`
   }
 `;
 
-const Header = styled.header`
+const Header = styled.header<{ $customerMode: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -63,12 +65,30 @@ const Header = styled.header`
       font-size: 18px;
     }
   }
+
+  @media (max-width: 640px) {
+    ${({ $customerMode }) => $customerMode && "flex-wrap: wrap;"}
+  }
 `;
 
 const TitleRow = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+`;
+
+const HeaderFilters = styled.div<{ $customerMode: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  @media (max-width: 640px) {
+    ${({ $customerMode }) => $customerMode && `
+      display: contents;
+      width: 100%;
+      justify-content: flex-end;
+    `}
+  }
 `;
 
 const MonthSelectWrap = styled.div`
@@ -79,6 +99,35 @@ const MonthSelectWrap = styled.div`
   @media (max-width: 1199px) {
     width: 135px;
   }
+`;
+
+const CustomerSelectWrap = styled(MonthSelectWrap)`
+  width: 220px;
+
+  @media (max-width: 1199px) {
+    width: 165px;
+  }
+
+  @media (max-width: 640px) {
+    width: 100%;
+    flex: 0 0 100%;
+    margin-left: 0;
+  }
+`;
+
+const CustomerSelectPlaceholder = styled.span`
+  position: absolute;
+  top: 50%;
+  right: 32px;
+  left: 38px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+  text-overflow: ellipsis;
+  transform: translateY(-50%);
+  white-space: nowrap;
 `;
 
 const MonthSelect = styled.select`
@@ -111,6 +160,23 @@ const MonthSelect = styled.select`
 
 const ContentWrap = styled.div`
   width: 100%;
+`;
+
+const CustomerSelectionPrompt = styled.div`
+  display: grid;
+  width: 100%;
+  min-height: 280px;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  padding: 24px;
+  font-size: 14px;
+  font-weight: 750;
+  text-align: center;
 `;
 
 const CalendarIcon = styled.span`
@@ -1360,9 +1426,14 @@ function ProgressSummaryCard({
   );
 }
 
-export function RevenueDashboard() {
+type RevenueDashboardProps = {
+  customerMode?: boolean;
+};
+
+export function RevenueDashboard({ customerMode = false }: RevenueDashboardProps) {
   const monthTabs = useMemo(() => getRevenueMonths(), []);
   const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
+  const [selectedCustomer, setSelectedCustomer] = useState("");
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -1417,8 +1488,20 @@ export function RevenueDashboard() {
     [profiles, selectedMonth],
   );
 
+  const customersForMonth = useMemo(
+    () => Array.from(new Set(monthlyProfiles.map((profile) => profile.customerName.trim()).filter(Boolean))).sort((first, second) => first.localeCompare(second, "vi")),
+    [monthlyProfiles],
+  );
+
+  const dashboardProfiles = useMemo(
+    () => customerMode
+      ? selectedCustomer ? monthlyProfiles.filter((profile) => profile.customerName.trim() === selectedCustomer) : []
+      : monthlyProfiles,
+    [customerMode, monthlyProfiles, selectedCustomer],
+  );
+
   const summary = useMemo<SummaryState>(() => {
-    return monthlyProfiles.reduce(
+    return dashboardProfiles.reduce(
       (result, profile) => {
         const status = normalizedStatus(profile.status);
         const totalCost = Number(profile.totalCost) || 0;
@@ -1479,7 +1562,7 @@ export function RevenueDashboard() {
         completed: 0,
       },
     );
-  }, [monthlyProfiles]);
+  }, [dashboardProfiles]);
 
   const totalCostBreakdown = useMemo(
     () => [
@@ -1508,7 +1591,7 @@ export function RevenueDashboard() {
       },
       {
         key: "waiting-cost",
-        label: "Tiền Khách Nợ",
+        label: "Tiền Khách Đang Nợ",
         value: summary.waitingCost,
         tone: "waiting" as const,
       },
@@ -1520,7 +1603,7 @@ export function RevenueDashboard() {
       },
       {
         key: "completed-cost",
-        label: "Tiền Nhận Về Túi",
+        label: "Tiền Nhận Về Tay",
         value: summary.completedCost,
         tone: "completed" as const,
       },
@@ -1532,25 +1615,25 @@ export function RevenueDashboard() {
     () => [
       {
         key: "processing-profit",
-        label: "Tiền Lời Đang Chờ",
+        label: "Lãi Đang Chờ",
         value: summary.processingProfit,
         tone: "processing" as const,
       },
       {
         key: "waiting-profit",
-        label: "Tiền Lời Khách Nợ",
+        label: "Lãi Từ Khách Đang Nợ",
         value: summary.waitingProfit,
         tone: "waiting" as const,
       },
       {
         key: "paid-profit",
-        label: "Tiền Lời Khách Trả",
+        label: "Lãi Từ Khách Đã Trả",
         value: summary.paidProfit,
         tone: "paid" as const,
       },
       {
         key: "completed-profit",
-        label: "Tiền Lời Về Túi",
+        label: "Tiền Lãi Về Túi",
         value: summary.completedProfit,
         tone: "completed" as const,
       },
@@ -1574,25 +1657,25 @@ export function RevenueDashboard() {
   );
 
   const vehicleTypeProgressItems = useMemo(
-    () => buildProgressGroupData(monthlyProfiles, VEHICLE_TYPES, (profile) => profile.vehicleType),
-    [monthlyProfiles],
+    () => buildProgressGroupData(dashboardProfiles, VEHICLE_TYPES, (profile) => profile.vehicleType),
+    [dashboardProfiles],
   );
 
   const receivingAgencyProgressItems = useMemo(
-    () => buildProgressGroupData(monthlyProfiles, RECEIVING_AGENCIES, (profile) => profile.receivingAgency),
-    [monthlyProfiles],
+    () => buildProgressGroupData(dashboardProfiles, RECEIVING_AGENCIES, (profile) => profile.receivingAgency),
+    [dashboardProfiles],
   );
 
   const serviceTypeProgressItems = useMemo(
-    () => buildProgressGroupData(monthlyProfiles, SERVICE_TYPES, (profile) => profile.serviceType),
-    [monthlyProfiles],
+    () => buildProgressGroupData(dashboardProfiles, SERVICE_TYPES, (profile) => profile.serviceType),
+    [dashboardProfiles],
   );
 
   const selectedMonthParts = useMemo(() => getMonthParts(selectedMonth), [selectedMonth]);
 
   const dailyProfileProgressItems = useMemo(
-    () => buildDailyProfileData(monthlyProfiles, selectedMonthParts.year, selectedMonthParts.month),
-    [monthlyProfiles, selectedMonthParts.month, selectedMonthParts.year],
+    () => buildDailyProfileData(dashboardProfiles, selectedMonthParts.year, selectedMonthParts.month),
+    [dashboardProfiles, selectedMonthParts.month, selectedMonthParts.year],
   );
 
   const topDailyProfileProgressItems = useMemo(
@@ -1606,7 +1689,7 @@ export function RevenueDashboard() {
     [dailyProfileProgressItems],
   );
 
-  const customerProgressItems = useMemo(() => buildCustomerProgressData(monthlyProfiles), [monthlyProfiles]);
+  const customerProgressItems = useMemo(() => buildCustomerProgressData(dashboardProfiles), [dashboardProfiles]);
   const topCustomerProgressItems = useMemo(() => customerProgressItems, [customerProgressItems]);
   const topDailyScale = summary.totalProfiles;
   const topCustomerScale = summary.totalProfiles;
@@ -1614,6 +1697,10 @@ export function RevenueDashboard() {
 
   const displayNumber = (value: number) => formatNumber(value);
   const loadingValue = <SpinnerIcon aria-label="Đang tải" size={16} />;
+  const handleMonthChange = (month: string) => {
+    setSelectedMonth(month);
+    setSelectedCustomer("");
+  };
   const openCostDetail = useCallback(() => {
     setIsCostDetailClosing(false);
     setIsCostDetailOpen(true);
@@ -1653,35 +1740,67 @@ export function RevenueDashboard() {
 
   return (
     <AppShell>
-      <Header>
+      <Header $customerMode={customerMode}>
         <TitleRow>
           <AccountMenu />
-          <h1>Doanh Thu</h1>
+          <h1>{customerMode ? "Khách Hàng" : "Doanh Thu"}</h1>
         </TitleRow>
-        <MonthSelectWrap>
-          <CalendarIcon>
-            <Calendar size={18} />
-          </CalendarIcon>
-          <MonthSelect
-            aria-label="Lọc doanh thu theo tháng"
-            value={selectedMonth}
-            onChange={(event) => setSelectedMonth(event.target.value)}
-          >
-            {monthTabs.map((month) => (
-              <option key={month.key} value={month.key}>
-                {month.label}
-              </option>
-            ))}
-          </MonthSelect>
-          <DropdownIcon>
-            <ChevronDown size={18} />
-          </DropdownIcon>
-        </MonthSelectWrap>
+        <HeaderFilters $customerMode={customerMode}>
+          <MonthSelectWrap>
+            <CalendarIcon>
+              <Calendar size={18} />
+            </CalendarIcon>
+            <MonthSelect
+              aria-label="Lọc doanh thu theo tháng"
+              value={selectedMonth}
+              onChange={(event) => handleMonthChange(event.target.value)}
+            >
+              {monthTabs.map((month) => (
+                <option key={month.key} value={month.key}>
+                  {month.label}
+                </option>
+              ))}
+            </MonthSelect>
+            <DropdownIcon>
+              <ChevronDown size={18} />
+            </DropdownIcon>
+          </MonthSelectWrap>
+          {customerMode && (
+            <CustomerSelectWrap>
+              <CalendarIcon>
+                <UserStar size={18} />
+              </CalendarIcon>
+              <MonthSelect
+                aria-label="Lọc doanh thu theo khách hàng"
+                value={selectedCustomer}
+                onChange={(event) => setSelectedCustomer(event.target.value)}
+              >
+                <option value="" disabled hidden />
+                <optgroup label="Chọn Khách Hàng">
+                  {customersForMonth.map((customer) => (
+                    <option key={customer} value={customer}>{customer}</option>
+                  ))}
+                </optgroup>
+              </MonthSelect>
+              {!selectedCustomer && <CustomerSelectPlaceholder>Chọn Khách Hàng</CustomerSelectPlaceholder>}
+              <DropdownIcon>
+                <ChevronDown size={18} />
+              </DropdownIcon>
+            </CustomerSelectWrap>
+          )}
+        </HeaderFilters>
       </Header>
 
       <ContentWrap>
         {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
 
+        {customerMode && !selectedCustomer ? (
+          <CustomerSelectionPrompt>
+            <UserSearch size={26} />
+            <span>Chọn Khách Hàng Để Xem Doanh Thu</span>
+          </CustomerSelectionPrompt>
+        ) : (
+          <>
         <SummaryLayout aria-label="Số liệu hồ sơ và doanh thu trong tháng">
           <StatusSummaryCard>
             <StatusTotalWrap>
@@ -1780,7 +1899,7 @@ export function RevenueDashboard() {
                 >
                   <TrendingUp size={18} />
                 </span>
-                <MetricSectionLabel $tone="success">Tổng Tiền Lời Dự Kiến</MetricSectionLabel>
+                <MetricSectionLabel $tone="success">Tổng Tiền Lãi Dự Kiến</MetricSectionLabel>
                 {currencyValue(summary.totalProfit, "success")}
               </MetricSection>
               <MetricDivider />
@@ -1804,6 +1923,7 @@ export function RevenueDashboard() {
           </SummaryMetricColumn>
         </SummaryLayout>
 
+        {!customerMode && (
         <CategorySection aria-label="Thống kê theo nhóm">
           <ProgressSummaryCard
             title="Loại Xe"
@@ -1835,39 +1955,47 @@ export function RevenueDashboard() {
               openCategoryDetail({ title: "Loại Dịch Vụ", items: serviceTypeProgressItems, totalCount: summary.totalProfiles })
             }
           />
-          <ProgressSummaryCard
-            title="Top Hồ Sơ Tháng"
-            items={topDailyProfileProgressItems}
-            loading={loading}
-            totalCount={topDailyScale}
-            maxVisibleItems={3}
-            icon={<ClockArrowUp size={18} />}
-            onOpenDetails={() =>
-              openCategoryDetail({
-                title: "Top Hồ Sơ Tháng",
-                items: dailyProfileProgressItems,
-                totalCount: topDailyScale,
-                layout: "calendar",
-              })
-            }
-          />
-          <ProgressSummaryCard
-            title="Top Khách Hàng"
-            items={topCustomerProgressItems}
-            loading={loading}
-            totalCount={topCustomerScale}
-            maxVisibleItems={3}
-            icon={<UserStar size={18} />}
-            onOpenDetails={() =>
-              openCategoryDetail({
-                title: "Top Khách Hàng",
-                items: customerProgressItems,
-                totalCount: topCustomerScale,
-                layout: "list",
-              })
-            }
-          />
+          {!customerMode && (
+            <>
+              <ProgressSummaryCard
+                title="Top Hồ Sơ Tháng"
+                items={topDailyProfileProgressItems}
+                loading={loading}
+                totalCount={topDailyScale}
+                maxVisibleItems={3}
+                icon={<ClockArrowUp size={18} />}
+                onOpenDetails={() =>
+                  openCategoryDetail({
+                    title: "Top Hồ Sơ Tháng",
+                    items: dailyProfileProgressItems,
+                    totalCount: topDailyScale,
+                    layout: "calendar",
+                  })
+                }
+              />
+              <ProgressSummaryCard
+                title="Top Khách Hàng Tháng"
+                items={topCustomerProgressItems}
+                loading={loading}
+                totalCount={topCustomerScale}
+                maxVisibleItems={3}
+                icon={<UserStar size={18} />}
+                onOpenDetails={() =>
+                  openCategoryDetail({
+                    title: "Top Khách Hàng Tháng",
+                    items: customerProgressItems,
+                    totalCount: topCustomerScale,
+                    layout: "list",
+                  })
+                }
+              />
+            </>
+          )}
         </CategorySection>
+        )}
+        {customerMode && <ProfileManager embedded selectedMonth={selectedMonth} customerName={selectedCustomer} />}
+          </>
+        )}
 
         {(isCostDetailOpen || isCostDetailClosing) && (
           <CostModalOverlay $closing={isCostDetailClosing} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeCostDetail()}>

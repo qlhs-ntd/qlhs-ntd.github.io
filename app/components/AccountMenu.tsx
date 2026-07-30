@@ -58,11 +58,17 @@ const AccountOverlay = styled.div`
   place-items: center;
   background: rgba(16, 24, 40, 0.38);
   padding: 20px;
+  overflow-y: auto;
+
+  @media (max-width: 640px) {
+    padding: 14px;
+  }
 `;
 
 const AccountDialog = styled.div`
   position: relative;
   width: min(100%, 360px);
+  max-width: calc(100vw - 28px);
   border-radius: 22px;
   background: #fff;
   padding: 26px;
@@ -145,6 +151,7 @@ const SessionTime = styled.span`
 const GoogleSheetLink = styled.a`
   display: flex;
   width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 5px;
   color: #3859d9;
@@ -327,8 +334,8 @@ export function AccountMenu() {
           }}
         >
           <ConfirmDialog role="dialog" aria-modal="true" aria-labelledby="logout-confirmation-title">
-            <h2 id="logout-confirmation-title">Đăng xuất?</h2>
-            <p>Bạn sẽ cần nhập lại mã bảo mật để truy cập QLHS.</p>
+            <h2 id="logout-confirmation-title">Đăng Xuất</h2>
+            <p>Kết thúc phiên đăng nhập hiện tại và khoá truy cập vào trang.</p>
             <ConfirmActions>
               <button type="button" onClick={() => setIsConfirmingLogout(false)}>Huỷ</button>
               <button type="button" onClick={logout}>Đăng xuất</button>

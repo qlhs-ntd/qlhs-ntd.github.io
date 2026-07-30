@@ -13,6 +13,7 @@ import {
   Check,
   CheckCircle2,
   ChevronDown,
+  ChevronsUpDown,
   CircleAlert,
   CircleX,
   ClipboardCheck,
@@ -38,6 +39,7 @@ import {
   TrendingUp,
   UserRound,
   Wallet,
+  X,
 } from "lucide-react";
 import { type FocusEvent, FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
@@ -517,7 +519,7 @@ const ProfileRow = styled.article`
   border-top: 1px solid #eff0f4;
   padding: 26px 20px;
   color: #4c5569;
-  font-size: 15px;
+  font-size: 14px;
   transition: background 120ms ease;
 
   &:hover {
@@ -955,7 +957,7 @@ const CustomerNameActions = styled(CostValueActions)`
   }
 `;
 
-const StatusPill = styled.span<{ $status: string }>`
+const StatusPill = styled.button<{ $status: string }>`
   display: inline-flex;
   min-height: 28px;
   align-items: center;
@@ -970,13 +972,15 @@ const StatusPill = styled.span<{ $status: string }>`
           ? "#7656c9"
         : "#c99300"};
   padding: 0 12px;
+  border: 0;
   color: white;
+  cursor: pointer;
   font-size: 15px;
   font-weight: 650;
   white-space: nowrap;
 
   @media (max-width: 1100px) {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   svg {
@@ -1322,7 +1326,7 @@ const ModalHeader = styled.div`
   }
 `;
 
-const Form = styled.form`
+const Form = styled.form<{ $saving: boolean }>`
   width: 100%;
   min-width: 0;
   min-height: 0;
@@ -1332,6 +1336,11 @@ const Form = styled.form`
   overscroll-behavior: contain;
   scroll-padding: 18px 0 32vh;
   -webkit-overflow-scrolling: touch;
+
+  ${({ $saving }) => $saving && `
+    pointer-events: none;
+    user-select: none;
+  `}
 
   @media (max-width: 1100px) {
     padding-bottom: calc(36px + env(safe-area-inset-bottom));
@@ -1861,6 +1870,147 @@ const SecondaryButton = styled.button`
   cursor: pointer;
 `;
 
+const StatusModal = styled(Modal)`
+  width: min(480px, calc(100vw - 28px));
+
+  @media (max-width: 1100px) {
+    height: auto;
+    max-height: calc(var(--modal-viewport-height, 100dvh) - 28px);
+    border-radius: 20px;
+  }
+`;
+
+const StatusModalHeader = styled.div`
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--line);
+  padding: 15px 16px;
+
+  h2 {
+    margin: 0;
+    color: var(--ink);
+    font-size: 18px;
+    letter-spacing: -0.025em;
+    text-align: center;
+  }
+`;
+
+const StatusModalCloseButton = styled.button`
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: #f1f3f7;
+  color: #596276;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+`;
+
+const StatusModalSaveButton = styled(PrimaryButton)`
+  min-height: 38px;
+  padding: 0 15px;
+`;
+
+const StatusModalBody = styled.div<{ $saving: boolean }>`
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+
+  ${({ $saving }) => $saving && `
+    pointer-events: none;
+    user-select: none;
+  `}
+`;
+
+const StatusCustomerLine = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  span {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  strong {
+    min-width: 0;
+    color: var(--ink);
+    font-size: 15px;
+    text-align: right;
+  }
+`;
+
+const StatusOptionList = styled.div`
+  display: grid;
+  gap: 10px;
+`;
+
+const StatusOptionLabel = styled.span`
+  display: block;
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+`;
+
+const StatusOption = styled.button<{ $active: boolean; $status: string }>`
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 62px;
+  border: 1px solid ${({ $active, $status }) => ($active ? statusColor($status) : "var(--line)")};
+  border-radius: 13px;
+  background: ${({ $active, $status }) => ($active ? statusColor($status) : "#fff")};
+  color: ${({ $active }) => ($active ? "#fff" : "var(--ink)")};
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 750;
+  text-align: left;
+  padding: 0 15px;
+
+  &:hover:not(:disabled) {
+    border-color: ${({ $status }) => statusColor($status)};
+    background: ${({ $active, $status }) => ($active ? statusColor($status) : statusTabBackground(
+      $status === "Hoàn tất" ? "completed" : $status === "Đã thanh toán" ? "paid" : $status === "Đang chờ thanh toán" ? "waiting" : "processing",
+    ))};
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.65;
+  }
+
+  svg {
+    color: ${({ $active, $status }) => ($active ? "#fff" : statusColor($status))};
+  }
+`;
+
+const StatusOptionText = styled.span`
+  display: grid;
+  gap: 3px;
+
+  strong {
+    font-size: 14px;
+  }
+
+  small {
+    color: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.76;
+  }
+`;
+
 const DeleteOverlay = styled.div<{ $closing: boolean }>`
   position: fixed;
   inset: 0;
@@ -1995,6 +2145,106 @@ const DeleteButton = styled.button`
 `;
 
 type EditorState = { mode: "create"; profile?: undefined } | { mode: "edit"; profile: ProfileRecord };
+
+const STATUS_UPDATE_OPTIONS = [
+  { value: "Đang xử lí", label: "Đang Xử Lí", description: "Đã ghi nhận, chưa nhận tiền, đang xử lí hồ sơ" },
+  { value: "Đang chờ thanh toán", label: "Chờ Thanh Toán", description: "Đã xử lí hồ sơ, chưa nhận tiền" },
+  { value: "Đã thanh toán", label: "Đã Thanh Toán", description: "Đã nhận tiền, chưa xử lí hồ sơ" },
+  { value: "Hoàn tất", label: "Đã Hoàn Tất", description: "Đã nhận tiền, đã xử lí hồ sơ" },
+] as const;
+
+function StatusUpdateModal({
+  profile,
+  saving,
+  onClose,
+  onSave,
+}: {
+  profile: ProfileRecord;
+  saving: boolean;
+  onClose: () => void;
+  onSave: (status: string) => Promise<boolean>;
+}) {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const [status, setStatus] = useState(normalizedStatus(profile.status));
+
+  const requestClose = useCallback(() => {
+    if (!saving) onClose();
+  }, [onClose, saving]);
+
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") requestClose();
+    };
+
+    document.addEventListener("keydown", closeOnEscape);
+    document.body.classList.add("profile-modal-open");
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      document.body.classList.remove("profile-modal-open");
+      document.body.style.overflow = "";
+    };
+  }, [requestClose]);
+
+  useEffect(() => {
+    const syncViewportSize = () => {
+      overlayRef.current?.style.setProperty("--modal-viewport-height", `${window.innerHeight}px`);
+    };
+
+    syncViewportSize();
+    window.addEventListener("resize", syncViewportSize);
+    return () => window.removeEventListener("resize", syncViewportSize);
+  }, []);
+
+  return (
+    <Overlay ref={overlayRef} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && requestClose()}>
+      <StatusModal $closing={false} role="dialog" aria-modal="true" aria-labelledby="status-update-title">
+        <StatusModalHeader>
+          <StatusModalCloseButton type="button" aria-label="Đóng cập nhật trạng thái" onClick={requestClose} disabled={saving}>
+            <X size={18} />
+          </StatusModalCloseButton>
+          <h2 id="status-update-title">Sửa Trạng Thái</h2>
+          <StatusModalSaveButton type="button" onClick={() => void onSave(status)} disabled={saving}>
+            {saving && <LoaderCircle className="spin" size={16} />}
+            {saving ? "Đang Lưu" : "Lưu"}
+          </StatusModalSaveButton>
+        </StatusModalHeader>
+        <StatusModalBody $saving={saving} aria-busy={saving}>
+          <StatusCustomerLine>
+            <span>Khách Hàng</span>
+            <strong>{profile.customerName || "—"}</strong>
+          </StatusCustomerLine>
+          <div>
+            <StatusOptionLabel>Trạng Thái</StatusOptionLabel>
+            <StatusOptionList>
+              {STATUS_UPDATE_OPTIONS.map((option) => (
+                (() => {
+                  const StatusIcon = statusIcon(option.value);
+                  return (
+                    <StatusOption
+                      key={option.value}
+                      type="button"
+                      $active={status === option.value}
+                      $status={option.value}
+                      disabled={saving}
+                      onClick={() => setStatus(option.value)}
+                    >
+                      <StatusIcon size={17} />
+                      <StatusOptionText>
+                        <strong>{option.label}</strong>
+                        <small>{option.description}</small>
+                      </StatusOptionText>
+                    </StatusOption>
+                  );
+                })()
+              ))}
+            </StatusOptionList>
+          </div>
+        </StatusModalBody>
+      </StatusModal>
+    </Overlay>
+  );
+}
 
 function DeleteConfirmModal({
   profile,
@@ -2210,6 +2460,12 @@ function monthKey(value: Date) {
 }
 
 const PROFILE_YEAR = 2026;
+const OPTIMISTIC_SAVE_DELAY_MS = 2000;
+
+function waitForSaveFeedback(startedAt: number) {
+  const remaining = Math.max(0, OPTIMISTIC_SAVE_DELAY_MS - (Date.now() - startedAt));
+  return new Promise<void>((resolve) => window.setTimeout(resolve, remaining));
+}
 
 function getYearEndMonths() {
   const months = [8, 9, 10, 11, 12];
@@ -2275,18 +2531,19 @@ function MoneyField({ icon, label, value, onChange }: {
   );
 }
 
-function ProfileModal({ state, profiles, saving, onClose, onSave }: {
+function ProfileModal({ state, profiles, saving, onClose, onSave, defaultCustomerName = "" }: {
   state: EditorState;
   profiles: ProfileRecord[];
   saving: boolean;
   onClose: () => void;
   onSave: (input: ProfileInput) => Promise<boolean>;
+  defaultCustomerName?: string;
 }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   const formScrollTopBeforeInputRef = useRef<number | null>(null);
   const formScrollLockFrameRef = useRef<number | null>(null);
   const [form, setForm] = useState<ProfileInput>(() =>
-    state.profile ? profileToInput(state.profile) : createEmptyProfileInput(),
+    state.profile ? profileToInput(state.profile) : { ...createEmptyProfileInput(), customerName: defaultCustomerName },
   );
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [closing, setClosing] = useState(false);
@@ -2533,6 +2790,8 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
         <Form
           id="profile-form"
           autoComplete="off"
+          $saving={saving}
+          aria-busy={saving}
           onSubmit={submit}
           onFocusCapture={revealFocusedField}
           onBeforeInputCapture={rememberFormPositionBeforeInput}
@@ -2805,7 +3064,13 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
   );
 }
 
-export function ProfileManager() {
+type ProfileManagerProps = {
+  embedded?: boolean;
+  selectedMonth?: string;
+  customerName?: string;
+};
+
+export function ProfileManager({ embedded = false, selectedMonth: selectedMonthOverride, customerName = "" }: ProfileManagerProps) {
   const monthTabs = useMemo(() => getYearEndMonths(), []);
   const copyResetTimerRef = useRef<number | null>(null);
   const statusTabLoadingTimerRef = useRef<number | null>(null);
@@ -2819,6 +3084,8 @@ export function ProfileManager() {
   const [loading, setLoading] = useState(true);
   const [isStatusTabLoading, setIsStatusTabLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [statusEditor, setStatusEditor] = useState<ProfileRecord | null>(null);
+  const [statusSaving, setStatusSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<ProfileRecord | null>(null);
   const [editor, setEditor] = useState<EditorState | null>(null);
@@ -2828,7 +3095,8 @@ export function ProfileManager() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [expandedCostIds, setExpandedCostIds] = useState<Set<string>>(() => new Set());
   const [expandedCustomerIds, setExpandedCustomerIds] = useState<Set<string>>(() => new Set());
-  const isCurrentMonthSelected = selectedMonth === monthKey(new Date());
+  const activeMonth = selectedMonthOverride ?? selectedMonth;
+  const isCurrentMonthSelected = activeMonth === monthKey(new Date());
 
   useEffect(() => {
     const current = new Date();
@@ -2871,9 +3139,10 @@ export function ProfileManager() {
   }, []);
 
   useEffect(() => {
+    if (embedded) return;
     const activeTab = statusTabsRef.current?.querySelector<HTMLButtonElement>('[aria-selected="true"]');
     activeTab?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
-  }, [activeStatusTab]);
+  }, [activeStatusTab, embedded]);
 
   useEffect(() => {
     if (!openActionId) return;
@@ -2891,10 +3160,23 @@ export function ProfileManager() {
 
   const monthlyProfiles = useMemo(() => profiles.filter((profile) => {
     const createdAt = new Date(profile.createdAt);
-    return !Number.isNaN(createdAt.getTime()) && monthKey(createdAt) === selectedMonth;
-  }), [profiles, selectedMonth]);
+    return !Number.isNaN(createdAt.getTime())
+      && monthKey(createdAt) === activeMonth
+      && (!customerName || profile.customerName.trim() === customerName);
+  }), [activeMonth, customerName, profiles]);
 
   const normalizedQuery = normalize(query.trim());
+  const searchPlaceholder = customerName
+    ? "Tìm theo chủ phương tiện, biển số"
+    : "Tìm theo tên, chủ phương tiện, biển số";
+  const searchAriaLabel = customerName
+    ? "Tìm hồ sơ theo chủ phương tiện hoặc biển số"
+    : "Tìm hồ sơ theo tên hoặc biển số";
+
+  const handleSearchChange = (value: string) => {
+    setQuery(value);
+    if (value.trim()) setActiveStatusTab("all");
+  };
 
   const activeStatus = STATUS_TABS.find((tab) => tab.key === activeStatusTab) ?? STATUS_TABS[0];
   const emptyStateTitle = normalizedQuery
@@ -2913,17 +3195,23 @@ export function ProfileManager() {
 
   const searchResults = useMemo(() => {
     if (!normalizedQuery) return [];
-    return monthlyProfiles.filter((profile) => matchesProfileSearch(profile, normalizedQuery));
-  }, [monthlyProfiles, normalizedQuery]);
+    return monthlyProfiles.filter((profile) => customerName
+      ? matchesCustomerDetailsSearch(profile, normalizedQuery)
+      : matchesProfileSearch(profile, normalizedQuery));
+  }, [customerName, monthlyProfiles, normalizedQuery]);
 
   const isSearchMode = Boolean(normalizedQuery);
 
   const visibleProfiles = useMemo(() => {
     return monthlyProfiles.filter((profile) => {
-      if (isSearchMode) return matchesProfileSearch(profile, normalizedQuery);
+      if (isSearchMode) {
+        return customerName
+          ? matchesCustomerDetailsSearch(profile, normalizedQuery)
+          : matchesProfileSearch(profile, normalizedQuery);
+      }
       return activeStatus.matches(profile);
     });
-  }, [activeStatus, monthlyProfiles, isSearchMode, normalizedQuery]);
+  }, [activeStatus, customerName, monthlyProfiles, isSearchMode, normalizedQuery]);
 
   const handleStatusTabChange = (nextTab: StatusTabKey) => {
     if (nextTab === activeStatusTab) return;
@@ -2973,43 +3261,125 @@ export function ProfileManager() {
 
   async function saveProfile(input: ProfileInput) {
     if (!editor) return false;
+    const editorState = editor;
+    const startedAt = Date.now();
+    let syncFailed = false;
     setSaving(true);
     try {
-      if (editor.mode === "create") {
-        const created = await profileService.create(input);
-        setProfiles((current) => [created, ...current]);
-        setToast({ message: "Đã thêm hồ sơ mới.", error: false });
+      if (editorState.mode === "create") {
+        const optimisticProfile = profileService.createOptimistic(input);
+        setProfiles((current) => [optimisticProfile, ...current]);
+
+        void profileService.syncCreate(optimisticProfile.id, input)
+          .then((syncedProfile) => {
+            setProfiles((current) => current.map((profile) => (
+              profile.id === optimisticProfile.id ? syncedProfile : profile
+            )));
+          })
+          .catch((error) => {
+            syncFailed = true;
+            setToast({ message: error instanceof Error ? error.message : "Không thể lưu hồ sơ.", error: true });
+            void profileService.refresh()
+              .then(setProfiles)
+              .catch(() => undefined);
+          });
       } else {
-        const updated = await profileService.update(editor.profile.id, input);
-        setProfiles((current) => current.map((profile) => (profile.id === updated.id ? updated : profile)));
-        setToast({ message: "Đã cập nhật hồ sơ.", error: false });
+        const optimisticProfile = profileService.updateOptimistic(editorState.profile, input);
+        setProfiles((current) => current.map((profile) => (
+          profile.id === optimisticProfile.id ? optimisticProfile : profile
+        )));
+
+        void profileService.syncUpdate(editorState.profile.id, input)
+          .then((syncedProfile) => {
+            setProfiles((current) => current.map((profile) => (
+              profile.id === syncedProfile.id ? syncedProfile : profile
+            )));
+          })
+          .catch((error) => {
+            syncFailed = true;
+            setToast({ message: error instanceof Error ? error.message : "Không thể lưu hồ sơ.", error: true });
+            void profileService.refresh()
+              .then(setProfiles)
+              .catch(() => undefined);
+          });
       }
+
+      await waitForSaveFeedback(startedAt);
+      if (syncFailed) return false;
+      setToast({ message: editorState.mode === "create" ? "Đã thêm hồ sơ mới." : "Đã cập nhật hồ sơ.", error: false });
       return true;
-    } catch (error) {
-      setToast({ message: error instanceof Error ? error.message : "Không thể lưu hồ sơ.", error: true });
-      return false;
     } finally {
       setSaving(false);
     }
   }
 
+  async function saveProfileStatus(status: string) {
+    if (!statusEditor) return false;
+    const profile = statusEditor;
+    const startedAt = Date.now();
+    let syncFailed = false;
+    const input = { ...profileToInput(profile), status };
+
+    setStatusSaving(true);
+    try {
+      const optimisticProfile = profileService.updateOptimistic(profile, input);
+      setProfiles((current) => current.map((item) => (
+        item.id === optimisticProfile.id ? optimisticProfile : item
+      )));
+
+      void profileService.syncUpdate(profile.id, input)
+        .then((syncedProfile) => {
+          setProfiles((current) => current.map((item) => (
+            item.id === syncedProfile.id ? syncedProfile : item
+          )));
+        })
+        .catch((error) => {
+          syncFailed = true;
+          setToast({ message: error instanceof Error ? error.message : "Không thể cập nhật trạng thái hồ sơ.", error: true });
+          void profileService.refresh()
+            .then(setProfiles)
+            .catch(() => undefined);
+        });
+
+      await waitForSaveFeedback(startedAt);
+      if (syncFailed) return false;
+      setStatusEditor(null);
+      setToast({ message: "Đã cập nhật trạng thái hồ sơ.", error: false });
+      return true;
+    } finally {
+      setStatusSaving(false);
+    }
+  }
+
   async function deleteProfile(profile: ProfileRecord) {
+    const startedAt = Date.now();
+    let syncFailed = false;
     setDeletingId(profile.id);
     try {
-      await profileService.remove(profile.id);
+      profileService.removeOptimistic(profile);
       setProfiles((current) => current.filter((item) => item.id !== profile.id));
+
+      void profileService.syncRemove(profile.id)
+        .catch((error) => {
+          syncFailed = true;
+          setToast({ message: error instanceof Error ? error.message : "Không thể xoá hồ sơ.", error: true });
+          void profileService.refresh()
+            .then(setProfiles)
+            .catch(() => undefined);
+        });
+
+      await waitForSaveFeedback(startedAt);
+      if (syncFailed) return false;
       setToast({ message: "Đã xoá hồ sơ.", error: false });
       return true;
-    } catch (error) {
-      setToast({ message: error instanceof Error ? error.message : "Không thể xoá hồ sơ.", error: true });
-      return false;
     } finally {
       setDeletingId(null);
     }
   }
 
-  return (
-    <AppShell>
+  const content = (
+    <>
+      {!embedded && (
       <Header>
         <TitleBlock>
           <TitleRow>
@@ -3037,6 +3407,7 @@ export function ProfileManager() {
           </DropdownIcon>
         </MonthSelectWrap>
       </Header>
+      )}
 
       <Panel>
         <Toolbar $mobileSearchOpen={mobileSearchOpen}>
@@ -3045,9 +3416,9 @@ export function ProfileManager() {
             <input
               type="search"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Tìm theo tên, chủ phương tiện, biển số"
-              aria-label="Tìm hồ sơ theo tên hoặc biển số"
+              onChange={(event) => handleSearchChange(event.target.value)}
+              placeholder={searchPlaceholder}
+              aria-label={searchAriaLabel}
             />
             {query && (
               <SearchClearButton
@@ -3068,9 +3439,9 @@ export function ProfileManager() {
                   autoFocus
                   type="search"
                   value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Tìm theo tên, chủ phương tiện, biển số"
-                  aria-label="Tìm hồ sơ theo tên hoặc biển số"
+                  onChange={(event) => handleSearchChange(event.target.value)}
+                  placeholder={searchPlaceholder}
+                  aria-label={searchAriaLabel}
                 />
                 <button
                   type="button"
@@ -3093,15 +3464,12 @@ export function ProfileManager() {
               </MobileSearchButton>
             )}
           </MobileSearch>
-          <PrimaryButton
-            type="button"
-            disabled={!isCurrentMonthSelected}
-            title={!isCurrentMonthSelected ? "Chỉ có thể thêm hồ sơ vào tháng hiện tại" : undefined}
-            onClick={() => setEditor({ mode: "create" })}
-          >
-            <FilePlus2 size={18} />
-            Thêm Mới
-          </PrimaryButton>
+          {isCurrentMonthSelected && (
+            <PrimaryButton type="button" onClick={() => setEditor({ mode: "create" })}>
+              <FilePlus2 size={18} />
+              Thêm Mới
+            </PrimaryButton>
+          )}
         </Toolbar>
         <StatusTabs ref={statusTabsRef} role="tablist" aria-label={isSearchMode ? "Kết quả tìm kiếm" : "Lọc hồ sơ theo trạng thái"}>
           {isSearchMode ? (
@@ -3113,7 +3481,7 @@ export function ProfileManager() {
               aria-selected="true"
             >
               Kết Quả Tìm Kiếm
-              <StatusBadge $active $tone="neutral">{Math.min(2, searchResults.length)}</StatusBadge>
+              <StatusBadge $active $tone="neutral">{searchResults.length}</StatusBadge>
             </StatusTab>
           ) : (
             STATUS_TABS.map((tab) => {
@@ -3153,7 +3521,12 @@ export function ProfileManager() {
                   <ProfileGroup data-customer-expanded={customerDetailsExpanded ? "true" : "false"}>
                   <CostLine aria-label="Trạng thái" $mobileStack>
                     <span>
-                      <StatusPill $status={profile.status}>
+                      <StatusPill
+                        type="button"
+                        $status={profile.status}
+                        aria-label={`Cập nhật trạng thái hồ sơ ${profile.customerName}`}
+                        onClick={() => setStatusEditor(profile)}
+                      >
                         {profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất"
                           ? <CheckCircle2 size={12} />
                           : profile.status === "Đã thanh toán"
@@ -3162,6 +3535,7 @@ export function ProfileManager() {
                               ? <Clock size={12} />
                             : <Loader size={12} />}
                         {formatStatus(profile.status)}
+                        <ChevronsUpDown className="status-picker-icon" size={13} />
                       </StatusPill>
                     </span>
                     <DesktopTimeValue>{formatCreatedAt(profile.createdAt)}</DesktopTimeValue>
@@ -3348,7 +3722,8 @@ export function ProfileManager() {
         )}
       </Panel>
 
-      {editor && <ProfileModal state={editor} profiles={profiles} saving={saving} onClose={() => setEditor(null)} onSave={saveProfile} />}
+      {editor && <ProfileModal state={editor} profiles={profiles} saving={saving} onClose={() => setEditor(null)} onSave={saveProfile} defaultCustomerName={customerName} />}
+      {statusEditor && <StatusUpdateModal profile={statusEditor} saving={statusSaving} onClose={() => setStatusEditor(null)} onSave={saveProfileStatus} />}
       {deleteConfirmation && (
         <DeleteConfirmModal
           profile={deleteConfirmation}
@@ -3358,6 +3733,8 @@ export function ProfileManager() {
         />
       )}
       {toast && <Toast $error={toast.error} $closing={toastClosing}>{toast.error ? <CircleAlert size={18} /> : <CheckCircle2 size={18} />}{toast.message}</Toast>}
-    </AppShell>
+    </>
   );
+
+  return embedded ? content : <AppShell>{content}</AppShell>;
 }

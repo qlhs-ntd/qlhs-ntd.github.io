@@ -169,6 +169,8 @@ function normalizeRecord(record: Partial<ProfileRecord>): ProfileRecord {
 }
 
 let demoProfiles: ProfileRecord[] = [];
+let profileCache: ProfileRecord[] | null = null;
+let profileListRequest: Promise<ProfileRecord[]> | null = null;
 
 async function requestScript<T>(action: string, payload?: Record<string, unknown>) {
   if (!scriptUrl) {
@@ -204,21 +206,107 @@ function now() {
   return new Date().toISOString();
 }
 
+async function loadProfilesOnce(): Promise<ProfileRecord[]> {
+  if (profileCache) return [...profileCache];
+
+  if (!profileListRequest) {
+    profileListRequest = (async () => {
+      const records = scriptUrl
+        ? (await requestScript<ProfileRecord[]>("list")).map(normalizeRecord)
+        : [...demoProfiles];
+      profileCache = records;
+      return records;
+    })();
+  }
+
+  try {
+    return [...(await profileListRequest)];
+  } finally {
+    profileListRequest = null;
+  }
+}
+
 export const isGoogleSheetsConnected = Boolean(scriptUrl);
 
 export const profileService = {
   async list(): Promise<ProfileRecord[]> {
-    if (scriptUrl) {
-      const records = await requestScript<ProfileRecord[]>("list");
-      return records.map(normalizeRecord);
+    return loadProfilesOnce();
+  },
+
+  async refresh(): Promise<ProfileRecord[]> {
+    profileCache = null;
+    return loadProfilesOnce();
+  },
+
+  createOptimistic(input: ProfileInput): ProfileRecord {
+    const cleanInput = normalizeInput(input);
+    const timestamp = now();
+    const profile = normalizeRecord({
+      id: crypto.randomUUID(),
+      ...cleanInput,
+      ...calculateProfileCosts(cleanInput),
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    });
+    profileCache = [profile, ...(profileCache ?? [])];
+    if (!scriptUrl) demoProfiles = [profile, ...demoProfiles];
+    return profile;
+  },
+
+  async syncCreate(temporaryId: string, input: ProfileInput): Promise<ProfileRecord> {
+    if (!scriptUrl) {
+      const created = profileCache?.find((profile) => profile.id === temporaryId);
+      if (!created) throw new Error("Không tìm thấy hồ sơ cần lưu.");
+      return created;
     }
-    return [...demoProfiles];
+
+    const cleanInput = normalizeInput(input);
+    const created = normalizeRecord(await requestScript<ProfileRecord>("create", { record: toScriptRecord(cleanInput) }));
+    profileCache = (profileCache ?? []).map((profile) => (profile.id === temporaryId ? created : profile));
+    return created;
+  },
+
+  updateOptimistic(existing: ProfileRecord, input: ProfileInput): ProfileRecord {
+    const cleanInput = normalizeInput(input);
+    const updated = normalizeRecord({
+      ...existing,
+      ...cleanInput,
+      ...calculateProfileCosts(cleanInput),
+      updatedAt: now(),
+    });
+    profileCache = (profileCache ?? []).map((profile) => (profile.id === updated.id ? updated : profile));
+    if (!scriptUrl) demoProfiles = demoProfiles.map((profile) => (profile.id === updated.id ? updated : profile));
+    return updated;
+  },
+
+  async syncUpdate(id: string, input: ProfileInput): Promise<ProfileRecord> {
+    if (!scriptUrl) {
+      const updated = profileCache?.find((profile) => profile.id === id);
+      if (!updated) throw new Error("Không tìm thấy hồ sơ cần cập nhật.");
+      return updated;
+    }
+
+    const cleanInput = normalizeInput(input);
+    const updated = normalizeRecord(await requestScript<ProfileRecord>("update", { id, record: toScriptRecord(cleanInput) }));
+    profileCache = (profileCache ?? []).map((profile) => (profile.id === updated.id ? updated : profile));
+    return updated;
+  },
+
+  removeOptimistic(profile: ProfileRecord): void {
+    profileCache = (profileCache ?? []).filter((item) => item.id !== profile.id);
+    if (!scriptUrl) demoProfiles = demoProfiles.filter((item) => item.id !== profile.id);
+  },
+
+  async syncRemove(id: string): Promise<void> {
+    if (scriptUrl) await requestScript<{ id: string }>("delete", { id });
   },
 
   async create(input: ProfileInput): Promise<ProfileRecord> {
     const cleanInput = normalizeInput(input);
     if (scriptUrl) {
-      return normalizeRecord(await requestScript<ProfileRecord>("create", { record: toScriptRecord(cleanInput) }));
+      const created = normalizeRecord(await requestScript<ProfileRecord>("create", { record: toScriptRecord(cleanInput) }));
+      if (profileCache) profileCache = [created, ...profileCache];
+      return created;
     }
 
     const timestamp = now();
@@ -230,13 +318,16 @@ export const profileService = {
       updatedAt: timestamp,
     });
     demoProfiles = [profile, ...demoProfiles];
+    if (profileCache) profileCache = [profile, ...profileCache];
     return profile;
   },
 
   async update(id: string, input: ProfileInput): Promise<ProfileRecord> {
     const cleanInput = normalizeInput(input);
     if (scriptUrl) {
-      return normalizeRecord(await requestScript<ProfileRecord>("update", { id, record: toScriptRecord(cleanInput) }));
+      const updated = normalizeRecord(await requestScript<ProfileRecord>("update", { id, record: toScriptRecord(cleanInput) }));
+      if (profileCache) profileCache = profileCache.map((profile) => (profile.id === updated.id ? updated : profile));
+      return updated;
     }
 
     const existing = demoProfiles.find((profile) => profile.id === id);
@@ -248,14 +339,17 @@ export const profileService = {
       updatedAt: now(),
     });
     demoProfiles = demoProfiles.map((profile) => (profile.id === id ? updated : profile));
+    if (profileCache) profileCache = profileCache.map((profile) => (profile.id === updated.id ? updated : profile));
     return updated;
   },
 
   async remove(id: string): Promise<void> {
     if (scriptUrl) {
       await requestScript<{ id: string }>("delete", { id });
+      if (profileCache) profileCache = profileCache.filter((profile) => profile.id !== id);
       return;
     }
     demoProfiles = demoProfiles.filter((profile) => profile.id !== id);
+    if (profileCache) profileCache = profileCache.filter((profile) => profile.id !== id);
   },
 };
