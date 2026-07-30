@@ -1797,7 +1797,7 @@ export function RevenueDashboard({ customerMode = false }: RevenueDashboardProps
         {customerMode && !selectedCustomer ? (
           <CustomerSelectionPrompt>
             <UserSearch size={26} />
-            <span>Chọn Khách Hàng Để Xem Doanh Thu</span>
+            <span>Chọn 1 khách hàng để xem chi tiết</span>
           </CustomerSelectionPrompt>
         ) : (
           <>
