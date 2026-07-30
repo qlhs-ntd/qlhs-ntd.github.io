@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AuthForm } from "../components/AuthForm";
 
 export const metadata: Metadata = {
-  title: "Đăng nhập",
+  title: "Đăng Nhập",
   robots: {
     index: false,
     follow: false,

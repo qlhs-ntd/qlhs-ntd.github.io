@@ -25,7 +25,7 @@ export function generateMetadata(): Metadata {
     description: "QLHS",
     applicationName: "QLHS",
     manifest: "/manifest.webmanifest",
-    keywords: ["quản lý hồ sơ", "hồ sơ"],
+    keywords: ["qlhs", "hs"],
     formatDetection: {
       telephone: false,
     },

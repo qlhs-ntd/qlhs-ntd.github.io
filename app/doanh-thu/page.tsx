@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { RevenueDashboard } from "../components/RevenueDashboard";
 
 export const metadata: Metadata = {
-  title: "QLHS - Dũng Nguyễn",
+  title: "Doanh Thu",
 };
 
 export default function RevenuePage() {
