@@ -1,12 +1,14 @@
 "use client";
 
-import { LogOut } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { FileSpreadsheet, KeyRound, LockKeyhole, MonitorSmartphone, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
-import { AUTH_ROUTE, clearSession } from "../lib/auth";
+import { AUTH_ROUTE, clearSession, getSessionDeviceName, getSessionStartedAt } from "../lib/auth";
 
 const publicBasePath = (process.env.NEXT_PUBLIC_BASE_PATH || "").replace(/\/$/, "");
+const googleSheetUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL?.trim()
+  || "https://docs.google.com/spreadsheets/d/19dqKPEW439W6R1FvjQNte54yV5wwZQ7LJqHxf30vGFc/edit?gid=235868267#gid=235868267";
 
 const Menu = styled.div`
   position: relative;
@@ -14,10 +16,10 @@ const Menu = styled.div`
   flex: 0 0 auto;
 `;
 
-const Trigger = styled.button`
+const AvatarTrigger = styled.button`
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   place-items: center;
   border: 0;
   border-radius: 11px;
@@ -25,14 +27,15 @@ const Trigger = styled.button`
   cursor: pointer;
   padding: 0;
 
-  &:hover {
+  ${Menu}:hover & {
     background: #f0f2f6;
   }
 
   img {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 9px;
+    object-fit: cover;
   }
 
   @media (max-width: 860px) {
@@ -47,36 +50,141 @@ const Trigger = styled.button`
   }
 `;
 
-const Popover = styled.div`
+const AccountOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: rgba(16, 24, 40, 0.38);
+  padding: 20px;
+`;
+
+const AccountDialog = styled.div`
+  position: relative;
+  width: min(100%, 360px);
+  border-radius: 22px;
+  background: #fff;
+  padding: 26px;
+  box-shadow: 0 24px 70px rgba(16, 24, 40, 0.26);
+`;
+
+const AccountCloseButton = styled.button`
   position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 30;
-  width: 150px;
-  padding: 6px;
-  border: 1px solid rgba(23, 32, 51, 0.1);
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: #f3f5f8;
+  color: #687086;
+  cursor: pointer;
+
+  &:hover {
+    background: #e8ebf1;
+    color: var(--ink);
+  }
+`;
+
+const AccountAvatar = styled.img`
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 24px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 8px 20px rgba(16, 24, 40, 0.18);
+  object-fit: cover;
+`;
+
+const AccountName = styled.p`
+  margin: -10px 0 22px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-align: center;
+`;
+
+const AccountLinkCard = styled.div`
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid #e5e8ef;
   border-radius: 14px;
   background: #fff;
-  box-shadow: 0 16px 38px rgba(32, 44, 84, 0.17);
+  color: var(--ink);
+  padding: 9px 15px;
+  font-size: 14px;
+  font-weight: 750;
+`;
 
-  button {
-    display: flex;
-    width: 100%;
-    min-height: 38px;
-    align-items: center;
-    gap: 8px;
-    border: 0;
-    border-radius: 9px;
-    background: transparent;
-    color: #c6344c;
-    cursor: pointer;
-    padding: 0 10px;
-    font-size: 13px;
-    font-weight: 700;
+const SessionCard = styled(AccountLinkCard)`
+  margin-top: 12px;
+`;
+
+const AccountCardTitle = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+`;
+
+const SessionTime = styled.span`
+  color: #3859d9;
+  font-size: 12px;
+  font-weight: 650;
+`;
+
+const GoogleSheetLink = styled.a`
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 5px;
+  color: #3859d9;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+
+  span {
+    min-width: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.35;
   }
 
-  button:hover {
-    background: #fff1f3;
+  &:hover {
+    text-decoration: underline;
+  }
+
+`;
+
+const LogoutButton = styled.button`
+  display: flex;
+  width: 100%;
+  min-height: 52px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 20px;
+  border: 0;
+  border-radius: 14px;
+  background: #fff0f2;
+  color: #c6344c;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+
+  &:hover {
+    background: #ffe2e7;
   }
 `;
 
@@ -142,20 +250,16 @@ export function AccountMenu() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isConfirmingLogout, setIsConfirmingLogout] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [sessionStartedAt, setSessionStartedAt] = useState<number | null>(null);
+  const [sessionDeviceName, setSessionDeviceName] = useState("");
 
   useEffect(() => {
-    if (!isOpen) return;
-
-    const closeWhenClickingOutside = (event: PointerEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("pointerdown", closeWhenClickingOutside);
-    return () => document.removeEventListener("pointerdown", closeWhenClickingOutside);
-  }, [isOpen]);
+    const frame = window.requestAnimationFrame(() => {
+      setSessionStartedAt(getSessionStartedAt());
+      setSessionDeviceName(getSessionDeviceName());
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   const requestLogout = () => {
     setIsOpen(false);
@@ -167,23 +271,53 @@ export function AccountMenu() {
     router.replace(AUTH_ROUTE);
   };
 
+  const sessionTime = sessionStartedAt === null
+    ? "Đang tải thời gian đăng nhập…"
+    : new Intl.DateTimeFormat("vi-VN", {
+      day: "numeric",
+      hour: "2-digit",
+      hourCycle: "h23",
+      minute: "2-digit",
+      month: "numeric",
+      timeZone: "Asia/Ho_Chi_Minh",
+      year: "2-digit",
+    }).format(new Date(sessionStartedAt));
+
   return (
-    <Menu ref={menuRef}>
-      <Trigger
-        type="button"
-        aria-label="Mở menu tài khoản"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((open) => !open)}
-      >
-        <img src={`${publicBasePath}/logo.png`} alt="" />
-      </Trigger>
+    <Menu>
+      <AvatarTrigger type="button" aria-label="Mở menu tài khoản" onClick={() => setIsOpen(true)}>
+        <img src={`${publicBasePath}/avatar-dung.jpeg`} alt="" />
+      </AvatarTrigger>
       {isOpen && (
-        <Popover>
-          <button type="button" onClick={requestLogout}>
-            <LogOut size={16} />
-            Đăng xuất
-          </button>
-        </Popover>
+        <AccountOverlay role="presentation" onPointerDown={(event) => {
+          if (event.target === event.currentTarget) setIsOpen(false);
+        }}>
+          <AccountDialog role="dialog" aria-modal="true" aria-label="Tài khoản" onPointerDown={(event) => event.stopPropagation()}>
+            <AccountCloseButton type="button" aria-label="Đóng menu tài khoản" onClick={() => setIsOpen(false)}>
+              <X size={18} />
+            </AccountCloseButton>
+            <AccountAvatar src={`${publicBasePath}/avatar-dung.jpeg`} alt="Ảnh đại diện Dũng" />
+            <AccountName>Dũng - QLHS</AccountName>
+            <AccountLinkCard>
+              <AccountCardTitle><FileSpreadsheet size={17} />Link Google Sheet</AccountCardTitle>
+              <GoogleSheetLink href={googleSheetUrl} target="_blank" rel="noreferrer" title={googleSheetUrl}>
+                <span>{googleSheetUrl}</span>
+              </GoogleSheetLink>
+            </AccountLinkCard>
+            <SessionCard>
+              <AccountCardTitle><KeyRound size={15} />Phiên Đăng Nhập</AccountCardTitle>
+              <SessionTime>Đăng nhập lần cuối lúc {sessionTime}</SessionTime>
+            </SessionCard>
+            <SessionCard>
+              <AccountCardTitle><MonitorSmartphone size={15} />Thiết Bị Đăng Nhập</AccountCardTitle>
+              <SessionTime>{sessionDeviceName || "Đang tải thiết bị…"}</SessionTime>
+            </SessionCard>
+            <LogoutButton type="button" onClick={requestLogout}>
+              <LockKeyhole size={17} />
+              Đăng Xuất
+            </LogoutButton>
+          </AccountDialog>
+        </AccountOverlay>
       )}
       {isConfirmingLogout && (
         <ConfirmOverlay

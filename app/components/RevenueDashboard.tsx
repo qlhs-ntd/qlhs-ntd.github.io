@@ -16,7 +16,7 @@ import {
   UserStar,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import {
   profileService,
@@ -599,17 +599,6 @@ const CurrencyInfoButton = styled.button`
   }
 `;
 
-const InlineInfoButton = styled(CurrencyInfoButton)`
-  width: 22px;
-  height: 22px;
-  margin-left: 0;
-
-  svg {
-    width: 12px;
-    height: 12px;
-  }
-`;
-
 const MetricDivider = styled.div`
   grid-column: 1 / -1;
   width: 100%;
@@ -901,11 +890,6 @@ const CostModalTotal = styled.div`
   }
 `;
 
-const InfoModalBody = styled.div`
-  display: grid;
-  gap: 12px;
-`;
-
 const CalendarModalWrap = styled.div`
   display: grid;
   gap: 14px;
@@ -994,22 +978,6 @@ const CalendarDayCount = styled.div<{ $isActive: boolean }>`
 
   @media (max-width: 1199px) {
     font-size: 18px;
-  }
-`;
-
-const InfoModalParagraph = styled.p`
-  margin: 0;
-  color: #374151;
-  font-size: 14px;
-  line-height: 1.6;
-
-  strong {
-    color: #121316;
-    font-weight: 700;
-  }
-
-  @media (max-width: 1199px) {
-    font-size: 13px;
   }
 `;
 
@@ -1138,73 +1106,6 @@ type CategoryDetailState = {
   items: ProgressGroupDatum[];
   totalCount: number;
   layout?: "list" | "calendar";
-};
-
-type DetailInfoKey =
-  | "processing-cost"
-  | "waiting-cost"
-  | "paid-cost"
-  | "completed-cost"
-  | "processing-profit"
-  | "waiting-profit"
-  | "paid-profit"
-  | "completed-profit";
-
-type DetailInfoContent = {
-  title: string;
-  paragraphs: ReactNode[];
-};
-
-const DETAIL_INFO_CONTENT: Record<DetailInfoKey, DetailInfoContent> = {
-  "processing-cost": {
-    title: "Chi Phí Ghi Nhận",
-    paragraphs: [
-      <>Chi phí khách phải trả được ghi nhận bởi tất cả hồ sơ ở trạng thái <strong>Đang Xử Lí</strong>. Chi Phí này được ghi nhận và có thể đã thu của khách, hoặc chưa thu của khách.</>,
-      <>Khi có 1 hồ sơ chuyển sang trạng thái <strong>Chờ Thanh Toán</strong>, chi phí hồ sơ đó sẽ chuyển sang <strong>Chi Phí Công Nợ.</strong></>,
-      <>Khi có 1 hồ sơ chuyển sang trạng thái <strong>Đã Thanh Toán</strong>, chi phí hồ sơ đó sẽ chuyển sang <strong>Chi Phí Đã Thu.</strong></>,
-      <>Khi có 1 hồ sơ chuyển sang trạng thái <strong>Đã Hoàn Tất</strong>, chi phí hồ sơ đó sẽ chuyển sang <strong>Doanh Thu.</strong></>,
-    ],
-  },
-  "waiting-cost": {
-    title: "Chi Phí Công Nợ",
-    paragraphs: [<>Chi phí khách chưa thanh toán của tất cả các hồ sơ đang ở trạng thái <strong>Chờ Thanh Toán</strong>.</>],
-  },
-  "paid-cost": {
-    title: "Chi Phí Đã Thu",
-    paragraphs: [<>Chi phí đã thu của khách ở tất cả các hồ sơ đang ở trạng thái <strong>Đã Thanh Toán</strong>.</>],
-  },
-  "completed-cost": {
-    title: "Doanh Thu",
-    paragraphs: ["Chi phí đã thu của khách và đã hoàn tất hồ sơ xong. Đây là tổng số tiền ghi nhận cuối cùng từ khách."],
-  },
-  "processing-profit": {
-    title: "Lợi Nhuận Tạm Ghi",
-    paragraphs: [
-      <>Lợi nhuận tạm ghi nhận khi hồ sơ <strong>Đang Xử Lí</strong>. Lợi nhuận này có thể đã có hoặc chưa tuỳ vào tình trạng khách đã thanh toán hoặc chưa.</>,
-      <>Lợi nhuận này bằng số tiền <strong>(Chi Phí Khách Trả - Chi Phí Ban Đầu)</strong> của hồ sơ ở trạng thái <strong>Đang Xử Lí</strong>.</>,
-    ],
-  },
-  "waiting-profit": {
-    title: "Lợi Nhuận Chờ Thu",
-    paragraphs: [
-      <>Lợi nhuận đang chờ được thanh toán từ các hồ sơ <strong>Chờ Thanh Toán</strong>.</>,
-      <>Lợi nhuận này bằng số tiền <strong>(Chi Phí Khách Trả - Chi Phí Ban Đầu)</strong> của hồ sơ ở trạng thái <strong>Chờ Thanh Toán</strong>.</>,
-    ],
-  },
-  "paid-profit": {
-    title: "Lợi Nhuận Sau Thanh Toán",
-    paragraphs: [
-      <>Lợi nhuận đã được khách thanh toán từ các hồ sơ <strong>Đã Thanh Toán</strong>.</>,
-      <>Lợi nhuận này bằng số tiền <strong>(Chi Phí Khách Trả - Chi Phí Ban Đầu)</strong> của hồ sơ ở trạng thái <strong>Đã Thanh Toán</strong>.</>,
-    ],
-  },
-  "completed-profit": {
-    title: "Lợi Nhuận Sau Tất Toán",
-    paragraphs: [
-      <>Lợi nhuận đã được khách thanh toán từ các hồ sơ <strong>Đã Hoàn Tất</strong>.</>,
-      <>Lợi nhuận này bằng số tiền <strong>(Chi Phí Khách Trả - Chi Phí Ban Đầu)</strong> của hồ sơ ở trạng thái <strong>Đã Hoàn Tất</strong>. Đây là số tiền cuối cùng nhận được sau khi trừ đi Chi Phí và là tổng tiền lãi từ các hồ sơ.</>,
-    ],
-  },
 };
 
 type SummaryState = {
@@ -1467,8 +1368,6 @@ export function RevenueDashboard() {
   const [error, setError] = useState("");
   const [isCostDetailOpen, setIsCostDetailOpen] = useState(false);
   const [isCostDetailClosing, setIsCostDetailClosing] = useState(false);
-  const [activeDetailInfo, setActiveDetailInfo] = useState<DetailInfoKey | null>(null);
-  const [isDetailInfoClosing, setIsDetailInfoClosing] = useState(false);
   const [activeCategoryDetail, setActiveCategoryDetail] = useState<CategoryDetailState | null>(null);
   const [isCategoryDetailClosing, setIsCategoryDetailClosing] = useState(false);
 
@@ -1499,8 +1398,6 @@ export function RevenueDashboard() {
   const hasModalOpen =
     isCostDetailOpen ||
     isCostDetailClosing ||
-    activeDetailInfo !== null ||
-    isDetailInfoClosing ||
     activeCategoryDetail !== null ||
     isCategoryDetailClosing;
 
@@ -1605,25 +1502,25 @@ export function RevenueDashboard() {
     () => [
       {
         key: "processing-cost",
-        label: "Ghi Nhận",
+        label: "Tiền Đang Xử Lí",
         value: summary.processingCost,
         tone: "processing" as const,
       },
       {
         key: "waiting-cost",
-        label: "Công Nợ",
+        label: "Tiền Khách Nợ",
         value: summary.waitingCost,
         tone: "waiting" as const,
       },
       {
         key: "paid-cost",
-        label: "Đã Thu",
+        label: "Tiền Khách Đã Trả",
         value: summary.paidCost,
         tone: "paid" as const,
       },
       {
         key: "completed-cost",
-        label: "Doanh Thu",
+        label: "Tiền Nhận Về Túi",
         value: summary.completedCost,
         tone: "completed" as const,
       },
@@ -1635,25 +1532,25 @@ export function RevenueDashboard() {
     () => [
       {
         key: "processing-profit",
-        label: "Tạm Ghi",
+        label: "Tiền Lời Đang Chờ",
         value: summary.processingProfit,
         tone: "processing" as const,
       },
       {
         key: "waiting-profit",
-        label: "Chờ Thu",
+        label: "Tiền Lời Khách Nợ",
         value: summary.waitingProfit,
         tone: "waiting" as const,
       },
       {
         key: "paid-profit",
-        label: "Sau Thanh Toán",
+        label: "Tiền Lời Khách Trả",
         value: summary.paidProfit,
         tone: "paid" as const,
       },
       {
         key: "completed-profit",
-        label: "Sau Tất Toán",
+        label: "Tiền Lời Về Túi",
         value: summary.completedProfit,
         tone: "completed" as const,
       },
@@ -1716,7 +1613,6 @@ export function RevenueDashboard() {
   const dailyProfileCalendarWeeks = useMemo(() => buildCalendarWeeks(dailyProfileProgressItems), [dailyProfileProgressItems]);
 
   const displayNumber = (value: number) => formatNumber(value);
-  const activeDetailContent = activeDetailInfo ? DETAIL_INFO_CONTENT[activeDetailInfo] : null;
   const loadingValue = <SpinnerIcon aria-label="Đang tải" size={16} />;
   const openCostDetail = useCallback(() => {
     setIsCostDetailClosing(false);
@@ -1730,18 +1626,6 @@ export function RevenueDashboard() {
       setIsCostDetailClosing(false);
     }, REVENUE_MODAL_CLOSE_MS);
   }, [isCostDetailClosing, isCostDetailOpen]);
-  const openDetailInfo = useCallback((key: DetailInfoKey) => {
-    setIsDetailInfoClosing(false);
-    setActiveDetailInfo(key);
-  }, []);
-  const closeDetailInfo = useCallback(() => {
-    if (activeDetailInfo === null || isDetailInfoClosing) return;
-    setIsDetailInfoClosing(true);
-    window.setTimeout(() => {
-      setActiveDetailInfo(null);
-      setIsDetailInfoClosing(false);
-    }, REVENUE_MODAL_CLOSE_MS);
-  }, [activeDetailInfo, isDetailInfoClosing]);
   const openCategoryDetail = useCallback((detail: CategoryDetailState) => {
     setIsCategoryDetailClosing(false);
     setActiveCategoryDetail(detail);
@@ -1835,7 +1719,7 @@ export function RevenueDashboard() {
           <FinancialColumn>
             <MetricCard $tone="primary">
               <span><Calculator size={18} /></span>
-              <small>Tổng Chi Phí Khách Trả</small>
+              <small>Tổng Tiền Khách Trả Dự Kiến</small>
               <CurrencyValue $tone="primary">
                 {loading ? (
                   <CurrencyLoadingValue>{loadingValue}</CurrencyLoadingValue>
@@ -1845,7 +1729,7 @@ export function RevenueDashboard() {
                     <span>đ</span>
                     <CurrencyInfoButton
                       type="button"
-                      aria-label="Xem chi tiết tổng chi phí khách trả"
+                      aria-label="Xem chi tiết tổng tiền khách trả dự kiến"
                       onClick={openCostDetail}
                     >
                       <Info size={15} />
@@ -1858,16 +1742,7 @@ export function RevenueDashboard() {
                 {totalCostStatusBreakdown.map((item) => (
                   <MetricBreakdownItem key={item.key}>
                     <MetricBreakdownRow>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                        {item.label}
-                        <InlineInfoButton
-                          type="button"
-                          aria-label={`Xem mô tả ${item.label}`}
-                          onClick={() => openDetailInfo(item.key as DetailInfoKey)}
-                        >
-                          <Info size={12} />
-                        </InlineInfoButton>
-                      </span>
+                      <span>{item.label}</span>
                       <strong>{loading ? <SpinnerIcon aria-label="Đang tải" size={14} /> : `${displayNumber(item.value)}đ`}</strong>
                     </MetricBreakdownRow>
                     <MetricBreakdownTrack>
@@ -1892,7 +1767,7 @@ export function RevenueDashboard() {
                 >
                   <Calculator size={18} />
                 </span>
-                <MetricSectionLabel $tone="danger">Tổng Chi Phí Ban Đầu</MetricSectionLabel>
+                <MetricSectionLabel $tone="danger">Tổng Tiền Bỏ Ra</MetricSectionLabel>
                 {currencyValue(summary.initialCost, "danger")}
               </MetricSection>
               <MetricDivider />
@@ -1905,7 +1780,7 @@ export function RevenueDashboard() {
                 >
                   <TrendingUp size={18} />
                 </span>
-                <MetricSectionLabel $tone="success">Tổng Lợi Nhuận Dự Kiến</MetricSectionLabel>
+                <MetricSectionLabel $tone="success">Tổng Tiền Lời Dự Kiến</MetricSectionLabel>
                 {currencyValue(summary.totalProfit, "success")}
               </MetricSection>
               <MetricDivider />
@@ -1913,16 +1788,7 @@ export function RevenueDashboard() {
                 {profitBreakdown.map((item) => (
                   <MetricBreakdownItem key={item.key}>
                     <MetricBreakdownRow>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-                        {item.label}
-                        <InlineInfoButton
-                          type="button"
-                          aria-label={`Xem mô tả ${item.label}`}
-                          onClick={() => openDetailInfo(item.key as DetailInfoKey)}
-                        >
-                          <Info size={12} />
-                        </InlineInfoButton>
-                      </span>
+                      <span>{item.label}</span>
                       <strong>{loading ? <SpinnerIcon aria-label="Đang tải" size={14} /> : `${displayNumber(item.value)}đ`}</strong>
                     </MetricBreakdownRow>
                     <MetricBreakdownTrack>
@@ -1970,7 +1836,7 @@ export function RevenueDashboard() {
             }
           />
           <ProgressSummaryCard
-            title="Top Hồ Sơ Theo Ngày"
+            title="Top Hồ Sơ Tháng"
             items={topDailyProfileProgressItems}
             loading={loading}
             totalCount={topDailyScale}
@@ -1978,7 +1844,7 @@ export function RevenueDashboard() {
             icon={<ClockArrowUp size={18} />}
             onOpenDetails={() =>
               openCategoryDetail({
-                title: "Top Hồ Sơ Theo Ngày",
+                title: "Top Hồ Sơ Tháng",
                 items: dailyProfileProgressItems,
                 totalCount: topDailyScale,
                 layout: "calendar",
@@ -1986,7 +1852,7 @@ export function RevenueDashboard() {
             }
           />
           <ProgressSummaryCard
-            title="Top Khách Hàng Có Hồ Sơ"
+            title="Top Khách Hàng"
             items={topCustomerProgressItems}
             loading={loading}
             totalCount={topCustomerScale}
@@ -1994,7 +1860,7 @@ export function RevenueDashboard() {
             icon={<UserStar size={18} />}
             onOpenDetails={() =>
               openCategoryDetail({
-                title: "Top Khách Hàng Có Hồ Sơ",
+                title: "Top Khách Hàng",
                 items: customerProgressItems,
                 totalCount: topCustomerScale,
                 layout: "list",
@@ -2007,8 +1873,8 @@ export function RevenueDashboard() {
           <CostModalOverlay $closing={isCostDetailClosing} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeCostDetail()}>
             <CostModalDialog $closing={isCostDetailClosing} role="dialog" aria-modal="true" aria-labelledby="cost-detail-title" onMouseDown={(event) => event.stopPropagation()}>
               <CostModalHeader>
-                <h2 id="cost-detail-title">Tổng Chi Phí Khách Trả</h2>
-                <CostModalCloseButton type="button" aria-label="Đóng chi tiết tổng chi phí khách trả" onClick={closeCostDetail}>
+                <h2 id="cost-detail-title">Tổng Tiền Khách Trả Dự Kiến</h2>
+                <CostModalCloseButton type="button" aria-label="Đóng chi tiết tổng tiền khách trả dự kiến" onClick={closeCostDetail}>
                   <X size={18} />
                 </CostModalCloseButton>
               </CostModalHeader>
@@ -2030,24 +1896,6 @@ export function RevenueDashboard() {
                   </MetricBreakdownItem>
                 ))}
               </MetricBreakdownList>
-            </CostModalDialog>
-          </CostModalOverlay>
-        )}
-
-        {(activeDetailContent || isDetailInfoClosing) && activeDetailContent && (
-          <CostModalOverlay $closing={isDetailInfoClosing} role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeDetailInfo()}>
-            <CostModalDialog $closing={isDetailInfoClosing} role="dialog" aria-modal="true" aria-labelledby="detail-info-title" onMouseDown={(event) => event.stopPropagation()}>
-              <CostModalHeader>
-                <h2 id="detail-info-title">{activeDetailContent.title}</h2>
-                <CostModalCloseButton type="button" aria-label="Đóng mô tả chi tiết" onClick={closeDetailInfo}>
-                  <X size={18} />
-                </CostModalCloseButton>
-              </CostModalHeader>
-              <InfoModalBody>
-                {activeDetailContent.paragraphs.map((paragraph, index) => (
-                  <InfoModalParagraph key={index}>{paragraph}</InfoModalParagraph>
-                ))}
-              </InfoModalBody>
             </CostModalDialog>
           </CostModalOverlay>
         )}

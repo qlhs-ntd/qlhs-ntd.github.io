@@ -125,11 +125,11 @@ function statusIcon(status: string): LucideIcon {
 }
 
 const STATUS_TABS: Array<{ key: StatusTabKey; label: string; tone: StatusTabTone; matches: (profile: ProfileRecord) => boolean }> = [
-  { key: "all", label: "Tất Cả", tone: "neutral", matches: () => true },
   { key: "processing", label: "Đang Xử Lí", tone: "processing", matches: (profile) => (profile.status || "Đang xử lí") === "Đang xử lí" },
   { key: "waiting", label: "Chờ Thanh Toán", tone: "waiting", matches: (profile) => profile.status === "Đang chờ thanh toán" },
   { key: "paid", label: "Đã Thanh Toán", tone: "paid", matches: (profile) => profile.status === "Đã thanh toán" },
   { key: "completed", label: "Hoàn Tất", tone: "completed", matches: (profile) => profile.status === "Hoàn tất" || profile.status === "Đã hoàn tất" },
+  { key: "all", label: "Tất Cả", tone: "neutral", matches: () => true },
 ];
 
 const Header = styled.header`
@@ -148,7 +148,7 @@ const TitleBlock = styled.div`
   h1 {
     margin: 0;
     color: var(--ink);
-    font-size: clamp(22px, 2.7vw, 30px);
+    font-size: clamp(22px, 2.7vw, 28px);
     letter-spacing: -0.045em;
     line-height: 1.05;
   }
@@ -2720,7 +2720,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
               <MoneyField icon={<BadgePlus size={14} />} label="Phát sinh khác" value={form.otherIncidentalCost} onChange={(value) => updateField("otherIncidentalCost", value)} />
 
               <CostSummary>
-                <span><Calculator size={13} />Chi Phí Khách Trả</span>
+                <span><Calculator size={13} />Tiền Khách Phải Trả</span>
                 <strong>{formatCurrencyShort(totalCost)}</strong>
               </CostSummary>
             </FormSection>
@@ -2776,7 +2776,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
                 </InputActionWrap>
               </Field>
 
-              <MoneyField icon={<HandCoins size={14} />} label="Chi phí ban đầu" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
+              <MoneyField icon={<HandCoins size={14} />} label="Tiền Bỏ Ra" value={form.initialCost} onChange={(value) => updateField("initialCost", value)} />
 
               <Field>
                 <FieldLabel><ClipboardCheck size={14} />Trạng Thái</FieldLabel>
@@ -2792,7 +2792,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave }: {
               </Field>
 
               <ProfitCostSummary>
-                <span><TrendingUp size={13} />Lợi Nhuận Thu Về</span>
+                <span><TrendingUp size={13} />Tiền Về Túi</span>
                 <strong>{formatCurrencyShort(profit)}</strong>
               </ProfitCostSummary>
             </FormSection>
@@ -2812,7 +2812,7 @@ export function ProfileManager() {
   const statusTabsRef = useRef<HTMLDivElement>(null);
   const actionMenuRootRef = useRef<HTMLDivElement>(null);
   const [selectedMonth, setSelectedMonth] = useState(`${PROFILE_YEAR}-08`);
-  const [activeStatusTab, setActiveStatusTab] = useState<StatusTabKey>("all");
+  const [activeStatusTab, setActiveStatusTab] = useState<StatusTabKey>("processing");
   const [profiles, setProfiles] = useState<ProfileRecord[]>([]);
   const [query, setQuery] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -3014,7 +3014,7 @@ export function ProfileManager() {
         <TitleBlock>
           <TitleRow>
             <AccountMenu />
-            <h1>Danh Sách Hồ Sơ</h1>
+            <h1>Hồ Sơ</h1>
           </TitleRow>
         </TitleBlock>
         <MonthSelectWrap>
@@ -3272,7 +3272,7 @@ export function ProfileManager() {
                     >
                       <ProfileIcon><Calculator size={14} /></ProfileIcon>
                       <CostToggleLabel>
-                        Chi Phí Khách Trả
+                        Tiền Khách Phải Trả
                         <ChevronDown className="cost-toggle-chevron" size={14} />
                       </CostToggleLabel>
                     </CostToggleButton>
@@ -3295,8 +3295,8 @@ export function ProfileManager() {
                     </CostValueActions>
                   </DesktopPaperworkLine>
                   <DesktopCostSeparator />
-                  <CostLine $total $amountTone="danger"><span><ProfileIcon $tone="danger"><HandCoins size={14} /></ProfileIcon>Chi phí ban đầu</span><strong>{formatCurrency(profile.initialCost)}</strong></CostLine>
-                  <CostLine $total $profit $amountTone="success"><span><ProfileIcon $tone="success"><TrendingUp size={14} /></ProfileIcon>Lợi Nhuận Thu Về</span><strong>{formatCurrency(profile.profit)}</strong></CostLine>
+                  <CostLine $total $amountTone="danger"><span><ProfileIcon $tone="danger"><HandCoins size={14} /></ProfileIcon>Tiền Bỏ Ra</span><strong>{formatCurrency(profile.initialCost)}</strong></CostLine>
+                  <CostLine $total $profit $amountTone="success"><span><ProfileIcon $tone="success"><TrendingUp size={14} /></ProfileIcon>Tiền Về Túi</span><strong>{formatCurrency(profile.profit)}</strong></CostLine>
                 </ProfileGroup>
 
                 <ProfileGroup aria-label="Thao tác hồ sơ">
