@@ -3070,9 +3070,19 @@ type ProfileManagerProps = {
   embedded?: boolean;
   selectedMonth?: string;
   customerName?: string;
+  onProfilesChange?: (profiles: ProfileRecord[]) => void;
+  onProfileUpsert?: (profile: ProfileRecord) => void;
+  onProfileRemoved?: (id: string) => void;
 };
 
-export function ProfileManager({ embedded = false, selectedMonth: selectedMonthOverride, customerName = "" }: ProfileManagerProps) {
+export function ProfileManager({
+  embedded = false,
+  selectedMonth: selectedMonthOverride,
+  customerName = "",
+  onProfilesChange,
+  onProfileUpsert,
+  onProfileRemoved,
+}: ProfileManagerProps) {
   const monthTabs = useMemo(() => getYearEndMonths(), []);
   const copyResetTimerRef = useRef<number | null>(null);
   const statusTabLoadingTimerRef = useRef<number | null>(null);
@@ -3112,13 +3122,15 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
   const loadProfiles = useCallback(async () => {
     setLoading(true);
     try {
-      setProfiles(await profileService.list());
+      const loadedProfiles = await profileService.list();
+      setProfiles(loadedProfiles);
+      onProfilesChange?.(loadedProfiles);
     } catch (error) {
       setToast({ message: error instanceof Error ? error.message : "Không thể tải danh sách hồ sơ.", error: true });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onProfilesChange]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void loadProfiles(), 0);
@@ -3272,18 +3284,23 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
       if (editorState.mode === "create") {
         const optimisticProfile = profileService.createOptimistic(input);
         setProfiles((current) => [optimisticProfile, ...current]);
+        onProfileUpsert?.(optimisticProfile);
 
         void profileService.syncCreate(optimisticProfile.id, input)
           .then((syncedProfile) => {
             setProfiles((current) => current.map((profile) => (
               profile.id === optimisticProfile.id ? syncedProfile : profile
             )));
+            onProfileUpsert?.(syncedProfile);
           })
           .catch((error) => {
             syncFailed = true;
             setToast({ message: error instanceof Error ? error.message : "Không thể lưu hồ sơ.", error: true });
             void profileService.refresh()
-              .then(setProfiles)
+              .then((refreshedProfiles) => {
+                setProfiles(refreshedProfiles);
+                onProfilesChange?.(refreshedProfiles);
+              })
               .catch(() => undefined);
           });
       } else {
@@ -3291,18 +3308,23 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
         setProfiles((current) => current.map((profile) => (
           profile.id === optimisticProfile.id ? optimisticProfile : profile
         )));
+        onProfileUpsert?.(optimisticProfile);
 
         void profileService.syncUpdate(editorState.profile.id, input)
           .then((syncedProfile) => {
             setProfiles((current) => current.map((profile) => (
               profile.id === syncedProfile.id ? syncedProfile : profile
             )));
+            onProfileUpsert?.(syncedProfile);
           })
           .catch((error) => {
             syncFailed = true;
             setToast({ message: error instanceof Error ? error.message : "Không thể lưu hồ sơ.", error: true });
             void profileService.refresh()
-              .then(setProfiles)
+              .then((refreshedProfiles) => {
+                setProfiles(refreshedProfiles);
+                onProfilesChange?.(refreshedProfiles);
+              })
               .catch(() => undefined);
           });
       }
@@ -3329,18 +3351,23 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
       setProfiles((current) => current.map((item) => (
         item.id === optimisticProfile.id ? optimisticProfile : item
       )));
+      onProfileUpsert?.(optimisticProfile);
 
       void profileService.syncUpdate(profile.id, input)
         .then((syncedProfile) => {
           setProfiles((current) => current.map((item) => (
             item.id === syncedProfile.id ? syncedProfile : item
           )));
+          onProfileUpsert?.(syncedProfile);
         })
         .catch((error) => {
           syncFailed = true;
           setToast({ message: error instanceof Error ? error.message : "Không thể cập nhật trạng thái hồ sơ.", error: true });
           void profileService.refresh()
-            .then(setProfiles)
+            .then((refreshedProfiles) => {
+              setProfiles(refreshedProfiles);
+              onProfilesChange?.(refreshedProfiles);
+            })
             .catch(() => undefined);
         });
 
@@ -3361,13 +3388,17 @@ export function ProfileManager({ embedded = false, selectedMonth: selectedMonthO
     try {
       profileService.removeOptimistic(profile);
       setProfiles((current) => current.filter((item) => item.id !== profile.id));
+      onProfileRemoved?.(profile.id);
 
       void profileService.syncRemove(profile.id)
         .catch((error) => {
           syncFailed = true;
           setToast({ message: error instanceof Error ? error.message : "Không thể xoá hồ sơ.", error: true });
           void profileService.refresh()
-            .then(setProfiles)
+            .then((refreshedProfiles) => {
+              setProfiles(refreshedProfiles);
+              onProfilesChange?.(refreshedProfiles);
+            })
             .catch(() => undefined);
         });
 

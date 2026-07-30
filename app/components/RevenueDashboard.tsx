@@ -32,6 +32,7 @@ import { ProfileManager } from "./ProfileManager";
 
 const PROFILE_YEAR = 2026;
 const REVENUE_MODAL_CLOSE_MS = 280;
+const SELECTED_CUSTOMER_STORAGE_KEY = "qlhs:selected-customer";
 
 const SpinnerIcon = styled(Loader)`
   animation: revenue-value-spin 850ms linear infinite;
@@ -1449,6 +1450,26 @@ export function RevenueDashboard({ customerMode = false }: RevenueDashboardProps
     }
   }, []);
 
+  useEffect(() => {
+    if (!customerMode) return;
+
+    const timer = window.setTimeout(() => {
+      try {
+        const savedSelection = JSON.parse(window.sessionStorage.getItem(SELECTED_CUSTOMER_STORAGE_KEY) ?? "null") as {
+          customer?: unknown;
+          month?: unknown;
+        } | null;
+        if (typeof savedSelection?.customer === "string" && typeof savedSelection.month === "string") {
+          setSelectedMonth(savedSelection.month);
+          setSelectedCustomer(savedSelection.customer);
+        }
+      } catch {
+        // Browsers can disable session storage; the page still works without persistence.
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [customerMode]);
+
   const loadProfiles = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -1700,7 +1721,41 @@ export function RevenueDashboard({ customerMode = false }: RevenueDashboardProps
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
     setSelectedCustomer("");
+    try {
+      window.sessionStorage.removeItem(SELECTED_CUSTOMER_STORAGE_KEY);
+    } catch {
+      // Ignore unavailable session storage.
+    }
   };
+  const handleCustomerChange = (customer: string) => {
+    setSelectedCustomer(customer);
+    try {
+      if (customer) {
+        window.sessionStorage.setItem(
+          SELECTED_CUSTOMER_STORAGE_KEY,
+          JSON.stringify({ customer, month: selectedMonth }),
+        );
+      } else {
+        window.sessionStorage.removeItem(SELECTED_CUSTOMER_STORAGE_KEY);
+      }
+    } catch {
+      // Ignore unavailable session storage.
+    }
+  };
+  const replaceProfiles = useCallback((nextProfiles: ProfileRecord[]) => {
+    setProfiles(nextProfiles);
+  }, []);
+  const upsertProfile = useCallback((nextProfile: ProfileRecord) => {
+    setProfiles((current) => {
+      const exists = current.some((profile) => profile.id === nextProfile.id);
+      return exists
+        ? current.map((profile) => (profile.id === nextProfile.id ? nextProfile : profile))
+        : [nextProfile, ...current];
+    });
+  }, []);
+  const removeProfile = useCallback((id: string) => {
+    setProfiles((current) => current.filter((profile) => profile.id !== id));
+  }, []);
   const openCostDetail = useCallback(() => {
     setIsCostDetailClosing(false);
     setIsCostDetailOpen(true);
@@ -1773,7 +1828,7 @@ export function RevenueDashboard({ customerMode = false }: RevenueDashboardProps
               <MonthSelect
                 aria-label="Lọc doanh thu theo khách hàng"
                 value={selectedCustomer}
-                onChange={(event) => setSelectedCustomer(event.target.value)}
+                onChange={(event) => handleCustomerChange(event.target.value)}
               >
                 <option value="" disabled hidden />
                 <optgroup label="Chọn Khách Hàng">
@@ -1993,7 +2048,16 @@ export function RevenueDashboard({ customerMode = false }: RevenueDashboardProps
           )}
         </CategorySection>
         )}
-        {customerMode && <ProfileManager embedded selectedMonth={selectedMonth} customerName={selectedCustomer} />}
+        {customerMode && (
+          <ProfileManager
+            embedded
+            selectedMonth={selectedMonth}
+            customerName={selectedCustomer}
+            onProfilesChange={replaceProfiles}
+            onProfileUpsert={upsertProfile}
+            onProfileRemoved={removeProfile}
+          />
+        )}
           </>
         )}
 
