@@ -135,7 +135,7 @@ export function AuthForm() {
               onKeyDown={(event) => handleKeyDown(event, index)}
               onPaste={(event) => handlePaste(event, index)}
               pattern="[0-9]*"
-              type="text"
+              type="password"
               value={digit}
             />
           ))}

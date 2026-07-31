@@ -8,7 +8,7 @@ import { AUTH_ROUTE, clearSession, getSessionDeviceName, getSessionStartedAt } f
 
 const publicBasePath = (process.env.NEXT_PUBLIC_BASE_PATH || "").replace(/\/$/, "");
 const googleSheetUrl = process.env.NEXT_PUBLIC_GOOGLE_SHEET_URL?.trim()
-  || "https://docs.google.com/spreadsheets/d/19dqKPEW439W6R1FvjQNte54yV5wwZQ7LJqHxf30vGFc/edit?gid=235868267#gid=235868267";
+  || "https://docs.google.com/spreadsheets/d/1-MEP_pzW8r8yajZmkcZ5C4XAbc1ncHVpKadcyUThZK8/edit?gid=0#gid=0";
 
 const Menu = styled.div`
   position: relative;

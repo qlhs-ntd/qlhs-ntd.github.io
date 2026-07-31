@@ -3,7 +3,7 @@ export const AUTH_ROUTE = "/auth";
 const SESSION_KEY = "qlhs-auth-expires-at";
 const SESSION_STARTED_AT_KEY = "qlhs-auth-started-at";
 const SESSION_DEVICE_NAME_KEY = "qlhs-auth-device-name";
-const SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
+const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 const VIETNAM_TIME_ZONE = "Asia/Ho_Chi_Minh";
 
 export function currentPasscode(now = new Date()): string {
