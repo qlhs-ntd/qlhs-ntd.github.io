@@ -2827,8 +2827,6 @@ function ProfileModal({ state, profiles, saving, onClose, onSave, defaultCustome
                     <InputNativeSelectAction>
                       <FileClock size={15} />
                       <select
-                        aria-label="Chọn khách hàng"
-                        value=""
                         disabled={customerHistoryOptions.length === 0}
                         onChange={(event) => {
                           if (event.target.value) selectCustomerName(event.target.value);
