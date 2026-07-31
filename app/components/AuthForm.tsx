@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle } from "lucide-react";
 import { createSession, currentPasscode } from "../lib/auth";
@@ -11,10 +11,10 @@ const publicBasePath = (process.env.NEXT_PUBLIC_BASE_PATH || "").replace(/\/$/, 
 
 export function AuthForm() {
   const router = useRouter();
-  const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const isAuthenticatingRef = useRef(false);
   const authenticationTimerRef = useRef<number | null>(null);
-  const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""));
+  const [passcode, setPasscode] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,7 +22,7 @@ export function AuthForm() {
     const isTouchDevice = window.matchMedia("(pointer: coarse), (max-width: 767px)").matches;
     if (isTouchDevice) return;
 
-    const frame = window.requestAnimationFrame(() => inputRefs.current[0]?.focus());
+    const frame = window.requestAnimationFrame(() => inputRef.current?.focus());
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
@@ -44,73 +44,24 @@ export function AuthForm() {
         return;
       }
 
-      setDigits(Array(OTP_LENGTH).fill(""));
+      setPasscode("");
       setError("Mã không đúng. Vui lòng thử lại.");
       setIsSubmitting(false);
       isAuthenticatingRef.current = false;
-      requestAnimationFrame(() => inputRefs.current[0]?.focus());
+      requestAnimationFrame(() => inputRef.current?.focus());
     }, 1500);
-  };
-
-  const setDigitsFrom = (startIndex: number, rawValue: string) => {
-    const enteredDigits = rawValue.replace(/\D/g, "").slice(0, OTP_LENGTH - startIndex);
-    const nextDigits = [...digits];
-
-    if (!enteredDigits) {
-      nextDigits[startIndex] = "";
-    } else {
-      enteredDigits.split("").forEach((digit, offset) => {
-        nextDigits[startIndex + offset] = digit;
-      });
-    }
-
-    setError("");
-    setDigits(nextDigits);
-
-    if (enteredDigits) {
-      const focusIndex = Math.min(startIndex + enteredDigits.length, OTP_LENGTH - 1);
-      requestAnimationFrame(() => inputRefs.current[focusIndex]?.focus());
-    }
-
   };
 
   const submit = (event?: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    const passcode = digits.join("");
 
     if (passcode.length !== OTP_LENGTH) {
       setError("Nhập đủ 4 số để đăng nhập.");
-      inputRefs.current.find((input) => !input?.value)?.focus();
+      inputRef.current?.focus();
       return;
     }
 
     authenticate(passcode);
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (event.key === "Backspace" && !digits[index] && index > 0) {
-      event.preventDefault();
-      const nextDigits = [...digits];
-      nextDigits[index - 1] = "";
-      setDigits(nextDigits);
-      inputRefs.current[index - 1]?.focus();
-      return;
-    }
-
-    if (event.key === "ArrowLeft" && index > 0) {
-      event.preventDefault();
-      inputRefs.current[index - 1]?.focus();
-    }
-
-    if (event.key === "ArrowRight" && index < OTP_LENGTH - 1) {
-      event.preventDefault();
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handlePaste = (event: ClipboardEvent<HTMLInputElement>, index: number) => {
-    event.preventDefault();
-    setDigitsFrom(index, event.clipboardData.getData("text"));
   };
 
   return (
@@ -120,25 +71,23 @@ export function AuthForm() {
         <h1>Đăng Nhập Dũng - QLHS</h1>
         <p className={styles.description}>Nhập mã bảo mật để tiếp tục</p>
 
-        <div className={styles.otp} aria-label="Mã đăng nhập gồm 4 số">
-          {digits.map((digit, index) => (
-            <input
-              key={index}
-              ref={(element) => { inputRefs.current[index] = element; }}
-              aria-label={`Số ${index + 1} trong mã đăng nhập`}
-              autoComplete={index === 0 ? "one-time-code" : "off"}
-              disabled={isSubmitting}
-              inputMode="numeric"
-              maxLength={1}
-              onChange={(event) => setDigitsFrom(index, event.target.value)}
-              onFocus={(event) => event.currentTarget.select()}
-              onKeyDown={(event) => handleKeyDown(event, index)}
-              onPaste={(event) => handlePaste(event, index)}
-              pattern="[0-9]*"
-              type="password"
-              value={digit}
-            />
-          ))}
+        <div className={styles.otp}>
+          <input
+            ref={inputRef}
+            aria-label="Mã đăng nhập gồm 4 số"
+            autoComplete="one-time-code"
+            disabled={isSubmitting}
+            inputMode="numeric"
+            maxLength={OTP_LENGTH}
+            onChange={(event) => {
+              setError("");
+              setPasscode(event.target.value.replace(/\D/g, "").slice(0, OTP_LENGTH));
+            }}
+            onFocus={(event) => event.currentTarget.select()}
+            pattern="[0-9]*"
+            type="password"
+            value={passcode}
+          />
         </div>
 
         {error && <p className={styles.error} role="alert">{error}</p>}
