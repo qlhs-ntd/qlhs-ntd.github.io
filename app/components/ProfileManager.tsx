@@ -2846,6 +2846,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave, defaultCustome
                   {form.customerName && (
                     <ClearInputButton
                       type="button"
+                      tabIndex={-1}
                       aria-label="Xoá tên khách hàng"
                       title="Xoá tên khách hàng"
                       onPointerDown={(event) => clearTextField(event, "customerName", "")}
@@ -2907,6 +2908,7 @@ function ProfileModal({ state, profiles, saving, onClose, onSave, defaultCustome
                   {form.vehicleOwnerName && (
                     <ClearInputButton
                       type="button"
+                      tabIndex={-1}
                       aria-label="Xoá tên chủ phương tiện"
                       title="Xoá tên chủ phương tiện"
                       onPointerDown={(event) => clearTextField(event, "vehicleOwnerName", "")}
@@ -2929,12 +2931,13 @@ function ProfileModal({ state, profiles, saving, onClose, onSave, defaultCustome
                     spellCheck={false}
                     maxLength={30}
                     value={form.vehiclePlate}
-                    onChange={(event) => updateField("vehiclePlate", event.target.value)}
-                    placeholder="60X-123.45"
+                    onChange={(event) => updateField("vehiclePlate", event.target.value.toUpperCase())}
+                    placeholder="60XY-123.45"
                   />
                   {form.vehiclePlate && (
                     <ClearInputButton
                       type="button"
+                      tabIndex={-1}
                       aria-label="Xoá Biển Số Cũ"
                       title="Xoá Biển Số Cũ"
                       onPointerDown={(event) => clearTextField(event, "vehiclePlate", "")}
@@ -3021,12 +3024,13 @@ function ProfileModal({ state, profiles, saving, onClose, onSave, defaultCustome
                     spellCheck={false}
                     maxLength={30}
                     value={form.newVehiclePlate}
-                    onChange={(event) => updateField("newVehiclePlate", event.target.value)}
-                    placeholder="60X-123.45"
+                    onChange={(event) => updateField("newVehiclePlate", event.target.value.toUpperCase())}
+                    placeholder="60YZ-567.89"
                   />
                   {form.newVehiclePlate && (
                     <ClearInputButton
                       type="button"
+                      tabIndex={-1}
                       aria-label="Xoá Biển Số Mới"
                       title="Xoá Biển Số Mới"
                       onPointerDown={(event) => clearTextField(event, "newVehiclePlate", "")}

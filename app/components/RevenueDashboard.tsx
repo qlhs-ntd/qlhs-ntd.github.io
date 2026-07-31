@@ -1831,11 +1831,9 @@ export function RevenueDashboard({ customerMode = false }: RevenueDashboardProps
                 onChange={(event) => handleCustomerChange(event.target.value)}
               >
                 <option value="" disabled hidden />
-                <optgroup label="Chọn Khách Hàng">
-                  {customersForMonth.map((customer) => (
-                    <option key={customer} value={customer}>{customer}</option>
-                  ))}
-                </optgroup>
+                {customersForMonth.map((customer) => (
+                  <option key={customer} value={customer}>{customer}</option>
+                ))}
               </MonthSelect>
               {!selectedCustomer && <CustomerSelectPlaceholder>Chọn Khách Hàng</CustomerSelectPlaceholder>}
               <DropdownIcon>
