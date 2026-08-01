@@ -1835,6 +1835,7 @@ export function RevenueDashboard({ customerMode = false }: RevenueDashboardProps
                   <option key={customer} value={customer}>{customer}</option>
                 ))}
               </MonthSelect>
+              {!selectedCustomer && <CustomerSelectPlaceholder>Chọn Khách Hàng</CustomerSelectPlaceholder>}
               <DropdownIcon>
                 <ChevronDown size={18} />
               </DropdownIcon>
