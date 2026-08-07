@@ -35,6 +35,8 @@ import {
   PencilLine,
   ReceiptText,
   Search,
+  SquareDashedMousePointer,
+  SquareDashedText,
   Trash2,
   TrendingUp,
   UserRound,
@@ -1707,6 +1709,61 @@ const SelectWrap = styled.div`
   }
 `;
 
+const AgencyToggleButton = styled.button`
+  display: grid;
+  flex-shrink: 0;
+  width: 44px;
+  height: 46px;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: #edf0ff;
+  padding: 0;
+  color: var(--primary);
+  cursor: pointer;
+  transition: background 140ms ease, transform 120ms ease;
+
+  &:hover {
+    background: #e1e6ff;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+`;
+
+const AgencyRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+`;
+
+const AgencyCustomInput = styled.input`
+  flex: 1;
+  width: 100%;
+  height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfbfd;
+  padding: 0 14px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  transition: 130ms ease;
+
+  &:focus {
+    border-color: rgba(56, 89, 217, 0.6);
+    background: white;
+    outline: none;
+  }
+
+  &::placeholder {
+    color: #aeb4c2;
+    font-weight: 400;
+  }
+`;
+
 const StatusSelectWrap = styled(SelectWrap)<{ $status: string }>`
   > svg {
     position: absolute;
@@ -2549,6 +2606,11 @@ function ProfileModal({ state, profiles, saving, onClose, onSave, defaultCustome
   );
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [closing, setClosing] = useState(false);
+  const [agencyInputMode, setAgencyInputMode] = useState<"select" | "custom">(() => {
+    const initial = state.profile ? state.profile.receivingAgency : RECEIVING_AGENCIES[0];
+    const isKnown = (RECEIVING_AGENCIES as readonly string[]).includes(initial);
+    return isKnown ? "select" : "custom";
+  });
   const { totalCost, profit } = calculateProfileCosts(form);
   const showCustomerHistoryButton = !form.customerName.trim();
   const showOwnerHistoryButton = !form.vehicleOwnerName.trim();
@@ -2955,13 +3017,43 @@ function ProfileModal({ state, profiles, saving, onClose, onSave, defaultCustome
                 </SelectWrap>
               </Field>
 
-              <Field>
+              <Field as="div">
                 <FieldLabel><Building2 size={14} />Cơ quan nhận</FieldLabel>
-                <SelectWrap>
-                  <select aria-label="Cơ quan nhận" value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
-                    {RECEIVING_AGENCIES.map((agency) => <option key={agency} value={agency}>{capitalizeWords(agency)}</option>)}
-                  </select>
-                </SelectWrap>
+                <AgencyRow>
+                  {agencyInputMode === "select" ? (
+                    <SelectWrap style={{ flex: 1 }}>
+                      <select aria-label="Cơ quan nhận" value={form.receivingAgency} onChange={(event) => updateField("receivingAgency", event.target.value)}>
+                        {RECEIVING_AGENCIES.map((agency) => <option key={agency} value={agency}>{capitalizeWords(agency)}</option>)}
+                      </select>
+                    </SelectWrap>
+                  ) : (
+                    <AgencyCustomInput
+                      aria-label="Cơ quan nhận (nhập tay)"
+                      type="text"
+                      placeholder="Nhập tên cơ quan nhận..."
+                      value={form.receivingAgency}
+                      onChange={(event) => updateField("receivingAgency", event.target.value)}
+                      autoComplete="off"
+                    />
+                  )}
+                  <AgencyToggleButton
+                    type="button"
+                    title={agencyInputMode === "select" ? "Chuyển sang nhập tay" : "Chuyển sang chọn danh sách"}
+                    onClick={() => {
+                      if (agencyInputMode === "select") {
+                        setAgencyInputMode("custom");
+                        updateField("receivingAgency", "");
+                      } else {
+                        setAgencyInputMode("select");
+                        updateField("receivingAgency", RECEIVING_AGENCIES[0]);
+                      }
+                    }}
+                  >
+                    {agencyInputMode === "select"
+                      ? <SquareDashedText size={20} />
+                      : <SquareDashedMousePointer size={20} />}
+                  </AgencyToggleButton>
+                </AgencyRow>
               </Field>
 
               <Field>
